@@ -1,0 +1,201 @@
+
+body {
+    font-family: Arial, sans-serif;
+    background: url('/images/bglogin.jpg') no-repeat center center;
+    background-size: cover;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.enrollment-form {
+    background-color: #4d0d18;
+    color: #fff;
+    padding: 40px;
+    width: 900px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #4d0d18;
+    padding: 10px;
+}
+
+.school-logo img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%; 
+    object-fit: cover; 
+    margin-right: 15px;
+}
+
+.school-name {
+    color: #fff;
+}
+
+.school-name h2 {
+    font-size: 24px;
+    margin: 0;
+}
+
+.school-name p {
+    font-size: 14px;
+    margin: 0;
+    color: #ccc;
+}
+.input-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.input-field {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.input-field label {
+    color: #fff;
+    font-size: 16px;
+    margin-right: 10px;
+    white-space: nowrap;
+}
+
+.input-field input {
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid #fff; 
+    color: #fff;
+    font-size: 14px;
+    width: 150px; 
+    outline: none;
+    padding: 2px;
+    transition: border-color 0.3s;
+}
+
+.input-field input:focus {
+    border-bottom: 1px solid #f00; /* Red line on focus */
+}
+
+
+.section-border {
+    border: 1px solid #fff;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.grade-level, .status, .strand {
+    margin-bottom: 10px;
+}
+
+.status {
+    margin-top: 20px; 
+}
+
+label {
+    font-weight: bold;
+    color: #fff;
+}
+
+input[type="radio"] {
+    margin-right: 5px;
+}
+
+
+
+
+input[type="text"],
+input[type="email"] {
+    width: 90%;
+    padding: 10px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #f8f7f2;
+    color: #333;
+}
+
+input[type="radio"] {
+    margin-right: 5px;
+}
+
+/* Section Styling */
+.form-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.grade-level,
+.strand {
+    text-align: left;
+}
+
+.student-info,
+.other-info {
+    text-align: left;
+}
+
+.student-info input {
+    width: 28%;
+}
+
+.other-info {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.gender,
+.dob,
+.contact,
+.email {
+    flex: 1;
+    margin: 5px;
+}
+
+/* Submit Button */
+.submit-btn {
+    background-color: #a52639;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    width: 80%;
+    border-radius: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 20px;
+}
+
+.submit-btn:hover {
+    background-color: #7a0f1d;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Go Back Link */
+.go-back {
+    display: block;
+    margin-top: 15px;
+    color: #ddd;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.go-back:hover {
+    text-decoration: underline;
+}
+.click-strand{
+    color: #ff778b;
+}

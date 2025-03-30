@@ -1,0 +1,609 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Garet', 'Times New Roman', Times, serif;
+    background-color: #f8f7f2;
+    color: #333;
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 250px;
+    background-color: #050a30;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 20px;
+    position: fixed;
+    height: 100vh;
+    z-index: 1000;
+}
+
+.logo-container {
+    text-align: center;
+    padding: 20px;
+}
+
+.logo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%; 
+    object-fit: cover;
+}
+
+.sidebar-nav {
+    flex-grow: 1;
+    padding: 20px 0;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+}
+
+.school-name {
+    font-size: 14px;
+    text-align: center;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.nav-item {
+    display: block;
+    padding: 15px 25px;
+    color: white;
+    text-decoration: none;
+    font-weight: normal;
+    transition: background-color 0.3s;
+    letter-spacing: 1.5px;
+}
+
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-item.active {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sub-menu {
+    padding-left: 20px;
+}
+
+.sub-item {
+    display: block;
+    padding: 10px 25px;
+    color: #ccc;
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: color 0.3s;
+}
+
+.sub-item:hover, .sub-item.active {
+    color: white;
+}
+
+.logout {
+    padding: 20px 0;
+    text-align: center;
+}
+
+/* Main Content Styles */
+.main-content {
+    flex-grow: 1;
+    margin-left: 250px;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 30px;
+    color: #050a30;
+    margin-top: 10px;
+    position: relative;
+}
+
+.header h1::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 3px;
+    background-color: #050a30;
+    position: absolute;
+    bottom: -22px;
+    left: 0;
+}
+
+.user-actions {
+    display: flex;
+    align-items: center;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+}
+
+.profile-pic {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    margin-right: 10px;
+    border: 2px solid #050a30;
+    object-fit: cover;
+}
+
+.user-info {
+    line-height: 1.2;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #050a30;
+}
+
+.user-grade {
+    font-size: 11px;
+    color: #777777a9;
+    font-weight: 600;
+    letter-spacing: .5px;
+}
+
+.icons {
+    display: flex;
+    align-items: center;
+}
+
+.icon-link {
+    margin-left: 15px;
+    position: relative;
+}
+
+.icon {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s;
+}
+
+.icon-link:hover .icon {
+    transform: scale(1.15);
+}
+
+/* Search Bar Styles */
+.search-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+.search-bar {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px 0 0 5px;
+    width: 300px;
+    font-family: 'Garet', sans-serif;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.search-bar:focus {
+    border-color: #050a30;
+    box-shadow: 0 0 5px rgba(5, 10, 48, 0.3);
+}
+
+.search-button {
+    background-color: #050a30;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.search-button:hover {
+    background-color: #0a1050;
+}
+
+/* Section Title Styles */
+.section-title {
+    color: #050a30;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 25px 0 15px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #050a30;
+    display: inline-block;
+}
+
+/* New Report Card Layout - Flex Container */
+.report-card-content {
+    display: flex;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+/* Student Card Styles */
+.student-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.student-card::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: #050a30;
+    border-radius: 8px 8px 0 0;
+}
+
+.student-photo {
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    object-fit: cover;
+    margin-right: 25px;
+    border: 2px solid #050a30;
+}
+
+.student-info {
+    flex-grow: 1;
+}
+
+.student-info-row {
+    display: flex;
+    margin-bottom: 12px;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #050a30;
+    width: 120px;
+    margin-right: 10px;
+}
+
+.info-value {
+    color: #333;
+}
+
+.student-card-title {
+    position: absolute;
+    top: -15px;
+    left: 20px;
+    background-color: #050a30;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+/* Student List Table Styles */
+.student-list-container {
+    flex: 3;
+}
+
+.table-container {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease-in-out;
+    margin-bottom: 20px;
+}
+
+.student-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.student-table th {
+    background-color: #050a30;
+    color: white;
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.student-table td {
+    padding: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.student-table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.student-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.student-table tbody tr.active {
+    background-color: #eef2ff;
+    border-left: 4px solid #050a30;
+}
+
+/* Grade and Actions Container */
+.grade-actions-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Final Grade Section Styles */
+.grade-summary-card {
+    background-color: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.grade-summary-card h2 {
+    color: #050a30;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.grade-circle {
+    width: 80px;
+    height: 80px;
+    background-color: #050a30;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 15px auto;
+    box-shadow: 0 5px 15px rgba(5, 10, 48, 0.3);
+}
+
+.grade-value {
+    font-size: 36px;
+    font-weight: 700;
+}
+
+.gpa {
+    font-weight: 500;
+    color: #050a30;
+}
+
+/* Button Styles */
+.button-container {
+    margin-bottom: 10px;
+}
+
+.update-button {
+    background-color: #050a30;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+    font-family: 'Garet', sans-serif;
+    width: 100%;
+    text-align: center;
+}
+
+.update-button:hover {
+    background-color: #0a1050;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.update-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #050a30;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #0a1050;
+}
+
+/* Responsive Styles */
+@media (max-width: 1200px) {
+    .report-card-content {
+        flex-direction: column;
+    }
+    
+    .grade-actions-container {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    
+    .grade-summary-card {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .button-container {
+        flex: 1;
+        min-width: 200px;
+        display: flex;
+        align-items: center;
+    }
+}
+
+@media (max-width: 992px) {
+    .main-content {
+        margin-left: 0;
+        padding-top: 80px;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: fixed;
+        bottom: 0;
+        z-index: 1000;
+        padding: 10px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    .logo-container, .sidebar-nav ul li:not(:first-child):not(:nth-child(2)), .logout {
+        display: none;
+    }
+
+    .sidebar-nav {
+        padding: 0;
+    }
+
+    .nav-item {
+        padding: 10px 15px;
+        font-size: 0.8rem;
+    }
+
+    .header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: #f8f7f2;
+        z-index: 999;
+        padding: 15px 20px;
+    }
+
+    .user-profile .user-info {
+        display: none;
+    }
+    
+    .grade-actions-container {
+        flex-direction: column;
+    }
+    
+    .student-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .student-photo {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+    
+    .student-info-row {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .info-label {
+        width: auto;
+        margin-right: 0;
+        margin-bottom: 5px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .search-container {
+        margin-top: 20px;
+    }
+
+    .search-bar {
+        width: 200px;
+    }
+    
+    .report-card-content {
+        gap: 15px;
+    }
+}
+
+@media (max-width: 576px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .user-actions {
+        margin-top: 15px;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .search-container {
+        width: 100%;
+    }
+
+    .search-bar {
+        width: 80%;
+    }
+
+    .grade-circle {
+        width: 60px;
+        height: 60px;
+    }
+
+    .grade-value {
+        font-size: 28px;
+    }
+
+    .update-button {
+        width: 100%;
+    }
+}
