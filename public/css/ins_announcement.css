@@ -16,7 +16,7 @@ body {
     position: relative;
 }
 
-
+/* Sidebar Styles */
 .sidebar {
     width: 250px;
     background-color: #050a30;
@@ -35,8 +35,9 @@ body {
 }
 
 .logo {
-    width: 120px;
-    height: 120px;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 10px ;
     border-radius: 50%; 
     object-fit: cover;
 }
@@ -44,6 +45,9 @@ body {
 .sidebar-nav {
     flex-grow: 1;
     padding: 20px 0;
+}
+.sidebar-nav a {
+    font-size: 14px;
 }
 
 .sidebar-nav ul {
@@ -90,11 +94,6 @@ body {
 
 .sub-item:hover, .sub-item.active {
     color: white;
-}
-
-.logout {
-    padding: 20px 0;
-    text-align: center;
 }
 
 /* Main Content Styles */
@@ -222,6 +221,176 @@ body {
 .search-button:hover {
     background-color: #0a1050;
 }
+
+
+/* Form and preview cards */
+/* Container & Layout */
+.announcement-creation {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+  margin-bottom: 40px;
+  transition: box-shadow 0.3s ease;
+}
+.announcement-creation:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* Message Box */
+.message-box {
+  background: linear-gradient(120deg, #f7f7f7, #ffffff);
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.message-header {
+  background: #050a30;
+  color: #fff;
+  padding: 16px 20px;
+}
+.message-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  letter-spacing: 0.5px;
+}
+.message-content {
+  padding: 20px;
+}
+.message-content textarea {
+  width: 100%;
+  min-height: 140px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  resize: vertical;
+  outline: none;
+  font-family: 'Garet', sans-serif;
+  font-size: 1rem;
+  padding: 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.message-content textarea:focus {
+  border-color: #050a30;
+  box-shadow: 0 0 6px rgba(5, 10, 48, 0.2);
+}
+
+/* Controls */
+.controls-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+.add-file-btn,
+.announce-btn {
+  background-color: #050a30;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+.add-file-btn:hover,
+.announce-btn:hover {
+  background-color: #08114e;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Section Dropdown */
+.section-dropdown select {
+  padding: 10px 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-family: 'Garet', sans-serif;
+  font-size: 1rem;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.section-dropdown select:focus {
+  border-color: #050a30;
+  box-shadow: 0 0 6px rgba(5, 10, 48, 0.2);
+}
+
+/* Preview Card */
+.announcement-preview {
+  background: #050a30;
+  color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(5, 10, 48, 0.4);
+  margin-bottom: 40px;
+  animation: fadeInUp 0.6s ease-out both;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+.preview-header h3 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+.preview-recipient {
+  font-size: 0.95rem;
+  opacity: 0.85;
+}
+.preview-content {
+  padding: 24px;
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+/* Announcement Cards List */
+.announcements-list .announcement-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.announcements-list .announcement-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+.announcements-list .announcement-card h4 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  color: #050a30;
+}
+.announcements-list .announcement-card p {
+  margin: 0.5em 0;
+  color: #333;
+}
+.announcements-list .announcement-card small {
+  display: block;
+  color: #777;
+  margin-top: 12px;
+}
+.announcements-list .announcement-card a {
+  color: #050a30;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.announcements-list .announcement-card a:hover {
+  color: #08114e;
+}
+
+
 
 /* Announcement Creation Area Styles */
 .announcement-creation {

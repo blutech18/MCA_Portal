@@ -37,8 +37,9 @@ body {
 }
 
 .logo {
-    width: 120px;
-    height: 120px;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 10px ;
     border-radius: 50%; 
     object-fit: cover;
 }
@@ -47,10 +48,14 @@ body {
     flex-grow: 1;
     padding: 20px 0;
 }
+.sidebar-nav a {
+    font-size: 14px;
+}
 
 .sidebar-nav ul {
     list-style: none;
 }
+
 .school-name {
     font-size: 14px;
     text-align: center;
@@ -93,10 +98,6 @@ body {
     color: white;
 }
 
-.logout {
-    padding: 20px 0;
-    text-align: center;
-}
 
 /* Main Content Styles */
 .main-content {
@@ -261,6 +262,9 @@ icons {
 .schedule-table {
     background-color: white;
     border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    box-sizing: border-box;
     overflow: hidden;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
 }
@@ -288,6 +292,7 @@ th {
 tbody tr:hover {
     background-color: #f9f9f9;
 }
+
 
 
 @media (max-width: 1200px) {

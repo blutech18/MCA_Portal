@@ -13,29 +13,31 @@
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="logo-container">
-                <img src="logo.png" alt="MCA Montessori School Logo" class="logo">
+                <img src="{{ asset('images/logo.png') }}" alt="MCA Montessori School Logo" class="logo">
                 <h2 class="school-name">MCA MONTESSORI SCHOOL</h2>
             </div>
             
             <nav class="navigation">
                 <ul>
-                    <li><a href="{{ route('instructor.dashboard') }}">DASHBOARD</a></li>
-                    <li class="active">
-                        <a href="{{ route('instructor.schedmore') }}">CLASSES</a>
-                        <ul class="submenu">
-                            <li><a href="{{ route('instructor.schedule') }}">SCHEDULES</a></li>
-                            <li class="active"><a href="{{ route('instructor.student') }}">STUDENTS</a></li>
+                    <li><a href="{{ route('instructor.dashboard') }}" class="nav-item">DASHBOARD</a></li>
+                    <li>
+                        <a href="{{ route('instructor.schedule') }}" class="nav-item active">CLASSES</a>
+                        <ul class="sub-menu">
+                            <li><a href="{{ route('instructor.schedule') }}" class="sub-item">SCHEDULES</a></li>
+                            <li><a href="{{ route('instructor.student') }}" class="sub-item active">STUDENTS</a></li>
                         </ul>
                     </li>
-                    <li><a href="{{ route('instructor.attendance') }}">ATTENDANCE REPORTS</a></li>
-                    <li><a href="{{ route('instructor.report') }}">GRADE REPORTS</a></li>
-                    <li><a href="{{ route('instructor.announcement') }}">ANNOUNCEMENTS</a></li>
+                    <li><a href="{{ route('instructor.attendance') }}" class="nav-item">ATTENDANCE REPORTS</a></li>
+                    <li><a href="{{ route('instructor.report') }}" class="nav-item">GRADE REPORTS</a></li>
+                    <li><a href="{{ route('instructor.announcement') }}" class="nav-item">ANNOUNCEMENTS</a></li>
                 </ul>
+                <div class="logout">
+                    <a href="javascript:void(0)" class="nav-item" onclick="confirmExit()">LOGOUT</a>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                        @csrf
+                    </form>
+                </div>  
             </nav>
-            
-            <div class="logout-container">
-                <a href="#logout" class="logout-btn">LOGOUT</a>
-            </div>
         </aside>
 
         <!-- Main Content Area -->
@@ -44,17 +46,15 @@
                 <h1 class="page-title">STUDENTS</h1>
                 <div class="user-controls">
                     <div class="instructor-profile">
-                        <img src="examplepic.png" alt="Instructor Profile" class="instructor-img">
+                        <img src="{{ asset('images/instructor_user.png') }}" alt="Instructor Profile" class="instructor-img">
                         <div class="instructor-info">
-                            <p class="instructor-name">Krystal Mendez</p>
+                            <p class="instructor-name">{{ $instructor->first_name }} {{ $instructor->last_name }}</p>
                             <p class="instructor-title">INSTRUCTOR</p>
                         </div>
                     </div>
-                    <div class="notification">
-                        <img src="bell.png" alt="Notifications" class="bell-icon">
-                    </div>
-                    <div class="settings">
-                        <img src="settings.png" alt="Settings" class="settings-icon">
+                    <div class="icons">
+                        <a href="#" class="icon-link"><img src="{{ asset('images/bell.png') }}" alt="Notifications" class="icon"></a>
+                        <a href="#" class="icon-link"><img src="{{ asset('images/settings.png') }}" alt="Settings" class="icon"></a>
                     </div>
                 </div>
             </header>
@@ -66,11 +66,11 @@
                     <div class="filter-group section-filter">
                         <select id="section-dropdown" class="section-dropdown">
                             <option value="">SECTION</option>
-                            <option value="A">Section A</option>
-                            <option value="B">Section B</option>
-                            <option value="C">Section C</option>
-                            <option value="D">Section D</option>
+                            @foreach($students->pluck('section.section_name')->unique()->filter() as $section)
+                                <option value="{{ $section }}">{{ $section }}</option>
+                            @endforeach
                         </select>
+                        
                     </div>
                     <div class="filter-group search-filter">
                         <input type="text" id="student-search" class="student-search" placeholder="Name of Student">
@@ -85,16 +85,23 @@
                 <div class="dashboard-cards">
                     <div class="student-count-card">
                         <h3>MY STUDENTS</h3>
-                        <p class="count">99</p>
+                        <p class="count">{{ $students->count() }}</p>
                     </div>
                     
-                    <div class="student-profile-card">
-                        <img src="meme.jpg" alt="Student Profile" class="student-img">
-                        <div class="student-info">
-                            <p><strong>Name:</strong> Jane Doe</p>
-                            <p><strong>Section:</strong> A</p>
+                    @php
+                        $firstStudent = $students->first();
+                    @endphp
+
+                    <!--@if($firstStudent)
+                        <div class="student-profile-card">
+                            <img src="{{asset('images/') }}" alt="Student Profile" class="student-img">
+                            <div class="student-info">
+                                <p><strong>Name:</strong> {{ $firstStudent->full_name }}</p>
+                                <p><strong>Section:</strong> {{ $firstStudent->section->section_name ?? 'N/A' }}</p>
+                            </div>
                         </div>
-                    </div>
+                    @endif-->
+
                 </div>
 
                 <div class="students-table-container">
@@ -108,37 +115,23 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Jane Doe</td>
-                                <td>A</td>
-                                <td>Active</td>
-                                <td>A</td>
-                            </tr>
-                            <tr>
-                                <td>John Smith</td>
-                                <td>A</td>
-                                <td>Active</td>
-                                <td>B+</td>
-                            </tr>
-                            <tr>
-                                <td>Maria Garcia</td>
-                                <td>B</td>
-                                <td>Active</td>
-                                <td>A-</td>
-                            </tr>
-                            <tr>
-                                <td>Kevin Johnson</td>
-                                <td>C</td>
-                                <td>Inactive</td>
-                                <td>C</td>
-                            </tr>
-                            <tr>
-                                <td>Emily Chen</td>
-                                <td>A</td>
-                                <td>Active</td>
-                                <td>A+</td>
-                            </tr>
+                            @forelse ($students as $student)
+                                <tr>
+                                    <td>{{ $student->full_name }}</td>
+                                    <td>{{ $student->section->section_name ?? 'No Section' }}</td>
+                                    <td>{{ $student->status->name ?? 'No Status' }}</td>
+                                    <td>
+                                        <a href="{{ route('instructor.report') }}" class="btn btn-primary btn-sm">View Grades</a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center">No students found.</td>
+                                </tr>
+                            @endforelse
                         </tbody>
+                        
+                        
                     </table>
                 </div>
                 
@@ -147,6 +140,7 @@
                 </div>
             </div>
         </main>
+        
     </div>
 
     <script>

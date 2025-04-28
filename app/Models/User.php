@@ -9,44 +9,46 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    protected $primaryKey = 'user_id';
+    public $incrementing = true; // ensure auto-increment works
+    protected $keyType = 'int';
+
     protected $fillable = [
         'name',
-        'email',
+        'username',
         'password',
+        'user_type',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
+            'email_verified_at' => 'datetime', // Remove if you dropped it
             'password' => 'hashed',
         ];
     }
-    public function class()
+
+    // Override to use 'user_id' instead of 'id' for authentication
+    public function getAuthIdentifierName()
     {
-        return $this->belongsTo(\App\Models\Classes::class, 'class_id');
+        return 'user_id';
+    }
+    
+    public function instructor()
+    {
+        // user_id is your PK on users, and user_id FK on instructors
+        return $this->hasOne(Instructor::class, 'user_id', 'user_id');
+    }
+
+    public function student()
+    {
+        return $this->hasOne(Student::class, 'user_id');
     }
 }

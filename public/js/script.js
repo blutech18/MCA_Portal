@@ -1,20 +1,20 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const inputEmail = document.getElementById("email");
+    const inputUsername = document.getElementById("username");
     const inputPass = document.getElementById("password");
     const lockPic = document.querySelector(".lock");
-    const emailPic = document.querySelector(".email");
+    const usernamePic = document.querySelector(".email");
 
-    inputEmail.addEventListener("focus", function () {
-        emailPic.style.display = "none";
+    inputUsername.addEventListener("focus", function () {
+        usernamePic.style.display = "none";
     });
 
     inputPass.addEventListener("focus", function () {
         lockPic.style.display = "none";
     });
 
-    inputEmail.addEventListener("blur", function () {
+    inputUsername.addEventListener("blur", function () {
         if (inputEmail.value.trim() === "") {
-            emailPic.style.display = "block";
+            usernamePic.style.display = "block";
         }
     });
 

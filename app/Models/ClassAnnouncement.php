@@ -6,5 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class ClassAnnouncement extends Model
 {
-    protected $fillable = ['class_name', 'title', 'message', 'file_path'];
+    protected $table = 'class_announcements';
+
+    protected $fillable = [
+        'class_name',
+        'title',
+        'message',
+        'file_path',
+    ];
 }

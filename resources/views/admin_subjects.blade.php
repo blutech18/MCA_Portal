@@ -18,7 +18,8 @@
           <li><a href="{{ route('admin.users') }}" class="{{ Route::currentRouteName() == 'admin.users' ? 'active' : '' }}">Users</a></li>
           <li><a href="{{ route('admin.instructors') }}" class="{{ Route::currentRouteName() == 'admin.instructors' ? 'active' : '' }}">Instructors</a></li>
           <li><a href="{{ route('admin.subjects') }}" class="{{ Route::currentRouteName() == 'admin.subjects' ? 'active' : '' }}">Subjects</a></li>
-          <li><a href="{{ route('admin.classes') }}" class="{{ Route::currentRouteName() == 'admin.classes' ? 'active' : '' }}">Classes</a></li>
+          <li><a href="{{ route('admin.classes') }}" class="{{ Route::currentRouteName() == 'admin.classes' ? 'active' : '' }}">Sections</a></li>
+          <li><a href="{{ route('admin.courses.index') }}" class="{{ Route::currentRouteName() == 'admin.courses.index' ? 'active' : '' }}">Courses</a></li>
         </ul>
       </nav>
       <a href="#" class="logout">Logout</a>
@@ -37,43 +38,67 @@
       </header>
 
       <div class="container-subjects">
-        <h3>Grade 11 Subjects</h3>
-        
-        <div class="subject-section">
-          <div class="profile-header">STEM Subjects <button class="btn add-subject">Add</button></div>
-          <ul class="subject-list">
-            <li>Physics 1 <button class="btn edit-btn">Edit</button> <button class="btn delete-btn">Delete</button></li>
-            <li>General Mathematics <button class="btn edit-btn">Edit</button> <button class="btn delete-btn">Delete</button></li>
-          </ul>
+        <div class="search-bar-container">
+          <h3>All Subjects</h3>
+          <input
+            type="text"
+            id="instructor-search"
+            class="search-bar2"
+            placeholder="Search Subject"
+            aria-label="Search Subject"
+          >
         </div>
-        
         <div class="subject-section">
-          <div class="profile-header">GAS Subjects <button class="btn add-subject">Add</button></div>
+          <div class="profile-header">
+            <select name="sort" id="sort">
+              <option value="">---Sort by---</option>
+            </select>
+            <!-- Add Subject Button -->
+            <button class="btn add-subject" id="add-subject-btn">Add</button>
+          </div>
+          
+          <!-- Display the existing subjects -->
           <ul class="subject-list">
-            <li>Oral Communication <button class="btn edit-btn">Edit</button> <button class="btn delete-btn">Delete</button></li>
-            <li>21st Century Literature <button class="btn edit-btn">Edit</button> <button class="btn delete-btn">Delete</button></li>
-          </ul>
-        </div>
-
-        <h3>Grade 12 Subjects</h3>
-
-        <div class="subject-section">
-          <div class="profile-header">STEM Subjects <button class="btn add-subject">Add</button></div>
-          <ul class="subject-list">
-            <li>Physics 2 <button class="btn edit-btn">Edit</button> <button class="btn delete-btn">Delete</button></li>
-            <li>Basic Calculus <button class="btn edit-btn">Edit</button> <button class="btn delete-btn">Delete</button></li>
-          </ul>
-        </div>
-        
-        <div class="subject-section">
-          <div class="profile-header">GAS Subjects <button class="btn add-subject">Add</button></div>
-          <ul class="subject-list">
-            <li>Reading and Writing <button class="btn edit-btn">Edit</button> <button class="btn delete-btn">Delete</button></li>
-            <li>Statistics and Probability <button class="btn edit-btn">Edit</button> <button class="btn delete-btn">Delete</button></li>
+            @foreach ($subjects as $subject)
+              <li>{{ $subject->name }} ({{ $subject->code }}) 
+                <button class="btn edit-btn">Edit</button> 
+                <button class="btn delete-btn">Delete</button>
+              </li>
+            @endforeach
           </ul>
         </div>
       </div>
+
+      <!-- Overlay -->
+      <div id="overlay"></div>
+
+      <!-- Add Subject Form (Hidden by default) -->
+      <div id="add-subject-form">
+          <button type="button" id="close-modal-btn">&times;</button>
+          <form action="{{ route('admin.subjects.store') }}" method="POST">
+              @csrf
+              <div>
+                  <label for="name">Subject Name:</label>
+                  <input type="text" name="name" id="name" required>
+              </div>
+              <div>
+                  <label for="code">Subject Code:</label>
+                  <input type="text" name="code" id="code" required>
+              </div>
+              <button type="submit" class="btn">Add Subject</button>
+              <button type="button" id="cancel-btn" class="btn">Cancel</button>
+          </form>
+      </div>
+
     </main>
   </div>
+
+  @if(session('success'))
+      <div class="alert alert-success">
+          {{ session('success') }}
+      </div>
+  @endif
+
+  <script src="{{ asset('js/script_admin_subjects.js') }}"></script>
 </body>
 </html>

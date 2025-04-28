@@ -24,7 +24,7 @@
                     <li>
                         <a href="{{ route('instructor.schedmore') }}" class="nav-item active">CLASSES</a>
                         <ul class="sub-menu">
-                            <li><a href="{{ route('instructor.schedule') }}" class="sub-item active">SCHEDULES</a></li>
+                            <li><a href="{{ route('instructor.schedmore') }}" class="sub-item active">SCHEDULES</a></li>
                             <li><a href="{{ route('instructor.student') }}" class="sub-item">STUDENTS</a></li>
                         </ul>
                     </li>
@@ -39,159 +39,81 @@
 
         <!-- Main Content -->
         <div class="main-content">
-            <div class="header">
-                <h1>SCHEDULES</h1>
-                <div class="user-actions">
-                    <div class="user-profile">
-                        <img src="examplepic.png" alt="User Profile" class="profile-pic">
-                        <div class="user-info">
-                            <p class="user-name">Krystal Mendez</p>
-                            <p class="user-role">INSTRUCTOR</p>
-                        </div>
-                    </div>
-                    <div class="icons">
-                        <a href="#" class="icon-link"><img src="bell.png" alt="Notifications" class="icon"></a>
-                        <a href="#" class="icon-link"><img src="settings.png" alt="Settings" class="icon"></a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="date-section">
-                <p class="today-date">Today, <span id="current-date">March 29, 2025</span></p>
-            </div>
-
+            <h1>Schedules</h1>
+        
             <div class="cards-container">
-                <!-- First row of cards -->
-                <div class="cards-row">
-                    <div class="schedule-card">
-                        <div class="card-content">
-                            <p class="card-label">GRADE:</p>
-                            <p class="card-data" id="grade1"></p>
-                            <p class="card-label">SECTION:</p>
-                            <p class="card-data" id="section1"></p>
-                            <p class="card-label">SUBJECT:</p>
-                            <p class="card-data" id="subject1"></p>
-                            <p class="card-label">TIME:</p>
-                            <p class="card-data" id="time1"></p>
-                        </div>
-                    </div>
-                    <div class="schedule-card">
-                        <div class="card-content">
-                            <p class="card-label">GRADE:</p>
-                            <p class="card-data" id="grade2"></p>
-                            <p class="card-label">SECTION:</p>
-                            <p class="card-data" id="section2"></p>
-                            <p class="card-label">SUBJECT:</p>
-                            <p class="card-data" id="subject2"></p>
-                            <p class="card-label">TIME:</p>
-                            <p class="card-data" id="time2"></p>
-                        </div>
-                    </div>
-                    <div class="schedule-card">
-                        <div class="card-content">
-                            <p class="card-label">GRADE:</p>
-                            <p class="card-data" id="grade3"></p>
-                            <p class="card-label">SECTION:</p>
-                            <p class="card-data" id="section3"></p>
-                            <p class="card-label">SUBJECT:</p>
-                            <p class="card-data" id="subject3"></p>
-                            <p class="card-label">TIME:</p>
-                            <p class="card-data" id="time3"></p>
-                        </div>
-                    </div>
+                <div class="schedule-card">
+                  <div id="grade1"></div>
+                  <div id="section1"></div>
+                  <div id="subject1"></div>
+                  <div id="time1"></div>
                 </div>
-                
-                <!-- Second row of cards -->
-                <div class="cards-row">
-                    <div class="schedule-card">
-                        <div class="card-content">
-                            <p class="card-label">GRADE:</p>
-                            <p class="card-data" id="grade4"></p>
-                            <p class="card-label">SECTION:</p>
-                            <p class="card-data" id="section4"></p>
-                            <p class="card-label">SUBJECT:</p>
-                            <p class="card-data" id="subject4"></p>
-                            <p class="card-label">TIME:</p>
-                            <p class="card-data" id="time4"></p>
-                        </div>
-                    </div>
-                    <div class="schedule-card">
-                        <div class="card-content">
-                            <p class="card-label">GRADE:</p>
-                            <p class="card-data" id="grade5"></p>
-                            <p class="card-label">SECTION:</p>
-                            <p class="card-data" id="section5"></p>
-                            <p class="card-label">SUBJECT:</p>
-                            <p class="card-data" id="subject5"></p>
-                            <p class="card-label">TIME:</p>
-                            <p class="card-data" id="time5"></p>
-                        </div>
-                    </div>
-                    <div class="schedule-card">
-                        <div class="card-content">
-                            <p class="card-label">GRADE:</p>
-                            <p class="card-data" id="grade6"></p>
-                            <p class="card-label">SECTION:</p>
-                            <p class="card-data" id="section6"></p>
-                            <p class="card-label">SUBJECT:</p>
-                            <p class="card-data" id="subject6"></p>
-                            <p class="card-label">TIME:</p>
-                            <p class="card-data" id="time6"></p>
-                        </div>
-                    </div>
+                <div class="schedule-card">
+                  <div id="grade2"></div>
+                  <div id="section2"></div>
+                  <div id="subject2"></div>
+                  <div id="time2"></div>
                 </div>
+                <div class="schedule-card">
+                  <div id="grade3"></div>
+                  <div id="section3"></div>
+                  <div id="subject3"></div>
+                  <div id="time3"></div>
+                </div>
+                <div class="more-link"></div>
             </div>
+        
+            <div class="schedule-table">
+                <table class="schedule-table">
+                    <thead>
+                      <tr>
+                        <th>Code</th>
+                        <th>Subject</th>
+                        <th>Grade</th>
+                        <th>Section</th>
+                        <th>Time</th>
+                        <th>Day</th>
+                        <th>Room</th>
+                      </tr>
+                    </thead>
+                    <tbody id="schedule-body">
+                      @forelse($schedules as $s)
+                        <tr>
+                          <td>{{ $s->code }}</td>
+                          <td>{{ $s->subject }}</td>
+                          <td>{{ $s->grade }}</td>
+                          <td>{{ $s->section }}</td>
+                          <td>
+                            {{ \Carbon\Carbon::parse($s->start)->format('h:i A') }}
+                            –{{ \Carbon\Carbon::parse($s->end)->format('h:i A') }}
+                          </td>
+                          <td>{{ $s->day }}</td>
+                          <td>{{ $s->room }}</td>
+                        </tr>
+                      @empty
+                        <tr>
+                          <td colspan="7" class="text-center">No schedules for today.</td>
+                        </tr>
+                      @endforelse
+                    </tbody>
+                  </table>
+                  
+            </div>
+
         </div>
+
     </div>
 
+    {{-- right before your JS, to verify --}}
+    <pre>{{ var_export($schedules->toArray(), true) }}</pre>
+
     <script>
-        
-        function updateDate() {
-            const now = new Date();
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            const formattedDate = now.toLocaleDateString('en-US', options);
-            document.getElementById('current-date').textContent = formattedDate;
-        }
-
-        
-        const scheduleData = [
-            { code: "MATH101", subject: "Mathematics", grade: "12", section: "A", time: "8:00 AM - 9:30 AM", day: "Monday" },
-            { code: "SCI102", subject: "Physics", grade: "11", section: "B", time: "9:45 AM - 11:15 AM", day: "Monday" },
-            { code: "ENG103", subject: "Literature", grade: "10", section: "C", time: "1:00 PM - 2:30 PM", day: "Monday" },
-            { code: "HIS104", subject: "History", grade: "9", section: "A", time: "2:45 PM - 4:15 PM", day: "Tuesday" },
-            { code: "ART105", subject: "Fine Arts", grade: "8", section: "B", time: "8:00 AM - 9:30 AM", day: "Wednesday" },
-            { code: "MUS106", subject: "Music", grade: "7", section: "C", time: "10:00 AM - 11:30 AM", day: "Thursday" }
-        ];
-
-        
-        function populateScheduleCards() {
-            for (let i = 0; i < scheduleData.length; i++) {
-                const cardIndex = i + 1;
-                const data = scheduleData[i];
-                
-                document.getElementById(`grade${cardIndex}`).textContent = data.grade;
-                document.getElementById(`section${cardIndex}`).textContent = data.section;
-                document.getElementById(`subject${cardIndex}`).textContent = data.subject;
-                document.getElementById(`time${cardIndex}`).textContent = data.time;
-            }
-        }
-
-     
-        document.addEventListener('DOMContentLoaded', function() {
-            updateDate();
-            populateScheduleCards();
-            
-            // Update date every minute
-            setInterval(updateDate, 60000);
-            
-            
-            const cards = document.querySelectorAll('.schedule-card');
-            cards.forEach((card, index) => {
-                setTimeout(() => {
-                    card.classList.add('show');
-                }, 100 * index);
-            });
-        });
+        // scheduleData now contains exactly those 8 fields per entry
+        const scheduleData = @json($schedules);
     </script>
+
+
+    <script src="{{ asset('js/script_instructor_schedule.js') }}"></script>
+    
 </body>
 </html>

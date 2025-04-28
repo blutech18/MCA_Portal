@@ -5,149 +5,380 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin - Instructors</title>
   <link rel="stylesheet" href="{{ asset('css/styles_admin_instructors.css') }}">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
-<body>
-  <div class="dashboard-container">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <img src="{{ asset('images/schoollogo.png') }}" alt="School Logo" class="logo">
-      <h2>MCA Montessori School</h2>
-      <nav class="menu">
-        <ul>
-          <li><a href="{{ route('admin.dashboard') }}" class="{{ Route::currentRouteName() == 'admin.dashboard' ? 'active' : '' }}">Dashboard</a></li>
-          <li><a href="{{ route('admin.users') }}" class="{{ Route::currentRouteName() == 'admin.users' ? 'active' : '' }}">Users</a></li>
-          <li><a href="{{ route('admin.instructors') }}" class="{{ Route::currentRouteName() == 'admin.instructors' ? 'active' : '' }}">Instructors</a></li>
-          <li><a href="{{ route('admin.subjects') }}" class="{{ Route::currentRouteName() == 'admin.subjects' ? 'active' : '' }}">Subjects</a></li>
-          <li><a href="{{ route('admin.classes') }}" class="{{ Route::currentRouteName() == 'admin.classes' ? 'active' : '' }}">Classes</a></li>
-        </ul>
-      </nav>
-      <a href="#" class="logout">Logout</a>
-    </aside>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <img src="{{ asset('images/schoollogo.png') }}" alt="School Logo" class="logo">
+        <h2>MCA Montessori School</h2>
+        <nav class="menu">
+          <ul>
+            <li><a href="{{ route('admin.dashboard') }}" class="{{ Route::currentRouteName() == 'admin.dashboard' ? 'active' : '' }}">Dashboard</a></li>
+            <li><a href="{{ route('admin.users') }}" class="{{ Route::currentRouteName() == 'admin.users' ? 'active' : '' }}">Users</a></li>
+            <li><a href="{{ route('admin.instructors') }}" class="{{ Route::currentRouteName() == 'admin.instructors' ? 'active' : '' }}">Instructors</a></li>
+            <li><a href="{{ route('admin.subjects') }}" class="{{ Route::currentRouteName() == 'admin.subjects' ? 'active' : '' }}">Subjects</a></li>
+            <li><a href="{{ route('admin.classes') }}" class="{{ Route::currentRouteName() == 'admin.classes' ? 'active' : '' }}">Sections</a></li>
+            <li><a href="{{ route('admin.courses.index') }}" class="{{ Route::currentRouteName() == 'admin.courses.index' ? 'active' : '' }}">Courses</a></li>
+          </ul>
+        </nav>
+        <a href="#" class="logout">Logout</a>
+      </aside>
 
-    <!-- Main Content -->
-    <main class="main-content">
-      <header class="top-bar">
-        <div class="welcome">
-          <h3>Manage Instructors</h3>
-        </div>
-        <div class="user-info">
-          <img src="{{ asset('images/bell.png') }}" alt="Notifications" class="icon">
-          <img src="{{ asset('images/settings.png') }}" alt="Settings" class="icon">
-        </div>
-      </header>
+      <!-- Main Content -->
+      <main class="main-content">
+        <header class="top-bar">
+          <div class="welcome">
+            <h3>Manage Instructors</h3>
+          </div>
+          <div class="user-info">
+            <img src="{{ asset('images/bell.png') }}" alt="Notifications" class="icon">
+            <img src="{{ asset('images/settings.png') }}" alt="Settings" class="icon">
+          </div>
+        </header>
 
-      <div class="container-users">
-        <!-- Profile Box Section (Top) -->
-        <section class="profile-box">
+        <div class="container-users">
+          <!-- Profile Box Section (Top) -->
+          <section class="profile-box">
             <div class="profile-header">
               <h3>Instructor Profile</h3>
               <div class="profile-actions">
-                <input type="text" class="search-bar" placeholder="Search Instructor...">
                 <button class="btn edit-btn">Edit</button>
                 <button class="btn delete-btn">Delete</button>
               </div>
             </div>
             <div class="profile-content">
               <div class="profile-image">
-                <img id="profile-pic" src="{{ asset('images/me.jpg') }}" alt="Instructor Profile">
+                <img id="profile-pic" alt="Instructor Profile">
               </div>
               <div class="profile-details">
                 <div class="profile-info-grid">
                   <div class="row">
-                    <p><span class="label">Full Name:</span> <span id="profile-fullname">Krystal Amor</span></p>
-                    <p><span class="label">Address:</span> <span id="profile-address">123 Main St</span></p>
-                    <p><span class="label">Employment Status:</span> <span id="profile-status">Active</span></p>
+                    <p><span class="label">Full Name:</span> <span id="profile-fullname">-------</span></p>
+                    <p><span class="label">Address:</span> <span id="profile-address">-------</span></p>
+                    <p><span class="label">Employment Status:</span> <span id="profile-status">-----</span></p>
                   </div>
                   <div class="row">
-                    <p><span class="label">Email:</span> <span id="profile-email">email@example.com</span></p>
-                    <p><span class="label">Date of Birth:</span> <span id="profile-dob">1995-08-15</span></p>
-                    <p><span class="label">Hire Date:</span> <span id="profile-hiredate">2015-09-20</span></p>
+                    <p><span class="label">Email:</span> <span id="profile-email">---------</span></p>
+                    <p><span class="label">Date of Birth:</span> <span id="profile-dob">---------</span></p>
+                    <p><span class="label">Hire Date:</span> <span id="profile-hiredate">---------</span></p>
                   </div>
                   <div class="row">
-                    <p><span class="label">Phone Number:</span> <span id="profile-phone">123-456-7890</span></p>
-                    <p><span class="label">Gender:</span> <span id="profile-gender">Female</span></p>
-                    <p><span class="label">Specialization:</span> <span id="profile-specialization">Science</span></p>
+                    <p><span class="label">Phone Number:</span> <span id="profile-phone">---------</span></p>
+                    <p><span class="label">Gender:</span> <span id="profile-gender">---------</span></p>
                   </div>
                 </div>
                 <!-- Additional Action Buttons -->
                 <div class="profile-extra-actions">
-                  <button class="btn schedule-btn">Work / Schedules</button>
-                  <button class="btn classes-btn">Classes</button>
+                  <button onclick="triggerScheduleModal()" class="btn schedule-btn">Work / Schedules</button>
+                  <button onclick="triggerAssignModal()" class="btn classes-btn">Classes</button>
                 </div>
               </div>
             </div>
           </section>
           
+          <!-- Instructors Table Section (Below Profile Box) -->
+          <section class="instructors-table">
+            <div class="subject-box-title">
+              <p>Instructor List</p>
+              <button class="add-instructor-btn" onclick="triggerAddInstructorModal()">+ Add Instructor</button>
+            </div>
+          
+            <div class="search-container">
+              <input
+                type="text"
+                id="instructor-search"
+                class="search-bar2"
+                placeholder="Search Instructor…"
+              >
+            </div>
+          
+            <div class="table-container">
+              <table id="instructor-table">
+                <thead>
+                  <tr>
+                    <th>Instructor ID</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Hire Date</th>
+                  </tr>
+                </thead>
+                <tbody id="instructor-body">
+                  @foreach($instructors as $instr)
+                    @php
+                      $fullname = $instr->first_name . ' ' . ($instr->middle_name ?? '') . ' ' . $instr->last_name . ($instr->suffix ? ', ' . $instr->suffix : '');
+                      $schedules = collect($instr->class_payload)
+                        ->flatMap(fn($c) => $c['schedules'])
+                        ->all();
+                      
+                    @endphp
+                    <tr
+                      onclick="populateProfile(this)"
+                      data-instructor-id="{{ $instr->instructor_id }}"
+                      data-fullname="{{ $fullname }}"
+                      data-instructor-classes='@json($instr->class_payload)'
+                      data-schedules='@json($schedules)'
+                      data-email="{{ $instr->email }}"
+                      data-status="{{ ucfirst($instr->status) }}"
+                      data-hiredate="{{ $instr->job_start_date }}"
+                      data-dob="{{ $instr->date_of_birth }}"
+                      data-address="{{ $instr->address }}"
+                      data-phone="{{ $instr->contact_number }}"
+                      data-gender="{{ ucfirst($instr->gender) }}"
+                      data-picture="{{ $instr->picture ? asset('storage/'.$instr->picture) : asset('images/default.png') }}"
+                    >
+                      <td>{{ $instr->schoolId->instructor_number }}</td>
+                      <td>{{ $instr->first_name }}
+                        @if($instr->middle_name) {{ $instr->middle_name }} @endif
+                        {{ $instr->last_name }}
+                        @if($instr->suffix) , {{ $instr->suffix }} @endif
+                      </td>
+                      <td>{{ $instr->email }}</td>
+                      <td>{{ ucfirst($instr->status) }}</td>
+                      <td>{{ \Carbon\Carbon::parse($instr->job_start_date)->toDateString() }}</td>
+                    </tr>
+                  @endforeach
 
-        <!-- Instructors Table Section (Below Profile Box) -->
-        <section class="instructors-table">
-          <div class="subject-box-title">
-            <p>Instructor List</p>
-            <a href="#">Add New Instructor &gt;&gt;</a>
-          </div>
-          <div class="search-container">
-            <input type="text" placeholder="Search instructors..." class="search-bar">
-          </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Full Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Address</th>
-                  <th>DOB</th>
-                  <th>Gender</th>
-                  <th>Status</th>
-                  <th>Hire Date</th>
-                  <th>Specialization</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr onclick="displayInstructor('Dr. Emily Clark', 'emily@example.com', '123-456-7890', '123 Main St', '1980-05-14', 'Female', 'Active', '2010-08-12', 'Science', '{{ asset('images/emily.jpg') }}')">
-                  <td>Dr. Emily Clark</td>
-                  <td>emily@example.com</td>
-                  <td>123-456-7890</td>
-                  <td>123 Main St</td>
-                  <td>1980-05-14</td>
-                  <td>Female</td>
-                  <td>Active</td>
-                  <td>2010-08-12</td>
-                  <td>Science</td>
-                </tr>
-                <tr onclick="displayInstructor('Mr. Robert Lee', 'robert@example.com', '987-654-3210', '456 Elm St', '1985-11-22', 'Male', 'Inactive', '2015-09-20', 'Math', '{{ asset('images/robert.jpg') }}')">
-                  <td>Mr. Robert Lee</td>
-                  <td>robert@example.com</td>
-                  <td>987-654-3210</td>
-                  <td>456 Elm St</td>
-                  <td>1985-11-22</td>
-                  <td>Male</td>
-                  <td>Inactive</td>
-                  <td>2015-09-20</td>
-                  <td>Math</td>
-                </tr>
-                <!-- Additional rows can be added dynamically -->
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-    </main>
-  </div>
+                </tbody>
+              </table>
+            </div>
+          </section>
 
-  <script>
-    function displayInstructor(name, email, phone, address, dob, gender, status, hiredate, specialization, profilePic) {
-      document.getElementById("profile-name").textContent = name;
-      document.getElementById("profile-email").textContent = email;
-      document.getElementById("profile-phone").textContent = phone;
-      document.getElementById("profile-address").textContent = address;
-      document.getElementById("profile-dob").textContent = dob;
-      document.getElementById("profile-gender").textContent = gender;
-      document.getElementById("profile-status").textContent = status;
-      document.getElementById("profile-hiredate").textContent = hiredate;
-      document.getElementById("profile-specialization").textContent = specialization;
-      document.getElementById("profile-pic").src = profilePic;
-    }
-  </script>
-</body>
+        </div>
+       
+        <!-- Schedule Modal -->
+        <div id="schedules-overlay" class="overlay">
+          <div class="schedule-form">
+            <h3>Assign Work Schedules</h3>
+
+            <div class="instructor-info">
+              <strong>Instructor:</strong> <span id="schedule-instructor-name">N/A</span>
+            </div>
+
+            <!-- List of existing schedules -->
+            <div id="existing-schedules-list" class="assigned-classes">
+              <strong>Current Schedules:</strong>
+              <ul id="schedule-items">
+                <!-- Populated by JavaScript -->
+              </ul>
+            </div>
+
+            <!-- Form to add schedule -->
+            <form id="schedule-form" method="POST" action="/admin/instructors/schedules">
+              @csrf
+              <input type="hidden" name="instructor_id" id="schedule-instructor-id">
+
+              <div class="form-group">
+                <label for="schedule-instructor-class-id">Class</label>
+                <select
+                  name="instructor_class_id"
+                  id="schedule-instructor-class-id"
+                  required
+                ></select>
+              </div>
+
+              <div class="form-group">
+                <label for="day_of_week">Day of the Week:</label>
+                <select name="day_of_week" id="day_of_week" required>
+                  <option value="">Select</option>
+                  <option value="Monday">Monday</option>
+                  <option value="Tuesday">Tuesday</option>
+                  <option value="Wednesday">Wednesday</option>
+                  <option value="Thursday">Thursday</option>
+                  <option value="Friday">Friday</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Start Time:</label>
+                <input type="time" name="start_time" required>
+              </div>
+
+              <div class="form-group">
+                <label>End Time:</label>
+                <input type="time" name="end_time" required>
+              </div>
+
+              <div class="form-group">
+                <label>Room:</label>
+                <input type="text" name="room" required>
+              </div>
+
+              <div class="button-group">
+                <button type="submit" class="btn save-btn">Save Schedule</button>
+                <button type="button" class="btn cancel-btn" id="cancel-schedule">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <div id="assign-classes-overlay" class="overlay" style="display:none">
+          <div class="assign-classes-form">
+
+            <h3>Assign Classes</h3>
+
+            <div class="instructor-info">
+              <strong>Instructor:</strong> <span id="instructor-name-display">N/A</span>
+            </div>
+
+            <div class="assigned-classes">
+              <strong>Currently Assigned Classes:</strong>
+              <ul id="assigned-classes-list">
+                <li>None assigned.</li>
+              </ul>
+            </div>
+
+            <form id="assign-classes-form" method="POST" action="{{ route('instructors.assign.classes') }}">
+              @csrf
+              <input type="hidden" name="instructor_id" id="modal-instructor-id">
+        
+              <div class="form-group">
+                <label for="class_ids">Select Classes:</label>
+                <select id="class_ids" name="class_ids[]" multiple size="6" class="select2">
+                  @foreach(\App\Models\SchoolClass::with(['subject','gradeLevel','strand'])->get() as $course)
+                    <option value="{{ $course->id }}">
+                      {{ $course->name }} ({{ $course->section_name }} —
+                      {{ $course->subject->code }} / {{ $course->gradeLevel->name }}
+                      @if($course->strand) / {{ $course->strand->name }} @endif)
+                    </option>
+                  @endforeach
+                </select>
+              </div>
+        
+              <div class="button-group">
+                <button type="submit" class="btn save-btn">Save</button>
+                <button type="button" class="btn cancel-btn" id="cancel-assign-classes">Cancel</button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+
+        <div id="add-instructor-overlay" class="modal-overlay">
+          <div class="modal-content add-instructor-form">
+            <button type="button" class="close-btn" id="cancel-add-instructor">×</button>
+            <h3>Add Instructor</h3>
+            <form action="{{ route('admin_instructors.store') }}" method="POST" enctype="multipart/form-data">
+              @csrf
+                <div class="student-info-container">
+                  <!-- Section 1: Instructor Image & Name -->
+                  <div class="section student-image">
+                      <img src="" alt="Profile Picture">
+                      <button type="button" class="btn-add-picture">Select Image</button>
+
+                      <div class="form-group1">
+                          <label for="first_name">First Name:</label>
+                          <input type="text" id="first_name" name="first_name" autocomplete="given-name">
+                      </div>
+                      <div class="form-group1">
+                          <label for="middle_name">Middle Name:</label>
+                          <input type="text" id="middle_name" name="middle_name" autocomplete="additional-name">
+                      </div>
+                      <div class="lname-suffix">
+                          <div class="form-group1">
+                              <label for="last_name">Last Name:</label>
+                              <input type="text" id="last_name" name="last_name" autocomplete="family-name">
+                          </div>
+                          <div class="form-group1">
+                              <label for="suffix">Suffix:</label>
+                              <input type="text" id="suffix" name="suffix" autocomplete="off">
+                          </div>
+                      </div>
+
+                      <div class="form-group1">
+                          <label for="username">Username:</label>
+                          <input type="text" name="username" id="username" class="form-control" required>
+                          <small id="username-feedback"></small>
+                      </div>
+                  </div>
+
+                  <!-- Section 2: Contact and Personal Info -->
+                  <div class="section personal-info">
+
+                      <div class="form-group1">
+                        <label for="instructor_school_number">Instructor ID (School Number):</label>
+                        <input type="text" name="instructor_school_number" id="instructor_school_number" class="form-control" required>
+                        <small id="id-feedback"></small>
+                      </div>
+
+                      <div class="form-group">
+                          <label for="email">Email Address:</label>
+                          <input type="email" id="email" name="email" autocomplete="email">
+                      </div>
+
+                      <div class="form-group">
+                          <label for="gender">Gender:</label>
+                          <div class="gender-options">
+                              <label><input type="radio" name="gender" value="male" required> Male</label>
+                              <label><input type="radio" name="gender" value="female" required> Female</label>
+                          </div>
+                      </div>
+
+                      <div class="form-group">
+                          <label for="date_of_birth">Date of Birth:</label>
+                          <input type="date" id="date_of_birth" name="date_of_birth" autocomplete="bday">
+                      </div>
+
+                      <div class="form-group">
+                          <label for="contact_number">Contact No.:</label>
+                          <input type="text" id="contact_number" name="contact_number" autocomplete="tel">
+                      </div>
+
+                      <div class="form-group">
+                          <label for="address">Address:</label>
+                          <input type="text" id="address" name="address" autocomplete="street-address">
+                      </div>
+                  </div>
+
+                  <!-- Section 3: Employment Info -->
+                  <div class="section student-details">
+                      <div class="form-group">
+                          <label for="job_start_date">Job Start Date:</label>
+                          <input type="date" id="job_start_date" name="job_start_date">
+                      </div>
+
+                      <div class="form-group">
+                          <label for="status">Status:</label>
+                          <select name="status" id="status">
+                              <option value="">-- Select Status --</option>
+                              <option value="active">Active</option>
+                              <option value="on leave">On Leave</option>
+                              <option value="inactive">Inactive</option>
+                          </select>
+                      </div>
+                  </div>
+              </div>
+              <button type="submit" class="add-btn">Add</button>
+            </form>
+          </div>
+        </div>
+        
+      </main>
+    </div>
+
+    <script>
+      function displayInstructor(name, email, phone, address, dob, gender, status, hiredate, specialization, profilePic) {
+        document.getElementById("profile-name").textContent = name;
+        document.getElementById("profile-email").textContent = email;
+        document.getElementById("profile-phone").textContent = phone;
+        document.getElementById("profile-address").textContent = address;
+        document.getElementById("profile-dob").textContent = dob;
+        document.getElementById("profile-gender").textContent = gender;
+        document.getElementById("profile-status").textContent = status;
+        document.getElementById("profile-hiredate").textContent = hiredate;
+        document.getElementById("profile-specialization").textContent = specialization;
+        document.getElementById("profile-pic").src = profilePic;
+      }
+    </script>
+    <script>
+      console.log('Instructor Classes:', @json($instr->instructorClasses));
+    </script>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="{{ asset('js/script_admin_instructors.js') }}"></script>
+  </body>
 </html>

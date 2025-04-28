@@ -14,14 +14,14 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo-container">
-                <img src="logo.png" alt="MCA Montessori School" class="logo">
+                <img src="{{ asset('images/logo.png') }}" alt="MCA Montessori School" class="logo">
                 <h2 class="school-name">MCA MONTESSORI SCHOOL</h2>
             </div>
             <nav class="sidebar-nav">
                 <ul>
                     <li><a href="{{ route('instructor.dashboard') }}" class="nav-item">DASHBOARD</a></li>
                     <li>
-                        <a href="{{ route('instructor.schedmore') }}" class="nav-item">CLASSES</a>
+                        <a href="{{ route('instructor.schedule') }}" class="nav-item">CLASSES</a>
                         <ul class="sub-menu">
                             <li><a href="{{ route('instructor.schedule') }}" class="sub-item">SCHEDULES</a></li>
                             <li><a href="{{ route('instructor.student') }}" class="sub-item">STUDENTS</a></li>
@@ -31,10 +31,13 @@
                     <li><a href="{{ route('instructor.report') }}" class="nav-item active">GRADE REPORTS</a></li>
                     <li><a href="{{ route('instructor.announcement') }}" class="nav-item">ANNOUNCEMENTS</a></li>
                 </ul>
+                <div class="logout">
+                    <a href="javascript:void(0)" class="nav-item" onclick="confirmExit()">LOGOUT</a>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                        @csrf
+                    </form>
+                </div>  
             </nav>
-            <div class="logout">
-                <a href="#" class="nav-item">LOGOUT</a>
-            </div>
         </div>
 
         <!-- Main Content -->
@@ -61,96 +64,72 @@
                 <button class="search-button"><i class="fas fa-search"></i></button>
             </div>
 
-            
+            <div class="controls">
+                <form id="filterForm" method="GET" action="{{ route('instructor.report') }}">
+                  @csrf
+                  <select name="class_id" onchange="document.getElementById('filterForm').submit()">
+                    @foreach($instructor->instructorClasses as $iclassOption)
+                      <option value="{{ $iclassOption->id }}"
+                              {{ $iclassOption->id == $iclass->id ? 'selected' : '' }}>
+                        {{ $iclassOption->class->name }} — {{ $iclassOption->class->section->section_name }}
+                      </option>
+                    @endforeach
+                  </select>
+                </form>
+            </div>
+              
             <div class="report-card-content">
-                
-                <div class="student-list-container">
-                    
-                    <div class="student-card">
-                        <span class="student-card-title">STUDENT CARD</span>
-                        <img src="meme.jpg" alt="Student Photo" class="student-photo">
-                        <div class="student-info">
-                            <div class="student-info-row">
-                                <span class="info-label">NAME:</span>
-                                <span class="info-value">Kenneth Kassandra Xynthea A. Mananggit</span>
-                            </div>
-                            <div class="student-info-row">
-                                <span class="info-label">SECTION:</span>
-                                <span class="info-value">Section A</span>
-                            </div>
-                            <div class="student-info-row">
-                                <span class="info-label">GRADE:</span>
-                                <span class="info-value">10th Grade</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <h2 class="section-title">STUDENT LIST</h2>
-                    <div class="table-container">
-                        <table class="student-table">
-                            <thead>
-                                <tr>
-                                    <th>NAME</th>
-                                    <th>ID</th>
-                                    <th>SECTION</th>
-                                    <th>GRADE</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="active">
-                                    <td>Maria Santos</td>
-                                    <td>10023</td>
-                                    <td>Section A</td>
-                                    <td>10th Grade</td>
-                                </tr>
-                                <tr>
-                                    <td>John Rivera</td>
-                                    <td>10024</td>
-                                    <td>Section A</td>
-                                    <td>10th Grade</td>
-                                </tr>
-                                <tr>
-                                    <td>Sofia Garcia</td>
-                                    <td>10025</td>
-                                    <td>Section B</td>
-                                    <td>10th Grade</td>
-                                </tr>
-                                <tr>
-                                    <td>Miguel Cruz</td>
-                                    <td>10026</td>
-                                    <td>Section B</td>
-                                    <td>10th Grade</td>
-                                </tr>
-                                <tr>
-                                    <td>Gabriela Ponce</td>
-                                    <td>10027</td>
-                                    <td>Section C</td>
-                                    <td>10th Grade</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <h2 class="section-title">STUDENT LIST</h2>
+              
+                @if(session('success'))
+                  <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+              
+                <div class="table-container">
+                  <table class="student-table">
+                    <thead>
+                      <tr>
+                        <th>NAME</th><th>CLASS</th><th>SECTION</th>
+                        <th>SUBJECT</th><th>1Q</th><th>2Q</th>
+                        <th>3Q</th><th>4Q</th><th>FINAL</th><th>ACTION</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @foreach($rows as $row)
+                        @php
+                          $s   = $row['student'];
+                          $c   = $row['class'];
+                          $sub = $row['subject'];
+                          $g   = $row['grade'];
+                        @endphp
+              
+                        <form method="POST" action="{{ route('instructor.grade.save') }}">
+                          @csrf
+                          <input type="hidden" name="grade_id"   value="{{ $g->id }}">
+                          <input type="hidden" name="student_id" value="{{ $s->student_id }}">
+                          <input type="hidden" name="class_id"   value="{{ $c->id }}">
+                          <input type="hidden" name="subject_id" value="{{ $sub->id }}">
+              
+                          <tr>
+                            <td>{{ $s->full_name }}</td>
+                            <td>{{ $c->name }}</td>
+                            <td>{{ $c->section->section_name }}</td>
+                            <td>{{ $sub->name }}</td>
+                            <td><input type="number" step="0.01" name="first_quarter"  value="{{ old('first_quarter',  $g->first_quarter)  }}" style="width:60px"></td>
+                            <td><input type="number" step="0.01" name="second_quarter" value="{{ old('second_quarter', $g->second_quarter) }}" style="width:60px"></td>
+                            <td><input type="number" step="0.01" name="third_quarter"  value="{{ old('third_quarter',  $g->third_quarter)  }}" style="width:60px"></td>
+                            <td><input type="number" step="0.01" name="fourth_quarter" value="{{ old('fourth_quarter', $g->fourth_quarter) }}" style="width:60px"></td>
+                            <td>{{ number_format($g->final_grade ?? 0, 2) }}</td>
+                            <td><button type="submit" class="btn btn-sm btn-primary">Save</button></td>
+                          </tr>
+                        </form>
+                      @endforeach
+                    </tbody>
+                  </table>
                 </div>
 
-                <!-- Grade Card and Generate Report - Right Side -->
-                <div class="grade-actions-container">
-                    <!-- Final Grade Card -->
-                    <div class="grade-summary-card">
-                        <h2>FINAL GRADE</h2>
-                        <div class="grade-circle">
-                            <span class="grade-value">A</span>
-                        </div>
-                        <p class="gpa">GPA: 3.85</p>
-                    </div>
-                    
-                    <!-- Generate Report Button -->
-                    <div class="button-container">
-                        <button class="update-button">GENERATE REPORT</button>
-                    </div>
-                    
-            
-                </div>
             </div>
+
         </div>
     </div>
 

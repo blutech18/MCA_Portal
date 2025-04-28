@@ -16,7 +16,7 @@
         <ul>
           <li><a href="{{ route('student.dashboard') }}">Dashboard</a></li>
           <li><a href="{{ route('grades') }}">View My Grades</a></li>
-          <li><a href="{{ route('subjects') }}">Subjects</a></li>
+          <li><a href="{{ route('student.subjects') }}">Subjects</a></li>
           <li><a href="{{ route('documents') }}">My Documents</a></li>
         </ul>
       </nav>

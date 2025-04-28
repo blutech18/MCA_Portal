@@ -10,11 +10,23 @@ class SubjectController extends Controller
 {
     public function index()
     {
-        // Fetch subjects for the logged-in user
-        $userId = Auth::id();
-        $subjects = Subject::where('user_id', $userId)->get();
+        $subjects = Subject::all();
+        return view('admin_subjects', compact('subjects'));
+    }
 
-        // Pass data to view. If there are no subjects, the collection will be empty.
-        return view('subjects', compact('subjects'));
+    // Store a new subject
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:255',
+        ]);
+
+        Subject::create([
+            'name' => $validated['name'],
+            'code' => $validated['code'],
+        ]);
+
+        return redirect()->route('admin.subjects')->with('success', 'Subject added successfully!');
     }
 }

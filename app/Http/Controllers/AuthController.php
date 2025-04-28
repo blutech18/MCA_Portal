@@ -27,7 +27,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
+            'username' => 'required|string',
             'password' => 'required',
         ]);
 
@@ -35,23 +35,19 @@ class AuthController extends Controller
             $request->session()->regenerate();
             
             $user = Auth::user();
-            
-            // Check if the email matches the admin email
-            // You can replace 'admin@example.com' with your designated admin email.
-            if ($user->email === 'admin@example.com') {
+         
+            if ($user->username === 'admin_mca') {
                 return redirect()->route('admin.dashboard');
             }
-            // Alternatively, check if the user is faculty
             else if ($user->user_type === 'faculty') {
                 return redirect()->route('instructor.dashboard');
             }
-            // Otherwise, assume the user is a student
             else {
                 return redirect()->route('student.dashboard');
             }
         }
     
-        return back()->withErrors(['email' => 'Invalid credentials']);
+        return back()->withErrors(['username' => 'Invalid credentials']);
     }
 
     public function logout(Request $request)

@@ -19,8 +19,8 @@
           <li><a href="{{ route('admin.users') }}" class="{{ Route::currentRouteName() == 'admin.users' ? 'active' : '' }}">Users</a></li>
           <li><a href="{{ route('admin.instructors') }}" class="{{ Route::currentRouteName() == 'admin.instructors' ? 'active' : '' }}">Instructors</a></li>
           <li><a href="{{ route('admin.subjects') }}" class="{{ Route::currentRouteName() == 'admin.subjects' ? 'active' : '' }}">Subjects</a></li>
-          <li><a href="{{ route('admin.classes') }}" class="{{ Route::currentRouteName() == 'admin.classes' ? 'active' : '' }}">Classes</a></li>
-          
+          <li><a href="{{ route('admin.classes') }}" class="{{ Route::currentRouteName() == 'admin.classes' ? 'active' : '' }}">Sections</a></li>
+          <li><a href="{{ route('admin.courses.index') }}" class="{{ Route::currentRouteName() == 'admin.courses.index' ? 'active' : '' }}">Courses</a></li>
         </ul>
       </nav>
       <a href="#" class="logout" onclick="confirmExit()">Logout</a>
@@ -44,34 +44,39 @@
 
       <!-- Banner -->
       <section class="banner">
+        <!-- Student Users -->
         <div class="users-box">
           <div class="subject-box-title">
-            <p>Student Users:</p>
-            <a href="#">See more &gt;&gt;</a>
+            <p>Student Users</p>
+            <a href="{{ route('admin.users') }}">See more »</a>
           </div>
           <div class="logo-number">
-            <img src="{{ asset('images/student_user.png') }}" alt="Logo">
-            <h2><strong>932</strong></h2>
+            <img src="{{ asset('images/student_user.png') }}" alt="Students">
+            <h2><strong>{{ $studentCount }}</strong></h2>
           </div>
         </div>
+
+        <!-- Instructor Users -->
         <div class="users-box">
           <div class="subject-box-title">
-            <p>Instructor Users:</p>
-            <a href="#">See more &gt;&gt;</a>
+            <p>Instructor Users</p>
+            <a href="{{ route('admin.instructors') }}">See more »</a>
           </div>
           <div class="logo-number">
-            <img src="{{ asset('images/instructor_user.png') }}" alt="Logo">
-            <h2><strong>932</strong></h2>
+            <img src="{{ asset('images/instructor_user.png') }}" alt="Instructors">
+            <h2><strong>{{ $instructorCount }}</strong></h2>
           </div>
         </div>
+
+        <!-- Total Users -->
         <div class="users-box">
           <div class="subject-box-title">
-            <p>Total Users:</p>
-            <a href="#">See more &gt;&gt;</a>
+            <p>Total Users</p>
+            <a href="{{ route('admin.users') }}">See more »</a>
           </div>
           <div class="logo-number">
-            <img src="{{ asset('images/all_user.png') }}" alt="Logo">
-            <h2><strong>932</strong></h2>
+            <img src="{{ asset('images/all_user.png') }}" alt="All Users">
+            <h2><strong>{{ $totalCount }}</strong></h2>
           </div>
         </div>
         
@@ -79,10 +84,11 @@
 
       <!-- Content Sections -->
       <section class="banner-subjects">
+
         <div class="subjects-box">
           <div class="subject-box-title">
-            <h3>Grade 11 Subjects</h3>
-            <a href="#">See more &gt;&gt;</a>
+            <h3>All Subjects</h3>
+            <a href="{{ route('admin.subjects') }}">See more &gt;&gt;</a>
           </div>
           <div class="subject-g11">
             <table>
@@ -94,95 +100,40 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>CS101</td>
-                  <td>Introduction to Programming</td>
-                  <td>30</td>
-                </tr>
-                <tr>
-                  <td>MATH102</td>
-                  <td>Calculus I</td>
-                  <td>25</td>
-                </tr>
-                <tr>
-                  <td>ENG103</td>
-                  <td>English Composition</td>
-                  <td>28</td>
-                </tr>
-                <tr>
-                  <td>PHYS104</td>
-                  <td>Physics I</td>
-                  <td>22</td>
-                </tr>
-                <tr>
-                  <td>HIST105</td>
-                  <td>World History</td>
-                  <td>27</td>
-                </tr>
-                <tr>
-                  <td>CHEM106</td>
-                  <td>Chemistry</td>
-                  <td>20</td>
-                </tr>
-                <tr>
-                  <td>IT107</td>
-                  <td>Database Management</td>
-                  <td>18</td>
-                </tr>
+                @foreach($subjects as $subj)
+                  <tr>
+                    <td>{{ $subj->code }}</td>
+                    <td>{{ $subj->name }}</td>
+                    <td>{{ $enrollmentCounts[$subj->id] ?? 0 }}</td>
+                  </tr>
+                @endforeach
               </tbody>
             </table>
           </div>
         </div>
+        
         <div class="subjects-box">
           <div class="subject-box-title">
-            <h3>Grade 12 Subjects</h3>
-            <a href="#">See more>></a>
+            <h3>All courses</h3>
+            <a href="{{ route('admin.courses.index') }}">See more >></a>
           </div>
           <div class="subject-g11">
             <table>
               <thead>
                 <tr>
-                  <th>Subject Code</th>
-                  <th>Subject Name</th>
-                  <th>No. of Students Enrolled</th>
+                  <th>Class Name</th>
+                  <th>Class Code</th>
+                  <th>Subject</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>CS101</td>
-                  <td>Introduction to Programming</td>
-                  <td>30</td>
-                </tr>
-                <tr>
-                  <td>MATH102</td>
-                  <td>Calculus I</td>
-                  <td>25</td>
-                </tr>
-                <tr>
-                  <td>ENG103</td>
-                  <td>English Composition</td>
-                  <td>28</td>
-                </tr>
-                <tr>
-                  <td>PHYS104</td>
-                  <td>Physics I</td>
-                  <td>22</td>
-                </tr>
-                <tr>
-                  <td>HIST105</td>
-                  <td>World History</td>
-                  <td>27</td>
-                </tr>
-                <tr>
-                  <td>CHEM106</td>
-                  <td>Chemistry</td>
-                  <td>20</td>
-                </tr>
-                <tr>
-                  <td>IT107</td>
-                  <td>Database Management</td>
-                  <td>18</td>
-                </tr>
+                @foreach($classes as $class)
+                  <tr>
+                    <td>{{ $class->name }}</td>
+                    <td>{{ $class->code }}</td>
+                    <td>{{ $class->subject->name ?? 'N/A' }}</td>
+                  </tr>
+                @endforeach
               </tbody>
             </table>
           </div>
@@ -192,18 +143,25 @@
 
       <section class="banner-strands">
         <div class="subjects-box">
-          <p>Grade 11 Subjects</p>
+          <div class="subject-box-title">
+            <p>Junior High Sections</p>
+            <a href="{{ route('admin.classes') }}">See more &gt;&gt;</a>
+          </div>
           <div class="logo-number">
-            <canvas id="strandChart"></canvas>
+            <canvas id="juniorChart"></canvas>
           </div>
         </div>
         <div class="subjects-box">
-          <p>Grade 12 Subjects</p>
+          <div class="subject-box-title">
+            <p>Senior High Sections</p>
+            <a href="{{ route('admin.classes') }}">See more &gt;&gt;</a>
+          </div>
           <div class="logo-number">
+            <canvas id="seniorChart"></canvas>
           </div>
         </div>
-        
       </section>
+
       <div id="confirm-modal" class="modal">
         <div class="modal-content">
             <p>Are you sure you want to log out?</p>
@@ -215,10 +173,14 @@
   </div>
 
   <script>
-    var strandLabels = @json($labels);
-    var strandSections = @json($sections);
-    console.log("Labels:", strandLabels, "Sections:", strandSections);
+    const juniorLabels = @json($juniorLabels);
+    const juniorData = @json($juniorData);
+    const seniorLabels = @json($seniorLabels);
+    const seniorData = @json($seniorData);
+
   </script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
   <script src="{{ asset('js/script_admin_dashboard.js') }}"></script>
   <script src="{{asset('js/logout.js')}}"></script>
 

@@ -13,14 +13,14 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo-container">
-                <img src="logo.png" alt="MCA Montessori School" class="logo">
+                <img src="{{asset('images/logo.png')}}" alt="MCA Montessori School" class="logo">
                 <h2 class="school-name">MCA MONTESSORI SCHOOL</h2>
             </div>
             <nav class="sidebar-nav">
                 <ul>
                     <li><a href="{{ route('instructor.dashboard') }}" class="nav-item">DASHBOARD</a></li>
                     <li>
-                        <a href="{{ route('instructor.schedmore') }}" class="nav-item">CLASSES</a>
+                        <a href="{{ route('instructor.schedule') }}" class="nav-item">CLASSES</a>
                         <ul class="sub-menu">
                             <li><a href="{{ route('instructor.schedule') }}" class="sub-item">SCHEDULES</a></li>
                             <li><a href="{{ route('instructor.student') }}" class="sub-item">STUDENTS</a></li>
@@ -30,10 +30,13 @@
                     <li><a href="{{ route('instructor.report') }}" class="nav-item">GRADE REPORTS</a></li>
                     <li><a href="{{ route('instructor.announcement') }}" class="nav-item active">ANNOUNCEMENTS</a></li>
                 </ul>
+                <div class="logout">
+                    <a href="javascript:void(0)" class="nav-item" onclick="confirmExit()">LOGOUT</a>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                        @csrf
+                    </form>
+                </div>  
             </nav>
-            <div class="logout">
-                <a href="#" class="nav-item">LOGOUT</a>
-            </div>
         </div>
 
         
@@ -61,49 +64,110 @@
             </div>
 
             
+            <h1>Post a New Announcement</h1>
+
+            @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+
             <div class="announcement-creation">
-                <div class="message-box">
-                    <div class="message-header">
-                        <h3>Attention!</h3>
-                    </div>
-                    <div class="message-content">
-                        <textarea placeholder="Input your message here..."></textarea>
-                    </div>
-                </div>
-                
-                <div class="controls-container">
-                    <div class="left-controls">
-                        <button class="add-file-btn">Add File</button>
-                    </div>
-                    <div class="right-controls">
-                        <div class="section-dropdown">
-                            <select id="section-select">
-                                <option value="" disabled selected>SECTION</option>
-                                <option value="section-a">Section A</option>
-                                <option value="section-b">Section B</option>
-                                <option value="section-c">Section C</option>
-                                <option value="section-gardenia">Section Gardenia</option>
-                                <option value="all">All Sections</option>
+                <form method="POST" action="{{ route('instructor.announcement.store') }}" enctype="multipart/form-data">
+                    @csrf
+                    
+                    <div class="controls-container">
+                        <div class="section-dropdown" style="flex: 1;">
+                            <label>Section</label>
+                            <select name="class_name">
+                                <option value="" disabled {{ old('class_name') ? '' : 'selected' }}>Choose Section</option>
+                                @foreach($instructor->instructorClasses as $ic)
+                                    <option value="{{ $ic->class->section->section_name }}"
+                                        {{ old('class_name') == $ic->class->section->section_name ? 'selected' : '' }}>
+                                        {{ $ic->class->name }} — {{ $ic->class->section->section_name }}
+                                    </option>
+                                @endforeach
                             </select>
+            
+                            @isset($errors)
+                                @error('class_name')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            @endisset
                         </div>
-                        <button class="announce-btn">ANNOUNCE</button>
+            
+                        <div style="flex: 1;">
+                            <label>Title</label>
+                            <input type="text" name="title" value="{{ old('title') }}" style="width: 100%; padding: 10px 16px; border: 1px solid #ccc; border-radius: 6px;">
+            
+                            @isset($errors)
+                                @error('title')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            @endisset
+                        </div>
                     </div>
-                </div>
-                
-                
-                <div class="announcement-preview">
-                    <div class="preview-header">
-                        <h3>Announcement</h3>
-                        <span class="preview-recipient">To: Section Gardenia</span>
+            
+                    <div class="message-box">
+                        <div class="message-header">
+                            <h3>Message</h3>
+                        </div>
+                        <div class="message-content">
+                            <textarea name="message" rows="6">{{ old('message') }}</textarea>
+            
+                            @isset($errors)
+                                @error('message')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            @endisset
+                        </div>
                     </div>
-                    <div class="preview-content">
-                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            
+                    <div class="controls-container">
+                        <div>
+                            <label class="add-file-btn">
+                                📎 Add File
+                                <input type="file" name="file" style="display: none;">
+                            </label>
+            
+                            @isset($errors)
+                                @error('file')
+                                    <div class="text-danger small">{{ $message }}</div>
+                                @enderror
+                            @endisset
+                        </div>
+            
+                        <div>
+                            <button type="submit" class="announce-btn">🚀 Announce</button>
+                        </div>
                     </div>
-                </div>
+                </form>
             </div>
             
+
+            <hr>
+
+            <h2>All Announcements</h2>
+            <div class="announcements-list">
+            @forelse($announcements as $a)
+                <div class="announcement-card">
+                <h4>{{ $a->title }}</h4>
+                <p><strong>To:</strong> {{ $a->class_name }}</p>
+                <p>{{ $a->message }}</p>
+                @if($a->file_path)
+                    <p><a href="{{ Storage::url($a->file_path) }}" target="_blank">Download Attachment</a></p>
+                @endif
+                <small>
+                    Posted 
+                    {{ optional($a->created_at)->diffForHumans() ?? 'Just now' }}
+                </small>
+                </div>
+            @empty
+                <p>No announcements yet.</p>
+            @endforelse
+            </div>
+
             
-            <div class="announcement-status">
+            
+            <!--<div class="announcement-status">
                 <div class="table-container">
                     <table class="status-table">
                         <thead>
@@ -148,7 +212,8 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </div>-->
+
         </div>
     </div>
 

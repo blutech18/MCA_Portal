@@ -1,307 +1,641 @@
 /* ---------- GENERAL LAYOUT ---------- */
 body {
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #ebe8e8;
-    color: #3e3e3e;
-  }
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #ebe8e8;
+  color: #3e3e3e;
+}
+
+.dashboard-container {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+}
+
+/* ---------- SIDEBAR ---------- */
+.sidebar {
+  width: 250px;
+  background: #1f3f49;
+  color: #fff;
+  height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: fixed;
+}
+
+.sidebar .logo {
+  width: 100px;
+  margin-bottom: 10px;
+}
+
+.sidebar h2 {
+  font-size: 18px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.menu ul {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+}
+
+.menu li {
+  width: 100%;
+}
+
+.menu a {
+  display: block;
+  color: #fff;
+  text-decoration: none;
+  padding: 12px 20px;
+  font-size: 16px;
+  transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+  border-radius: 5px; /* Smooth rounded corners */
+}
+
+.menu a:hover {
+  background: #2a5662; /* Lighter shade of sidebar */
+  color: #f8d210; /* Highlight color */
+}
+
+.menu a.active {
+  background: #f8d210; /* Highlight color */
+  color: #1f3f49; /* Dark text for contrast */
+  font-weight: bold;
+  border-radius: 5px;
+}
+
+.sidebar .logout {
+  margin-top: auto;
+  text-decoration: none;
+  color: #fff;
+  background: #a03d40;
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-align: center;
+}
+/* ---------- MAIN CONTENT ---------- */
+.main-content {
+  margin-left: 250px;
+  padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.welcome{
+  display: flex;
   
-  .dashboard-container {
-    display: flex;
-    width: 100%;
-    height: 100vh;
-  }
-  
-  /* ---------- SIDEBAR ---------- */
-  .sidebar {
-    width: 250px;
-    background: #1f3f49;
-    color: #fff;
-    height: 100vh;
-    padding: 20px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: fixed;
-  }
-  
-  .sidebar .logo {
-    width: 100px;
-    margin-bottom: 10px;
-  }
-  
-  .sidebar h2 {
-    font-size: 18px;
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .menu ul {
-    list-style: none;
-    padding: 0;
-    width: 100%;
-  }
-  
-  .menu li {
-    width: 100%;
-  }
-  
-  .menu a {
-    display: block;
-    color: #fff;
-    text-decoration: none;
-    padding: 12px 20px;
-    font-size: 16px;
-    transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
-    border-radius: 5px; /* Smooth rounded corners */
-  }
-  
-  .menu a:hover {
-    background: #2a5662; /* Lighter shade of sidebar */
-    color: #f8d210; /* Highlight color */
-  }
-  
-  .menu a.active {
-    background: #f8d210; /* Highlight color */
-    color: #1f3f49; /* Dark text for contrast */
-    font-weight: bold;
-    border-radius: 5px;
-  }
-  
-  .sidebar .logout {
-    margin-top: auto;
-    text-decoration: none;
-    color: #fff;
-    background: #a03d40;
-    padding: 10px 20px;
-    border-radius: 5px;
-    text-align: center;
-  }
-  /* ---------- MAIN CONTENT ---------- */
-  .main-content {
-    margin-left: 250px;
-    padding: 20px;
-    flex: 1;
-    overflow-y: auto;
-  }
-  
-  .top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .welcome h3 {
-    margin: 0;
-    color: #1f3f49;
-  }
-  
-  .user-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
-  
-  .icon {
-    width: 30px;
-  }
-  
-  /* ---------- CONTAINER FOR SECTIONS ---------- */
-  .container-users {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  
- /* ---------- General Layout for Profile Box ---------- */
+  align-items: center;
+  gap: 10px;
+}
+
+.welcome h3 {
+  margin: 0;
+  color: #1f3f49;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.icon {
+  width: 30px;
+}
+
+/* ---------- CONTAINER FOR SECTIONS ---------- */
+.container-users {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ---------- General Layout for Profile Box ---------- */
 .profile-box {
-    background: #fff;
-    padding: 20px;
-    margin: 20px 0;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(62, 62, 62, 0.2);
-    max-width: 100%;
+  background: #fff;
+  padding: 20px;
+  margin: 20px 0;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(62, 62, 62, 0.2);
+  max-width: 100%;
+}
+
+/* ---------- Header for Profile Box ---------- */
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.profile-header h3 {
+  margin: 0;
+  color: #1f3f49;
+  font-size: 22px;
+}
+
+/* Profile Actions (Search bar and buttons) */
+.profile-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.profile-actions .search-bar {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* ---------- Profile Content Layout ---------- */
+.profile-content {
+  display: flex;
+  gap: 20px;
+}
+
+/* Profile Image Styling */
+.profile-image {
+  flex: 0 0 150px;
+}
+
+.profile-image img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #1f3f49;
+}
+
+/* Profile Details Grid */
+.profile-details {
+  flex: 1;
+}
+
+.profile-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.profile-info-grid .row {
+  display: contents;
+}
+
+.profile-info-grid p {
+  margin: 5px 0;
+  font-size: 15px;
+}
+
+.profile-info-grid .label {
+  font-weight: bold;
+  color: #333;
+  margin-right: 5px;
+}
+
+/* ---------- Additional Action Buttons ---------- */
+.profile-extra-actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+.schedule-btn {
+  background-color: #007bff;
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.classes-btn {
+  background-color: #17a2b8;
+  color: #fff;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.schedule-btn:hover,
+.classes-btn:hover {
+  opacity: 0.9;
+}
+
+/* ---------- Overlay for add classes ---------- */
+#assign-classes-overlay.overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 1000;
+}
+
+.assign-classes-form {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  width: 500px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.assign-classes-form h3 {
+  margin-bottom: 15px;
+}
+
+.instructor-info, .assigned-classes {
+  margin-bottom: 15px;
+}
+
+#assigned-classes-list {
+  list-style: disc;
+  margin-left: 20px;
+  padding-left: 0;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+select#class_ids {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.save-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.cancel-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+
+
+/* ---------- INSTRUCTORS TABLE SECTION ---------- */
+.instructors-table {
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(62, 62, 62, 0.2);
+}
+
+.subject-box-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.search-container {
+  margin-bottom: 15px;
+}
+
+.search-bar {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.search-bar2 {
+  width: 30%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.table-container table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+  background: #fff;
+}
+
+.table-container th,
+.table-container td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+  font-size: 14px;
+}
+
+.table-container thead {
+  background-color: #1f3f49;
+  color: #fff;
+}
+
+.table-container tbody tr:hover {
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+/* ---------- BUTTONS (if needed) ---------- */
+.btn {
+  padding: 5px 10px;
+  margin: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+}
+
+.edit-btn {
+  background-color: #4CAF50;
+  color: #fff;
+}
+
+.delete-btn {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.delete-schedule-btn {
+  background-color: #f44336;
+  color: #fff;
+}
+
+/*------add instructor button------*/
+
+.add-instructor-btn {
+  background: #28a745;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.add-instructor-btn:hover {
+  background: #218838;
+}
+
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.modal-overlay.show {
+  display: flex;
+}
+.modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  position: relative;
+  width: 400px;
+}
+.modal-content .close-btn {
+  position: absolute; top: 10px; right: 10px;
+  background: none; border: none; font-size: 1.2rem;
+  cursor: pointer;
+}
+
+/* Schedule form styling */
+
+#schedules-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.6);
+  justify-content: center;
+  align-items: center;
+}
+
+/* Show the modal */
+#schedules-overlay.show {
+  display: flex;
+}
+
+/* Modal box */
+.schedule-modal {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 500px;
+  max-height: 90%;
+  overflow-y: auto;
+}
+.schedule-form {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.25);
+}
+
+/* Optional: consistent button group spacing */
+.button-group {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+/* Schedule entries spacing */
+.schedule-entry {
+  margin-bottom: 1rem;
+}
+.schedule-entry label {
+  display: block;
+  margin: 0.25rem 0;
+}
+
+.instructor-overlay {
+  position: fixed;
+  display: none;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.instructor-overlay.show {
+  display: flex;
+}
+/* Main form container */
+.add-instructor-form {
+  background: #fff;
+  height: 90vh;
+  padding: 30px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 1200px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+}
+
+/* Title styling */
+.add-instructor-form h3 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.feedback-loading { color: black; }
+.feedback-error { color: red; }
+.feedback-warning { color: orange; }
+.feedback-success { color: green; }
+
+/* Container for the three sections */
+.student-info-container {
+  display: flex;
+  gap: 20px;
+}
+.section {
+  flex: 1;
+  box-sizing: border-box;
+  /* Optional: add a border for visual separation */
+  border-right: 1px solid #ccc;
+}
+.section:last-child {
+  border-right: none;
+}
+
+/* Student image section */
+.student-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.student-image img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border: 1px solid rgb(0, 0, 0);
+  margin-bottom: 10px;
+}
+.btn-add-picture {
+  padding: 8px 12px;
+  background: #8d8787;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.lname-suffix{
+  display: flex;
+}
+
+/* General form group styling */
+.form-group {
+  margin-bottom: 15px;
+  margin-right: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.form-group1 {
+  margin-bottom: 10px;
+  width: 100%;
+  margin-right: 15px;
+}
+
+.form-group1 label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.form-group1 input{
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+.gender-options {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.gender-options label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Add button style */
+.add-btn {
+  position: absolute;
+  left: 83%;
+  top: 10%;
+  margin: 10px auto 0;
+  padding: 10px 20px;
+  background: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  width: 100px;
+  max-width: 180px;
+  text-align: center;
+}
+
+/* Responsive: Stack columns vertically on small screens */
+@media (max-width: 768px) {
+  .student-info-container {
+    flex-direction: column;
   }
-  
-  /* ---------- Header for Profile Box ---------- */
-  .profile-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-  }
-  
-  .profile-header h3 {
-    margin: 0;
-    color: #1f3f49;
-    font-size: 22px;
-  }
-  
-  /* Profile Actions (Search bar and buttons) */
-  .profile-actions {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-  
-  .profile-actions .search-bar {
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-  }
-  
-  /* ---------- Profile Content Layout ---------- */
-  .profile-content {
-    display: flex;
-    gap: 20px;
-  }
-  
-  /* Profile Image Styling */
-  .profile-image {
-    flex: 0 0 150px;
-  }
-  
-  .profile-image img {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #1f3f49;
-  }
-  
-  /* Profile Details Grid */
-  .profile-details {
-    flex: 1;
-  }
-  
-  .profile-info-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-  
-  .profile-info-grid .row {
-    display: contents;
-  }
-  
-  .profile-info-grid p {
-    margin: 5px 0;
-    font-size: 15px;
-  }
-  
-  .profile-info-grid .label {
-    font-weight: bold;
-    color: #333;
-    margin-right: 5px;
-  }
-  
-  /* ---------- Additional Action Buttons ---------- */
-  .profile-extra-actions {
-    margin-top: 15px;
-    display: flex;
-    gap: 10px;
-  }
-  
-  .schedule-btn {
-    background-color: #007bff;
-    color: #fff;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: opacity 0.3s;
-  }
-  
-  .classes-btn {
-    background-color: #17a2b8;
-    color: #fff;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: opacity 0.3s;
-  }
-  
-  .schedule-btn:hover,
-  .classes-btn:hover {
-    opacity: 0.9;
-  }
-  
-  
-  /* ---------- INSTRUCTORS TABLE SECTION ---------- */
-  .instructors-table {
-    background: #fff;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(62, 62, 62, 0.2);
-  }
-  
-  .subject-box-title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  
-  .search-container {
-    margin-bottom: 15px;
-  }
-  
-  .search-bar {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  .table-container table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 10px;
-    background: #fff;
-  }
-  
-  .table-container th,
-  .table-container td {
-    padding: 10px;
-    border: 1px solid #ddd;
-    text-align: left;
-    font-size: 14px;
-  }
-  
-  .table-container thead {
-    background-color: #1f3f49;
-    color: #fff;
-  }
-  
-  .table-container tbody tr:hover {
-    background-color: #f8f9fa;
-    cursor: pointer;
-  }
-  
-  /* ---------- BUTTONS (if needed) ---------- */
-  .btn {
-    padding: 5px 10px;
-    margin: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    border: none;
-    border-radius: 4px;
-  }
-  
-  .edit-btn {
-    background-color: #4CAF50;
-    color: #fff;
-  }
-  
-  .delete-btn {
-    background-color: #f44336;
-    color: #fff;
-  }
-  
+}

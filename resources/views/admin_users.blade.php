@@ -1,149 +1,190 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard</title>
-  <link rel="stylesheet" href="{{ asset('css/styles_admin_users.css') }}">
-</head>
-<body>
-  <div class="dashboard-container">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <img src="{{ asset('images/schoollogo.png') }}" alt="School Logo" class="logo">
-      <h2>MCA Montessori School</h2>
-      <nav class="menu">
-        <ul>
-          <li><a href="{{ route('admin.dashboard') }}" class="{{ Route::currentRouteName() == 'admin.dashboard' ? 'active' : '' }}">Dashboard</a></li>
-          <li><a href="{{ route('admin.users') }}" class="{{ Route::currentRouteName() == 'admin.users' ? 'active' : '' }}">Users</a></li>
-          <li><a href="{{ route('admin.instructors') }}" class="{{ Route::currentRouteName() == 'admin.instructors' ? 'active' : '' }}">Instructors</a></li>
-          <li><a href="{{ route('admin.dashboard') }}" class="{{ Route::currentRouteName() == 'admin.dashboard' ? 'active' : '' }}">Subjects</a></li>
-          <li><a href="{{ route('admin.classes') }}" class="{{ Route::currentRouteName() == 'admin.classes' ? 'active' : '' }}">Classes</a></li>
-        </ul>
-      </nav>
-      <a href="#" class="logout" onclick="confirmExit()">Logout</a>
-      <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-          @csrf
-      </form>
-    </aside>
+@extends('layouts.app')
 
-    <!-- Main Content -->
-    <main class="main-content">
-      <header class="top-bar">
-        <div class="welcome">
-          <h3> Manage Users</h3>
-        </div>
-        <div class="user-info">
-          <img src="{{ asset('images/bell.png') }}" alt="Notifications" class="icon">
-          <img src="{{asset('images/settings.png')}}" class="icon">
-        </div>
-      </header>
+@section('content')
+ 
+    <div class="container-users">
+        @php
+             $studentUsers = $users->where('user_type', 'student');
+            $instructorUsers = $users
+                ->where('user_type', 'faculty')
+                ->reject(function ($user) {
+                    return $user->username === 'admin_mca' || $user->name === 'Administrator';
+                });
+            
+        @endphp
 
-      <div class="container-users">
-        <section class="banner-profile">
-          <div class="users-box">
-            <div class="user-box-title">
-              <h2>Profile</h2>
-            </div>
-            <div class="profile-container">
-              <div class="logo-number1">
-                <img src="{{ asset('images/me.jpg') }}" alt="Profile Picture">
-              </div>
-              <div class="profile-info">
-                <p><strong>Name:</strong> Krystal Amor</p>
-                <p><strong>User Type:</strong> Student</p>
-                <p><strong>Email:</strong> email@example.com</p>
-                <p><strong>Password:</strong> $2y$12$4xeLgESEifrqt/sy2aecjuOKx6xF0YM0/cOd6yT.9fBP8keIELnL2</p>
-                <div class="profile-buttons">
-                  <button class="btn edit-btn">Edit</button>
-                  <button class="btn delete-btn">Delete</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="banner">
-          <!-- Student Users Box -->
-          <div class="users-box2">
+        <div class="users-box2">
             <div class="subject-box-title">
-              <p>Student Users</p>
-              <a href="#">See more &gt;&gt;</a>
+                <p>Student Users</p>
+                <button class="add-user-btn" data-type="student">+ Add User</button>
             </div>
-            <div class="search-container">
-              <input type="text" placeholder="Search students..." class="search-bar">
-            </div>
-            <div class="table-container">
-              <table>
+
+            <!-- Search Bar -->
+            <input type="text" class="search-bar" placeholder="Search Student Users..." onkeyup="filterUsers(this, 'student-table')">
+
+            <!-- Users Table -->
+            <table class="users-table" id="student-table">
                 <thead>
-                  <tr>
-                    <th>Student ID</th>
-                    <th>Student Name</th>
-                    <th>Email</th>
-                  </tr>
+                    <tr>
+                        <th>Name</th>
+                        <th>Username</th>
+                        <!-- Add more columns if needed -->
+                    </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>1001</td>
-                    <td>Jane Doe</td>
-                    <td>jane@example.com</td>
-                  </tr>
-                  <tr>
-                    <td>1002</td>
-                    <td>John Smith</td>
-                    <td>john@example.com</td>
-                  </tr>
+                    @foreach ($studentUsers as $user)
+                        <tr>
+                            <td>{{ $user->name }}</td>
+                            <td>{{ $user->username }}</td>
+                        </tr>
+                    @endforeach
                 </tbody>
-              </table>
-            </div>
-          </div>
-        
-          <!-- Instructor Users Box -->
-          <div class="users-box2">
+            </table>
+        </div>
+
+        <div class="users-box2">
             <div class="subject-box-title">
-              <p>Instructors</p>
-              <a href="#">See more &gt;&gt;</a>
+                <p>Instructors</p>
+                <button class="add-user-btn" data-type="instructor">+ Add User</button>
             </div>
-            <div class="search-container">
-              <input type="text" placeholder="Search instructors..." class="search-bar">
-            </div>
-            <div class="table-container">
-              <table>
+
+            <!-- Search Bar -->
+            <input type="text" class="search-bar" placeholder="Search Instructors..." onkeyup="filterUsers(this, 'instructor-table')">
+
+            <!-- Users Table -->
+            <table class="users-table" id="instructor-table">
                 <thead>
-                  <tr>
-                    <th>Instructor ID</th>
-                    <th>Instructor Name</th>
-                    <th>Email</th>
-                  </tr>
+                    <tr>
+                        <th>Name</th>
+                        <th>Username</th>
+                        <!-- Add more columns if needed -->
+                    </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>2001</td>
-                    <td>Dr. Emily Clark</td>
-                    <td>emily@example.com</td>
-                  </tr>
-                  <tr>
-                    <td>2002</td>
-                    <td>Mr. Robert Lee</td>
-                    <td>robert@example.com</td>
-                  </tr>
+                    @foreach ($instructorUsers as $user)
+                        <tr>
+                            <td>{{ $user->name }}</td>
+                            <td>{{ $user->username }}</td>
+                        </tr>
+                    @endforeach
                 </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-        
-      </div>
-      <div id="confirm-modal" class="modal">
+            </table>
+        </div>
+
+    </div>
+
+    <div id="addUserModal" class="modal">
         <div class="modal-content">
-            <p>Are you sure you want to log out?</p>
-            <button class="confirm-btn" onclick="logout(event)">Yes, Logout</button>
-            <button class="cancel-btn" onclick="closeModal()">No</button>
-        </div>
-      </div>
-    </main>
-  </div>
+          <span class="close">&times;</span>
+          <h2>Add New User</h2>
+      
+            @php
+                // grab the error bag from the session
+                $errorsBag = session('errors');
+            @endphp
+                
+            @if($errorsBag && $errorsBag->any())
+                <div class="alert alert-danger" style="color:red; margin-bottom:1rem;">
+                    <ul style="padding-left:1.2rem; margin:0;">
+                    @foreach($errorsBag->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                    </ul>
+                </div>
+            @endif
+        
+            @if(session('success'))
+                <div id="successPopup" class="popup-success">
+                {{ session('success') }}
+                </div>
+            @endif
 
-  <script src="{{asset('js/logout.js')}}"></script>
-</body>
-</html>
+      
+          <form method="POST" action="{{ route('users.store') }}">
+            @csrf
+      
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" value="{{ old('name') }}" required>
+      
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" value="{{ old('username') }}" required>
+      
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+      
+            <label for="password_confirmation">Confirm Password</label>
+            <input type="password" id="password_confirmation" name="password_confirmation" required>
+      
+            <label for="user_type">User Type</label>
+            <select id="user_type" name="user_type" required>
+              <option value="">-- Select User Type --</option>
+              <option value="student" {{ old('user_type')=='student'?'selected':'' }}>Student</option>
+              <option value="faculty" {{ old('user_type')=='faculty'?'selected':'' }}>Instructor</option>
+            </select>
+      
+            <button type="submit" class="submit-btn">Add User</button>
+          </form>
+
+        </div>
+    </div>
+      
+
+    <!-- Confirm Logout Modal (if you still need it) -->
+    <div id="confirm-modal" class="modal">
+      <div class="modal-content">
+        <p>Are you sure you want to log out?</p>
+        <button class="confirm-btn" onclick="logout(event)">Yes, Logout</button>
+        <button class="cancel-btn" onclick="closeModal()">No</button>
+      </div>
+    </div>
+
+
+@endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // If there were validation errors in session, auto‑open the modal:
+        @if (session('errors') && session('errors')->any())
+            document.getElementById('addUserModal').style.display = 'flex';
+        @endif
+
+        // Open "Add User" modal on button click
+        document.querySelectorAll('.add-user-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+            document.getElementById('addUserModal').style.display = 'flex';
+            });
+        });
+
+        // Close modal on "×"
+        document.querySelectorAll('.modal .close').forEach(x => {
+            x.addEventListener('click', () => {
+            x.closest('.modal').style.display = 'none';
+            });
+        });
+
+        // Close modal when clicking on overlay
+        window.addEventListener('click', e => {
+            if (e.target.classList.contains('modal')) {
+            e.target.style.display = 'none';
+            }
+        });
+        });
+
+        @if(session('success'))
+        document.addEventListener('DOMContentLoaded', function() {
+            const successPopup = document.getElementById('successPopup');
+            if (successPopup) {
+            successPopup.style.display = 'block';
+
+            // Optional: Automatically hide after 5s
+            setTimeout(() => {
+                successPopup.style.display = 'none';
+            }, 5000);
+            }
+        });
+        @endif
+    
+</script>
+@endpush
+

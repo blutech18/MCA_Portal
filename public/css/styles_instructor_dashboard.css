@@ -35,8 +35,9 @@ body {
 }
 
 .logo {
-    width: 90px;
-    height: 90px;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 10px ;
     border-radius: 50%; 
     object-fit: cover;
 }
@@ -44,6 +45,9 @@ body {
 .sidebar-nav {
     flex-grow: 1;
     padding: 20px 0;
+}
+.sidebar-nav a {
+    font-size: 14px;
 }
 
 .sidebar-nav ul {
@@ -75,6 +79,24 @@ body {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+.nav-item-sub {
+    display: block;
+    padding: 10px 20px;
+    color: white;
+    text-decoration: none;
+    font-weight: normal;
+    transition: background-color 0.3s;
+    letter-spacing: 1.5px;
+}
+
+.nav-item-sub:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-item-sub.active {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
 .sub-menu {
     padding-left: 20px;
 }
@@ -92,10 +114,7 @@ body {
     color: white;
 }
 
-.logout {
-    padding: 20px 0;
-    text-align: center;
-}
+
 
 /* Mobile Menu Button */
 .mobile-menu-btn {
@@ -133,16 +152,14 @@ body {
     align-items: center;
     padding-bottom: 20px;
     border-bottom: 1px solid #e0e0e0;
-    margin-bottom: 30px;
 }
 
 .header h1 {
     font-size: 30px;
-    color: #050a30;
-    margin-top: 10px;
-    position: relative;
+    color: #0f1a41;
+    margin-top: 30px;
+    position: relative; 
 }
-
 .header h1::after {
     content: '';
     display: block;
@@ -162,7 +179,6 @@ body {
 .user-profile {
     display: flex;
     align-items: center;
-    margin-right: 20px;
 }
 
 .profile-pic {
@@ -250,11 +266,13 @@ body {
 .dashboard-summary {
     display: flex;
     gap: 30px;
+    margin-top: 30px;
     margin-bottom: 30px;
 }
 
 .summary-card {
     flex: 1;
+    text-align: center;
     background-color: #050a30;
     border-radius: 8px;
     color: white;
@@ -262,6 +280,25 @@ body {
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
     position: relative;
     overflow: hidden;
+}
+.summary-details{
+    background-color: #4e58a5;
+    margin-top: px;
+}
+.summary-details:hover {
+    opacity: 0.8;
+    transition: opacity 0.3s;
+    transform: scale(1.02);
+    cursor: pointer;
+}
+.summary-details-bottom{
+    background-color: #4e58a5;
+}
+.summary-details-bottom:hover {
+    opacity: 0.8;
+    transition: opacity 0.3s;
+    transform: scale(1.02);
+    cursor: pointer;
 }
 
 .card-content {
@@ -313,6 +350,48 @@ body {
     bottom: 15px;
     right: 20px;
 }
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .schedule-table th,
+  .schedule-table td {
+    padding: .5rem;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+  }
+  .class-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1px;
+  }
+  .sections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+    gap: 1rem;
+  }
+  .section-card {
+    margin-top: 10px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .section-card h4 {
+    font-size: 1rem;
+    margin-bottom: .75rem;
+    color: #555;
+  }
+  .student-badge {
+    display: inline-block;
+    background: #f0f0f0;
+    color: #333;
+    border-radius: 12px;
+    padding: .25rem .5rem;
+    margin: .25rem .25rem 0 0;
+    font-size: .875rem;
+  }
 
 /* Section Styles */
 .section {

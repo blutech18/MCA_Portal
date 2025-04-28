@@ -44,9 +44,14 @@ body {
     padding: 20px 0;
 }
 
+.logo-container h2{
+    font-size: 14.5px;
+}
+
 .logo {
-    width: 120px;
-    height: 120px;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 10px ;
     border-radius: 50%; 
     object-fit: cover;
 }
@@ -62,7 +67,7 @@ body {
     list-style: none;
 }
 
-.navigation li {
+.navigation li, .logout{
     display: block;
     padding: 15px 25px;
     color: white;
@@ -73,6 +78,9 @@ body {
 }
 
 .navigation li:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.navigation .logout:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -105,12 +113,9 @@ body {
 }
 
 .logout-container {
-     padding: 20px 0;
     text-align: center;
 
 }
-
-
 
 .main-content {
     flex-grow: 1;
@@ -186,6 +191,26 @@ body {
     height: 24px;
     transition: transform 0.3s;
 
+}
+
+icons {
+    display: flex;
+    align-items: center;
+}
+
+.icon-link {
+    margin-left: 15px;
+    position: relative;
+}
+
+.icon {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s;
+}
+
+.icon-link:hover .icon {
+    transform: scale(1.15);
 }
 
 

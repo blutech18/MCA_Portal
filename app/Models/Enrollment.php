@@ -9,22 +9,20 @@ class Enrollment extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
-        'semester',
-        'grade_level',
-        'status',
-        'strand',
-        'first_name',
-        'middle_name',
-        'last_name',
-        'gender',
-        'dob',
-        'contact',
-        'email',
+        'student_id',
+        'class_id',
+        'enrolled_at',
     ];
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class);
+    }
+
+    public function course()
+    {
+        // our SchoolClass model uses table "classes"
+        return $this->belongsTo(SchoolClass::class, 'class_id');
+    }
 }

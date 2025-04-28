@@ -1,17 +1,54 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const chartCanvas = document.getElementById('strandChart');
-    if (chartCanvas) {
-        const ctx = chartCanvas.getContext('2d');
+    const juniorCanvas = document.getElementById('juniorChart');
+    const seniorCanvas = document.getElementById('seniorChart');
 
-        new Chart(ctx, {
+    if (juniorCanvas) {
+        const ctxJunior = juniorCanvas.getContext('2d');
+        new Chart(ctxJunior, {
             type: 'bar',
             data: {
-                labels: strandLabels,  // Should be set from Blade
+                labels: juniorLabels,
                 datasets: [{
-                    label: 'Number of Sections',
-                    data: strandSections, // Should be set from Blade
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
+                    label: 'Junior High Sections',
+                    data: juniorData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Grade Levels'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Sections'
+                        }
+                    }
+                }
+            }
+        });
+        
+    }
+
+    if (seniorCanvas) {
+        const ctxSenior = seniorCanvas.getContext('2d');
+        new Chart(ctxSenior, {
+            type: 'bar',
+            data: {
+                labels: seniorLabels,  // Labels for the X-axis
+                datasets: [{
+                    label: 'Senior High Sections',
+                    data: seniorData,  // Data for the Y-axis
+                    backgroundColor: 'rgba(255, 159, 64, 0.5)',
+                    borderColor: 'rgba(255, 159, 64, 1)',
                     borderWidth: 1
                 }]
             },
@@ -22,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }
         });
-    } else {
-        console.error("Canvas element with id 'strandChart' not found");
+        
     }
 });
+

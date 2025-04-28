@@ -25,12 +25,17 @@
         </div>
         <div class="input-box">
           <img src="{{ asset('images/email.png') }}" alt="email_picture" class="email">
-          <input type="text" id = "email" name = "email"  placeholder ="Enter your email address" required>
+          <input type="text" id = "username" name = "username"  placeholder ="Enter your username" required>
         </div>
         <div class="input-box">
           <img src="{{ asset('images/lock.png') }}" alt="Lock" class="lock">
           <input type="password" id="password" name="password" placeholder="Enter your password" required>
         </div>
+
+        @if (session('errors') && session('errors')->has('username'))
+            <p class="error-message">{{ session('errors')->first('username') }}</p>
+        @endif
+
         <div class="remember-forgot">
           <label><input type="checkbox">Remember Me</label>
           <a href="#">Forgot Password</a>
@@ -38,11 +43,7 @@
         <button type="submit" class="btn">LOGIN</button>
         <div class="divider">
           <hr>
-        <div class="register-link">
-          <p>New Here? <a href="{{ route('enrollment_form') }}">Click here to enroll</a></p>
-        </div>
       </form>
-      <p class="error-message">Invalid username or password. Please try again.</p>
     </div>
   </div>
   

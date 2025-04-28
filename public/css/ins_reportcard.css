@@ -35,8 +35,9 @@ body {
 }
 
 .logo {
-    width: 120px;
-    height: 120px;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 10px ;
     border-radius: 50%; 
     object-fit: cover;
 }
@@ -44,6 +45,9 @@ body {
 .sidebar-nav {
     flex-grow: 1;
     padding: 20px 0;
+}
+.sidebar-nav a {
+    font-size: 14px;
 }
 
 .sidebar-nav ul {
@@ -92,10 +96,48 @@ body {
     color: white;
 }
 
-.logout {
-    padding: 20px 0;
-    text-align: center;
-}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    background-color: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    align-items: center;
+  }
+  
+  .controls select {
+    font-size: 1rem;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+    transition: border-color 0.2s, background-color 0.2s;
+    min-width: 240px;
+  }
+  
+  .controls select:hover {
+    background-color: #fff;
+  }
+  
+  .controls select:focus {
+    outline: none;
+    border-color: #050a30;
+    background-color: #fff;
+  }
+  
+  @media (max-width: 600px) {
+    .controls {
+      flex-direction: column;
+    }
+    .controls select {
+      width: 100%;
+      min-width: auto;
+    }
+  }
 
 /* Main Content Styles */
 .main-content {
@@ -237,6 +279,7 @@ body {
 /* New Report Card Layout - Flex Container */
 .report-card-content {
     display: flex;
+    flex-direction: column;
     gap: 30px;
     margin-top: 30px;
 }
