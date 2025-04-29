@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const juniorCanvas = document.getElementById('juniorChart');
     const seniorCanvas = document.getElementById('seniorChart');
 
+
+    console.log('canvas elements:', juniorCanvas, seniorCanvas);
+    
     if (juniorCanvas) {
         const ctxJunior = juniorCanvas.getContext('2d');
         new Chart(ctxJunior, {

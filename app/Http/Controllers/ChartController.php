@@ -76,10 +76,17 @@ class ChartController extends Controller
             
 
             // Prepare data for charts
-            $juniorLabels = $juniorSections->pluck('gradeLevel.name')->unique();
-            $juniorData = $juniorLabels->map(function($label) use ($juniorSections) {
-                return $juniorSections->where('gradeLevel.name', $label)->count();
-            });
+            $juniorLabels = $juniorSections
+                ->pluck('gradeLevel.name')  // e.g. Collection ['7', '8',  '7', ...]
+                ->unique()                  // keeps only ['7','8']
+                ->values()                  // re-indexes to [0=>'7',1=>'8']
+                ->toArray();                // converts to plain PHP array
+
+            $juniorData = collect($juniorLabels)
+                ->map(fn($label) => 
+                    $juniorSections->where('gradeLevel.name', $label)->count()
+                )
+                ->toArray();
 
             $seniorLabels = $seniorSections->pluck('strand.name')->unique()->values()->toArray();
             $seniorData = collect($seniorLabels)->map(function($label) use ($seniorSections) {

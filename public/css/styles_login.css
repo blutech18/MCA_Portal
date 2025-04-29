@@ -184,19 +184,35 @@ input:focus + .lock {
   .wrapper .btn{
     width: 40%;
     height: 45px;
-    background: #962424;
     border: none;
     outline: none;
     border-radius: 40px;
     box-shadow: 0 0 10px rgba(0, 0, 0, .1);
-    cursor: pointer;
     letter-spacing: 2px;
     font-size: 16px;
     font-weight: 100;
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     color: #fff;
     margin-left: 125px;
+    background: linear-gradient(135deg, #8e2de2, #4a00e0);
+    color: white;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+    transition: all 0.3s ease;
   }
+
+
+  
+  .btn:hover {
+    background: linear-gradient(135deg, #4a00e0, #8e2de2);
+    transform: scale(1.05);
+  }
+  
+
   .wrapper .register-link{
     font-size: 14.5px;
     text-align: center;
@@ -235,6 +251,49 @@ input:focus + .lock {
   height: 20px;
   animation: spin 1s linear infinite;
 }
+
+
+.action-buttons {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.action-buttons p {
+  margin: 10px 0;
+}
+
+.action-buttons a {
+  text-decoration: none;
+  font-size: 1.0rem;
+  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  display: inline-block;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  letter-spacing: 1px;
+}
+
+.btn-enroll {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  color: white;
+}
+
+.btn-enroll:hover {
+  background: linear-gradient(135deg, #0072ff, #00c6ff);
+  transform: scale(1.05);
+}
+
+.btn-assess {
+  background: linear-gradient(135deg, #f7971e, #ffd200);
+  color: black;
+}
+
+.btn-assess:hover {
+  background: linear-gradient(135deg, #ffd200, #f7971e);
+  transform: scale(1.05);
+}
+
 
 @keyframes spin {
   from { transform: rotate(0deg); }

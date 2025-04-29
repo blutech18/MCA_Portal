@@ -20,6 +20,8 @@ use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\StudentSubjectController;
 use App\Http\Controllers\AdminInstructorController;
+use App\Http\Controllers\AdminNewEnrolleeController;
+use App\Http\Controllers\StrandAssessmentController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\InstructorStudentController;
 use App\Http\Controllers\StudentReportCardController;
@@ -28,7 +30,6 @@ use App\Http\Controllers\InstructorDashboardController;
 use App\Http\Controllers\InstructorAttendanceController;
 use App\Http\Controllers\InstructorAnnouncementController;
 use App\Http\Controllers\InstructorStudentGradeController;
-
 
 // Show the login form (GET)
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -47,9 +48,7 @@ Route::get('/strand_assessment', function () {
     return view('strand_assessment');
 })->name('strand.assessment');
 
-Route::get('/result', function () {
-    return view('assessment_result');
-})->name('assessment.result');
+Route::get('/result', [StrandAssessmentController::class,'showResult'])->name('assessment.result');
 
 Route::post('/enroll', [EnrollmentController::class, 'store'])->name('enrollment.store');
 
@@ -130,7 +129,15 @@ Route::middleware('auth')->group(function(){
         'update' => 'admin.courses.update',
         'destroy' => 'admin.courses.destroy',
     ]);
-    
+
+    Route::get('/admin/enrollees', [AdminNewEnrolleeController::class,'index'])
+     ->name('admin.enrollees');
+
+    Route::get('/admin/enrollees/{enrollee}', [AdminNewEnrolleeController::class,'show'])
+        ->name('admin.enrollees.show');
+
+    Route::delete('/admin/enrollees/{enrollee}', [AdminNewEnrolleeController::class,'destroy'])
+        ->name('admin.enrollees.destroy');
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 

@@ -40,9 +40,13 @@
           <label><input type="checkbox">Remember Me</label>
           <a href="#">Forgot Password</a>
         </div>
-        <button type="submit" class="btn">LOGIN</button>
+        <button type="submit" class="btn">🔐 LOGIN</button>
         <div class="divider">
           <hr>
+          <div class="action-buttons">
+            <p><a href="{{ route('enrollment_form') }}" class="btn-enroll">📋 Enroll Now</a></p>
+            <p><a href="{{ route('strand.assessment') }}" class="btn-assess">🧠 Take Strand Assessment</a></p>
+          </div>
       </form>
     </div>
   </div>

@@ -27,21 +27,16 @@
                 <button class="option"></button>
                 <button class="option"></button>
                 <button class="option"></button>
-            </div>
-
-            <h2>2. People usually describe me as...</h2>
-            <div class="option-container">
                 <button class="option"></button>
                 <button class="option"></button>
                 <button class="option"></button>
             </div>
-
             <div class="navigation">
                 <button class="nav-btn">&lt;</button>
                 <button class="nav-btn">&gt;</button>
             </div>
             <div class="button-container">
-                <button class="button-back" onclick="confirmExit()" data-route="{{ route('enrollment_form') }}">Go to Enroll</button>
+                <button class="button-back" onclick="confirmExit()" data-route="{{ route('login') }}">&#60 Login</button>
                 <button class="submit-btn" onclick="goToResult()" data-result-route="{{ route('assessment.result') }}">
                     Submit Assessment
                 </button>

@@ -1,9 +1,11 @@
 
 body {
-    font-family: Arial, sans-serif;
-    background: url('/images/bglogin.jpg') no-repeat center center;
+    font-family: 'Garamond', serif;
+    background: url('/images/bglogin.jpg') no-repeat center center fixed;
     background-size: cover;
     margin: 0;
+    padding: 0;
+    height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -13,9 +15,11 @@ body {
 
 .enrollment-form {
     background-color: #4d0d18;
+    top: 10vh;
+    height: 120vh;
     color: #fff;
     padding: 40px;
-    width: 900px;
+    width: 70vw;
     border-radius: 15px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     text-align: center;
@@ -52,12 +56,30 @@ body {
     margin: 0;
     color: #ccc;
 }
+
+.info-section{
+    margin-top: 20vh;
+    margin-left: 40px;
+    margin-right: 40px;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #70535857;
+    border-radius: 5px;
+    border-bottom: 1px solid #fff;
+}
+.info-section .note {
+    margin-bottom: 10px;
+    color: #dfb239;
+}
 .input-field {
     display: flex;
     flex-direction: column;
-    margin-bottom: 20px;
+    margin-left: 5px;
 }
-
+.citizenshipp{
+    display: flex;
+    flex-direction: column;
+}
 .input-field {
     display: flex;
     align-items: center;
@@ -144,6 +166,10 @@ input[type="radio"] {
 
 .student-info,
 .other-info {
+    display: flex;
+    margin-bottom: 20px;
+    margin-left: 25px;
+    margin-right: 25px;
     text-align: left;
 }
 
@@ -157,12 +183,17 @@ input[type="radio"] {
     justify-content: space-between;
 }
 
-.gender,
+.gender{
+    margin  : 5px;
+    display: flex; 
+    flex-direction: column; 
+}
 .dob,
 .contact,
 .email {
     flex: 1;
     margin: 5px;
+    margin-bottom: 20px;
 }
 
 /* Submit Button */
@@ -187,8 +218,7 @@ input[type="radio"] {
 /* Go Back Link */
 .go-back {
     display: block;
-    margin-top: 15px;
-    color: #ddd;
+    color: #3a1010;
     text-decoration: none;
     font-size: 14px;
 }
@@ -199,3 +229,75 @@ input[type="radio"] {
 .click-strand{
     color: #ff778b;
 }
+
+/* Container must be relative for absolute‐positioned steps */
+.enrollment-form { position: relative; }
+
+/* Each step sits on top of one another */
+.form-step {
+  position: absolute;
+  top: 30vh; left: 0; width: 100%;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  opacity: 0;
+  transform: translateX(50px);
+  pointer-events: none;
+}
+.form-step h3 {
+    color: #fff;
+    font-size: 24px;  /* ← this forces the text to the left edge */
+    margin-bottom: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+    padding: 5px;
+    background-color: #853a3a;
+  }
+.form-step label{
+    font-family: Arial, sans-serif;
+}
+  
+/* Only the active step is visible */
+.form-step.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+button {
+    background-color: #b40808;        /* your base red */
+    color: #fff;                      /* white text */
+    border: none;                     /* remove default border */
+    border-radius: 8px;               /* soft rounded corners */
+    padding: 10px 20px;               /* roomy click area */
+    font-size: 14px;                  /* readable text */
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);  /* subtle depth */
+    transition: 
+      background-color 0.3s ease, 
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+    outline: none;                    /* remove ugly default focus */
+  }
+  
+  button:hover {
+    background-color: #8a0606;        /* darker on hover */
+    transform: translateY(-2px);      /* lift up a bit */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+  }
+  
+  button:active {
+    background-color: #700404;        /* even darker when clicked */
+    transform: translateY(0);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+  }
+  
+  button:focus {
+    box-shadow: 0 0 0 3px rgba(180,8,8,0.5);  /* red glow on keyboard focus */
+  }
+  
+ .enrollment-form .button-back{
+    float: left;
+    background-color: #528f61;
+  }

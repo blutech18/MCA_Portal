@@ -1,6 +1,6 @@
 body {
     font-family: 'Garet', sans-serif;
-    background: url('bglogin.jpg') no-repeat center center/cover;
+    background: url('/images/bglogin.jpg') no-repeat center center fixed;
     margin: 0;
     padding: 0;
     display: flex;
