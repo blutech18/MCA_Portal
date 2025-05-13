@@ -46,7 +46,7 @@ class ChartController extends Controller
 
         // 2) count students / instructors (your existing logic)…
         $studentCount    = User::where('user_type','student')->count();
-        $instructorCount = User::where('user_type','faculty')
+        $instructorCount = User::where('user_type','instructor')
                                 ->whereNotIn('username',['admin_mca'])
                                 ->count();
         $totalCount      = $studentCount + $instructorCount;

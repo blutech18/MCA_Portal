@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
@@ -10,19 +11,22 @@ class AuthController extends Controller
     public function showLoginForm()
     {
         if (Auth::check()) {
-            $user = Auth::user();
-            if ($user->role === 'admin') {
-                return redirect()->route('admin.dashboard');
-            } 
-            else if ($user->role === 'instructor') {
-                return redirect()->route('instructor.dashboard');
-            } 
-            else {
-                return redirect()->route('student.dashboard');
-            }
+            $type = Auth::user()->user_type;   // ← use user_type
+    
+            Log::debug('[SHOW LOGIN FORM] Authenticated user_type = ' . $type);
+            return match($type) {
+                'admin'      => redirect()->route('admin.dashboard'),
+                'instructor' => redirect()->route('instructor.dashboard'),
+                default      => redirect()->route('student.dashboard'),
+            };
         }
+        Log::debug('[SHOW LOGIN FORM] not authenticated, showing login view');
+    
         return view('index');
     }
+
+
+
 
     public function login(Request $request)
     {
@@ -33,22 +37,30 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            
-            $user = Auth::user();
-         
-            if ($user->username === 'admin_mca') {
-                return redirect()->route('admin.dashboard');
-            }
-            else if ($user->user_type === 'faculty') {
-                return redirect()->route('instructor.dashboard');
-            }
-            else {
-                return redirect()->route('student.dashboard');
+            $type = Auth::user()->user_type;
+        
+            $type = Auth::user()->user_type;
+            Log::debug('[LOGIN REDIRECT] user_type = ' . $type);
+        
+            switch ($type) {
+                case 'admin':
+                    Log::debug('[LOGIN REDIRECT] going to admin');
+                    return redirect()->route('admin.dashboard');
+                case 'instructor':
+                    Log::debug('[LOGIN REDIRECT] going to instructor');
+                    return redirect()->route('instructor.dashboard');
+                default:
+                    Log::debug('[LOGIN REDIRECT] going to student');
+                    return redirect()->route('student.dashboard');
             }
         }
-    
+        
+
         return back()->withErrors(['username' => 'Invalid credentials']);
     }
+
+
+    
 
     public function logout(Request $request)
     {

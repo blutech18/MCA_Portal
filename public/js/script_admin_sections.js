@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const addStudentBtn = document.querySelector(".add-student-btn");
     const overlay = document.querySelector(".overlay");
     const addStudentForm = document.querySelector(".add-student-form");
-    const usernameInput = document.getElementById("username");
 
 
 
@@ -12,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
         addStudentBtn.addEventListener("click", () => {
             const wasHidden = overlay.style.display === "none";
             overlay.style.display = wasHidden ? "flex" : "none";
+            console.log("Submit triggered");
            
         });
 
@@ -24,47 +24,49 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("Add Student button, overlay, or form not found.");
     }
 
-    const messageBox = document.getElementById('username-feedback');
+    const appIdInput = document.getElementById('student_school_id');
+    const photoImg   = document.getElementById('student-photo');
 
-    usernameInput.addEventListener('blur', function () {
-        const username = this.value.trim();
+    if (!appIdInput) return console.error('No #student_school_id found');
 
-        if (!messageBox) return;
+    appIdInput.addEventListener('blur', () => {
+        const appNum = appIdInput.value.trim();
+        console.log('Blurring ID, appNum =', appNum);        // 🔥 debug
+        if (!appNum) return;
 
-        if (username === '') {
-            messageBox.innerText = '';
-            return;
-        }
+        // build the URL via Laravel so it’s always correct
+        const url = `${window.enrolleeApiBase}/${encodeURIComponent(appNum)}`;
+        console.log('Fetching', url);
 
-        messageBox.innerText = 'Checking...';
-        messageBox.style.color = 'black';
+        fetch(url)
+        .then(res => {
+            console.log('Got response', res.status);
+            if (!res.ok) throw new Error('Not found');
+            return res.json();
+        })
+        .then(data => {
+            console.log('Enrollee data', data);
+            document.getElementById('fname').value   = data.given_name   || '';
+            document.getElementById('mname').value   = data.middle_name  || '';
+            document.getElementById('lname').value   = data.surname      || '';
+            document.getElementById('email').value   = data.email        || '';
+            document.getElementById('dob').value     = data.dob          || '';
+            document.getElementById('contact').value = data.contact_no   || '';
+            document.getElementById('address').value = data.address      || '';
 
-        fetch('/check-username/' + encodeURIComponent(username))
-            .then(response => response.json())
-            .then(data => {
-                console.log(data); // For debugging
-
-                if (!data.valid) {
-                    messageBox.innerText = 'Username not found.';
-                    messageBox.style.color = 'red';
-                } else if (data.has_student) {
-                    messageBox.innerText = `This user is already linked to another student (ID: ${data.student_id})`;
-                    messageBox.style.color = 'orange';
-                } else {
-                    messageBox.innerText = `User is available. User ID: ${data.user_id}`;
-                    messageBox.style.color = 'green';
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-                messageBox.innerText = 'Error fetching user data.';
-                messageBox.style.color = 'red';
-            });
+            if (data.id_picture_path) {
+            photoImg.src = `/storage/${data.id_picture_path}`;
+            } else {
+            photoImg.src = '/images/student_user.png';
+            }
+        })
+        .catch(err => {
+            console.warn('Lookup failed:', err);
+            ['fname','mname','lname','email','dob','contact','address']
+            .forEach(id => document.getElementById(id).value = '');
+            photoImg.src = '/images/student_user.png';
+        });
     });
-
-
-    
-
     
     const grade   = document.getElementById('grade');
     const strand  = document.getElementById('strand');
@@ -118,7 +120,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function fetchSections(params) {
         const qs = new URLSearchParams(params).toString();
-        fetch(`/api/sections?${qs}`)
+        fetch(`/admin/api/sections?${qs}`)
         .then(r => r.json())
         .then(json => {
             section.innerHTML = '<option value="">-- Select Section --</option>';
@@ -188,7 +190,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const addSectionBtn   = document.querySelector(".add-section-btn");
     const overlaySection  = document.querySelector(".overlay-section");
-    const sectionFormWrap = document.querySelector(".add-section-form");
+    const gradeSelect = document.getElementById("section-grade-level");
+    const strandGroup = document.getElementById("strand-group");
+    const strandEl    = document.getElementById("section-strand");
     
     // Show the modal
     addSectionBtn.addEventListener("click", () => {
@@ -201,6 +205,22 @@ document.addEventListener("DOMContentLoaded", function () {
         overlaySection.style.display = "none";
         }
     });
+
+    function toggleStrand() {
+    // your <option>s carry data-name="{{ $g->name }}", so use that
+    const name = gradeSelect.selectedOptions[0]?.dataset.name || "";
+    if (parseInt(name, 10) >= 11) {
+      strandGroup.style.display   = "";
+      strandEl.required           = true;
+    } else {
+      strandGroup.style.display   = "none";
+      strandEl.required           = false;
+      strandEl.value              = "";
+    }
+  }
+
+  gradeSelect.addEventListener("change", toggleStrand);
+  toggleStrand();  // run once in case the form was pre‐populated
 
     const sortSelect  = document.getElementById('sort');
     const searchInput = document.getElementById('search');

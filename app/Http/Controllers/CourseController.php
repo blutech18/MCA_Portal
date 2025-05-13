@@ -74,25 +74,30 @@ class CourseController extends Controller
 
         return view('admin_courses_edit', compact('course', 'subjects', 'gradeLevels', 'strands'));
     }
-
+    
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:50',
-            'subject_id' => 'required|exists:subjects,id',
-            'grade_level_id' => 'required|exists:grade_level,grade_level_id',
-            'strand_id' => 'nullable|exists:strands,id',
-            'section_name' => 'nullable|string|max:100',
-            'semester' => 'nullable|in:1st,2nd',
-            'room' => 'nullable|string|max:50',
+            'name'            => 'required|string|max:255',
+            'code'            => 'nullable|string|max:50',
+            'subject_id'      => 'required|exists:subjects,id',
+            'grade_level_id'  => 'required|exists:grade_level,grade_level_id',
+            'strand_id'       => 'nullable|exists:strands,id',
+            'section_id'      => 'nullable|exists:section,id',    // <- here!
+            'semester'        => 'nullable|in:1st,2nd',
+            'room'            => 'nullable|string|max:50',
         ]);
-
+    
         $course = SchoolClass::findOrFail($id);
+    
+        // mass-assign will now include section_id
         $course->update($validated);
-
-        return redirect()->route('admin.courses.index')->with('success', 'Course updated successfully.');
+    
+        return redirect()
+            ->route('admin.courses.index')
+            ->with('success', 'Course updated successfully.');
     }
+    
 
     public function destroy($id)
     {

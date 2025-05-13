@@ -24,7 +24,7 @@ class Student extends Model
     }
     public function studentID()
     {
-        return $this->belongsTo(StudentId::class, 'student_id');
+        return $this->belongsTo(StudentId::class, 'student_school_id');
     }
     public function gradeLevel()
     {
@@ -62,6 +62,16 @@ class Student extends Model
     public function attendances()
     {
         return $this->hasMany(Attendance::class,'student_id');
+    }
+
+    public function getIsEnrolledAttribute(): bool
+    {
+        // Check if the student has a valid student number (from student_ids table)
+        // AND is present in either enrollee table (approved)
+        return $this->studentId && (
+            \App\Models\NewStudentEnrollee::where('application_number', $this->studentId->student_number)->exists() ||
+            \App\Models\OldStudentEnrollee::where('application_number', $this->studentId->student_number)->exists()
+        );
     }
 
 

@@ -53,15 +53,7 @@
                 </div>
             </header>
 
-            <section class="welcome-banner">
-                <div class="banner-content">
-                    <h2>Welcome back, {{ Auth::user()->name }}!</h2>
-                    <p>Here's your latest academic progress for School Year 2024-2025</p>
-                </div>
-                <div class="banner-image">
-                    <img src="{{asset('images/school2.jpg')}}" alt="School Building" class="school-img">
-                </div>
-            </section>
+            
 
             <section class="report-card">
                 <div class="semester-selector">

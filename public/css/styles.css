@@ -1,0 +1,319 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: url('/images/bglogin.jpg') no-repeat;
+  background-size: cover;
+  background-position: center;
+  padding: 20px;
+}
+
+.wrapper {
+  width: 100%;
+  max-width: 420px;
+  background: #5a1a20;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  color: #f4e9ea;
+  border-radius: 12px;
+  padding: 60px 40px 30px; 
+  position: relative;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+.logo {
+  width: 100px; 
+  height: 100px;
+  position: absolute;
+  top: -50px; 
+  left: 50%; 
+  transform: translateX(-50%);
+  border-radius: 50%; 
+  background-color: #fff; 
+  border: 3px solid #7a222b; 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.wrapper h1 {
+  font-size: 19px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.wrapper .input-box {
+  position: relative;
+  width: 100%;
+  margin: 25px 0;
+}
+
+.input-box input {
+  width: 100%;
+  height: 50px;
+  background: #f4e9ea;
+  border: 2px solid rgba(90, 80, 80, 0.2);
+  border-radius: 40px;
+  font-size: 16px;
+  color: #2b0f12;
+  padding: 12px 45px 12px 20px;
+  transition: all 0.3s ease;
+}
+
+.input-box input::placeholder {
+  color: #7a222b;
+  opacity: 0.7;
+}
+
+.input-box input:focus {
+  border-color: #7a222b; 
+  box-shadow: 0 0 8px #bd8c91;
+}
+
+.input-box.invalid input {
+  border-color: #ff6b6b;
+  box-shadow: 0 0 8px rgba(255, 107, 107, 0.5);
+}
+
+.input-box .input-feedback {
+  position: absolute;
+  font-size: 12px;
+  color: #ff6b6b;
+  bottom: -20px;
+  left: 20px;
+}
+
+.input-box i {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: #7a222b;
+}
+
+.toggle-password {
+  right: 45px !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-password:hover {
+  color: #9a3a44;
+}
+
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background-color: #9a3a44; 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}
+
+button:focus {
+  outline: 3px solid #bd8c91;
+  outline-offset: 2px;
+}
+
+.wrapper .remember-forgot {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 14.5px;
+  margin: -5px 0 15px;
+}
+
+.remember-forgot a {
+  color: #f4e9ea;
+  text-decoration: none;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.remember-forgot a:hover {
+  text-decoration: underline;
+  color: #bd8c91;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.remember-forgot a:focus {
+  outline: 2px solid #bd8c91;
+  text-decoration: underline;
+}
+
+.wrapper .btn {
+  width: 100%;
+  height: 45px;
+  background: #7a222b;
+  border: none;
+  outline: none;
+  border-radius: 40px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .1);
+  cursor: pointer;
+  font-size: 16px;
+  color: #f4e9ea;
+  font-weight: 600;
+  margin-bottom: 10px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn:disabled {
+  background-color: #6b1e26;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.spinner {
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #f4e9ea;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+  position: absolute;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.divider hr {
+  border: none;
+  height: 2px;
+  background-color: #f4e9ea;
+  width: 80%;
+  margin: 20px auto;
+  opacity: 0.5;
+}
+
+.status-message {
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 15px;
+  transition: all 0.3s ease;
+}
+
+.error-message {
+  color: #ff6b6b;
+  background-color: rgba(255, 107, 107, 0.1);
+  border-left: 4px solid #ff6b6b;
+}
+
+.success-message {
+  color: #6bff9e;
+  background-color: rgba(107, 255, 158, 0.1);
+  border-left: 4px solid #6bff9e;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.enroll-btn, .assessment-btn {
+  flex: 1;
+  padding: 12px 0;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.enroll-btn::before, .assessment-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+  z-index: -1;
+}
+
+.enroll-btn:hover::before, .assessment-btn:hover::before {
+  left: 100%;
+}
+
+.enroll-btn {
+  background-color: #7a222b;
+  color: #f4e9ea;
+}
+
+.assessment-btn {
+  background-color: #bd8c91;
+  color: #2b0f12;
+}
+
+.enroll-btn:hover {
+  background-color: #9a3a44;
+  transform: translateY(-2px);
+}
+
+.assessment-btn:hover {
+  background-color: #d1adb0;
+  transform: translateY(-2px);
+}
+
+/* Responsive Styles */
+@media (max-width: 480px) {
+  .wrapper {
+    padding: 50px 20px 20px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .logo {
+    width: 80px;
+    height: 80px;
+    top: -40px;
+  }
+  
+  .wrapper h1 {
+    font-size: 17px;
+  }
+}
+
+
+input:focus-visible, button:focus-visible, a:focus-visible {
+  outline: 3px solid #bd8c91;
+  outline-offset: 2px;
+}
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.status-message:not(:empty) {
+  animation: fadeIn 0.3s ease forwards;
+}

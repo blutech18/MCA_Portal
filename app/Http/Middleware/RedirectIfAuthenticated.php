@@ -16,7 +16,7 @@ class RedirectIfAuthenticated extends Redirected
         if (Auth::check()) {
             return (Auth::user()->user_type === 'student')
                 ? redirect()->route('student.dashboard')
-                : redirect()->route('faculty.dashboard');
+                : redirect()->route('instructor.dashboard');
         }
 
         return $next($request);

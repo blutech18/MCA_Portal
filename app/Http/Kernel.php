@@ -88,13 +88,12 @@ class Kernel extends HttpKernel
      *
      * @deprecated
      */
-    /*protected $routeMiddleware = [
+    protected $routeMiddleware = [
         'auth' => \App\Http\Middleware\Authenticate::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'nocache' => \App\Http\Middleware\NoCache::class,
-    // other middleware...
+        'role' => \App\Http\Middleware\CheckRole::class,
     ];
-
     /**
      * The application's middleware aliases.
      *

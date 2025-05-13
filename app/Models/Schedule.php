@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Schedule extends Model
 {
     protected $primaryKey = 'schedule_id';
+    public $incrementing = true;
+    protected $keyType = 'int';
 
     protected $fillable = [
         'instructor_class_id',

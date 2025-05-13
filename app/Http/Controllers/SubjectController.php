@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Subject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
 class SubjectController extends Controller
@@ -29,4 +30,24 @@ class SubjectController extends Controller
 
         return redirect()->route('admin.subjects')->with('success', 'Subject added successfully!');
     }
+
+    // in SubjectController.php
+
+public function destroy($id)
+{
+    Log::debug('SubjectController@destroy called with id', ['id' => $id]);
+
+    // force a real lookup
+    $subject = Subject::findOrFail($id);
+    Log::debug('Subject found', ['subject' => $subject->toArray()]);
+
+    $deleted = $subject->delete();
+    Log::debug('Subject delete() returned', ['deleted' => $deleted]);
+
+    return redirect()
+        ->route('admin.subjects')
+        ->with('success', 'Subject deleted successfully!');
+}
+
+
 }

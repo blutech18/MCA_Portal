@@ -74,7 +74,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const messageBox = document.getElementById('username-feedback');
 
-  usernameInput.addEventListener('blur', function () {
+  if(usernameInput){
+    usernameInput.addEventListener('blur', function () {
       const username = this.value.trim();
 
       if (!messageBox) return;
@@ -106,7 +107,9 @@ document.addEventListener("DOMContentLoaded", function () {
               messageBox.innerText = 'Error checking username.';
               messageBox.style.color = 'red';
           });
-  });
+    });
+  }
+ 
 
   const overlayy = document.getElementById("assign-classes-overlay");
   const form = document.getElementById("assign-classes-form");
@@ -231,11 +234,16 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
 
     if (scheds.length) {
       scheds.forEach(s => {
+        console.dir(s);
+        console.log('─ keys:', Object.keys(s).join(', '));
+        const schedId = s.id;
+        console.log('🗑 will delete schedule id =', schedId);
         const li = document.createElement('li');
 
         // schedule text
         const txt = document.createElement('span');
         txt.textContent = `${s.day_of_week} ${s.start_time}–${s.end_time} @ ${s.room}`;
+        console.log('schedule object:', s);
         li.appendChild(txt);
 
         // delete button
@@ -245,7 +253,9 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
         del.style.marginLeft = '1em';
         del.addEventListener('click', () => {
           if (!confirm('Delete this schedule?')) return;
-          fetch(`/admin/instructors/schedules/${s.schedule_id}`, {
+          const schedId = s.schedule_id;    // no longer null!
+          const url     = window.deleteScheduleUrl.replace('##ID##', schedId);
+          fetch(url, {
             method: 'DELETE',
             headers: {
               'X-CSRF-TOKEN': csrfToken,
@@ -254,12 +264,12 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
           })
           .then(r => {
             if (!r.ok) throw new Error('Delete failed');
-            // remove from our in-memory payload
-            pivot.schedules = pivot.schedules.filter(x => x.schedule_id != s.schedule_id);
+            pivot.schedules = pivot.schedules.filter(x => x.schedule_id !== schedId);
             renderSchedulesForPivot(pivotId, payload);
           })
           .catch(err => alert(err.message));
         });
+        
 
         li.appendChild(del);
         ul.appendChild(li);
@@ -269,9 +279,6 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
     }
   }
 
-  
-  
-  
   /*--- Search functionality --- */
   document.getElementById('instructor-search').addEventListener('input', function () {
       const query = this.value;
@@ -315,7 +322,7 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
         console.log('Selected Instructor Row:', selectedInstructorRow);
         populateProfile(row); 
     }
-});
+  });
 
   /*--- Profile box functionality --- */
   let selectedInstructorRow = null;
@@ -330,9 +337,21 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
       // Mark current row as active
       row.classList.add('active');
       selectedInstructorRow = row;
+
+      const first  = row.dataset.firstName  || '';
+      const middle = row.dataset.middleName || '';
+      const last   = row.dataset.lastName   || '';
+      const suffix = row.dataset.suffix     || '';
+    
+      // Build the full name
+      let full = first;
+      if (middle) full += ' ' + middle;
+      full += ' ' + last;
+      if (suffix) full += ', ' + suffix;
+    
   
       // Populate profile fields
-      document.getElementById("profile-fullname").textContent = row.dataset.fullname || 'N/A';
+      document.getElementById("profile-fullname").textContent = full;
       document.getElementById("profile-address").textContent = row.dataset.address || 'N/A';
       document.getElementById("profile-status").textContent = row.dataset.status || 'N/A';
       document.getElementById("profile-email").textContent = row.dataset.email || 'N/A';
@@ -344,13 +363,47 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
   }
   
   /*--- Edit button functionality --- */
-  document.querySelectorAll(".edit-btn").forEach(button => {
-      button.addEventListener("click", function (event) {
-          event.stopPropagation(); // Prevent the row click event from firing
-          const instructorId = this.getAttribute("data-instructor-id");
-          window.location.href = `/admin/instructors/edit/${instructorId}`;
-      });
+// open/close handlers for edit overlay
+const editOverlay    = document.getElementById('editInstructorOverlay');
+const editForm       = document.getElementById('editInstructorForm');
+const cancelEditBtn  = document.getElementById('cancel-edit-instructor');
+console.log('rtwet',editForm.action);
+// when someone clicks “Edit” in the profile box:
+document.querySelector('.profile-actions .edit-btn')
+  .addEventListener('click', () => {
+    if (!selectedInstructorRow) {
+      return alert('Please select an instructor row first.');
+    }
+
+    // pull all of our data-* attributes off the row
+    const row = selectedInstructorRow;
+    const id    = row.dataset.instructorId;
+    const full  = row.dataset.fullname;
+    // …and the rest
+
+    document.getElementById('edit_instructor_id').value     = id;
+     document.getElementById('edit_first_name').value      = row.dataset.firstName    || '';
+    document.getElementById('edit_middle_name').value     = row.dataset.middleName   || '';
+    document.getElementById('edit_last_name').value       = row.dataset.lastName     || '';
+    document.getElementById('edit_suffix').value          = row.dataset.suffix       || '';
+    document.getElementById('edit_email').value            = row.dataset.email;
+    document.getElementById('edit_gender').value           = row.dataset.gender.toLowerCase();
+    document.getElementById('edit_dob').value              = row.dataset.dob;
+    document.getElementById('edit_contact').value          = row.dataset.phone;
+    document.getElementById('edit_address').value          = row.dataset.address;
+    document.getElementById('edit_hiredate').value         = row.dataset.hiredate;
+    document.getElementById('edit_status').value           = row.dataset.status.toLowerCase();
+
+    editForm.action = window.updateInstructorUrl.replace('__ID__', id);
+    console.log("🔧 setting form.action →", editForm.action);
+    
+    editOverlay.style.display = 'flex';
   });
+
+// cancel button closes overlay
+cancelEditBtn.addEventListener('click', () => {
+  editOverlay.style.display = 'none';
+});
 
   /*--- Delete button functionality --- */
   document.querySelectorAll(".delete-btn").forEach(button => {

@@ -65,4 +65,9 @@ document.addEventListener("DOMContentLoaded", function () {
         
     }
 });
+function toggleSubMenu(event) {
+    event.preventDefault();
+    const submenu = event.target.nextElementSibling;
+    submenu.classList.toggle('hidden');
+  }
 

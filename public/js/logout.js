@@ -10,6 +10,7 @@ function logout(event) {
     event.preventDefault();
     document.getElementById('logout-form').submit();
 }
+
 // Open modal and pass the user type
 document.querySelectorAll('.add-user-btn').forEach(button => {
   button.addEventListener('click', function () {
@@ -56,4 +57,20 @@ function filterUsers(inputElement, tableId) {
       row.style.display = match ? '' : 'none';
   });
 }
+
+const settingsToggle = document.getElementById('settingsToggle');
+const settingsMenu   = document.getElementById('settingsMenu');
+
+settingsToggle.addEventListener('click', e => {
+  e.stopPropagation();
+  settingsMenu.style.display = 
+    settingsMenu.style.display === 'block' ? 'none' : 'block';
+});
+
+// Close the menu when clicking outside
+document.addEventListener('click', () => {
+  settingsMenu.style.display = 'none';
+});
+
+// Your existing confirmExit
 

@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Instructor extends Model
 {
     protected $primaryKey = 'instructor_id';
+
+    public function getRouteKeyName()
+    {
+        return 'instructor_id';
+    }
     protected $fillable = [
       'user_id',
       'instructor_school_id',

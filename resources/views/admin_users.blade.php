@@ -6,7 +6,7 @@
         @php
              $studentUsers = $users->where('user_type', 'student');
             $instructorUsers = $users
-                ->where('user_type', 'faculty')
+                ->where('user_type', 'instructor')
                 ->reject(function ($user) {
                     return $user->username === 'admin_mca' || $user->name === 'Administrator';
                 });
@@ -16,7 +16,7 @@
         <div class="users-box2">
             <div class="subject-box-title">
                 <p>Student Users</p>
-                <button class="add-user-btn" data-type="student">+ Add User</button>
+                <!--<button class="add-user-btn" data-type="student">+ Add User</button>-->
             </div>
 
             <!-- Search Bar -->
@@ -45,7 +45,7 @@
         <div class="users-box2">
             <div class="subject-box-title">
                 <p>Instructors</p>
-                <button class="add-user-btn" data-type="instructor">+ Add User</button>
+                <!--<button class="add-user-btn" data-type="instructor">+ Add User</button>-->
             </div>
 
             <!-- Search Bar -->
