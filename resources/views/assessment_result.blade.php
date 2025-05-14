@@ -18,7 +18,7 @@
         </p>
 
         <div class="btn-container">
-            <a href="{{ route('enrollment_form') }}" class="btn go-back-btn">Go Enroll</a>
+            <a href="{{ route('login') }}" class="btn go-back-btn">Back</a>
         </div>
     </div>
 </body>

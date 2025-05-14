@@ -396,6 +396,28 @@ body {
     border-left: 4px solid #050a30;
 }
 
+.core-values-table th {
+  background-color: #050a30;
+  color: white;
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.core-values-table td {
+  padding: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.core-values-table tbody tr:hover {
+  background-color: #f5f5f5;
+}
+
+.core-values-table tbody tr.active {
+  background-color: #eef2ff;
+  border-left: 4px solid #050a30;
+}
 /* Grade and Actions Container */
 .grade-actions-container {
     flex: 1;

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MCA Montessori School - Attendance Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --sidebar-color: #5c0017;
+            --accent-color: #9B2242;
+            --highlight-color: #BC4863;
+            --navy-blue: #1D3461;
+            --bg-color: #F5F1E8;
+            --text-dark: #3A3A3A;
+            --text-light: #FFFFFF;
+            --text-muted: #666666;
+            --success-green: #2E8B57;
+            --alert-amber: #D4A76A;
+            --shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            --border-radius: 10px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 300px;
+            background-color: var(--sidebar-color);
+            color: var(--text-light);
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            padding: 30px 0;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: white;
+            padding: 10px;
+            object-fit: contain;
+        }
+
+        .school-name {
+            margin-top: 10px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-nav a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .sidebar-nav a i {
+            margin-right: 15px;
+        }
+
+        .sidebar-nav li.active a,
+        .sidebar-nav a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid white;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 300px;
+            padding: 30px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .welcome-text h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--sidebar-color);
+        }
+
+        .grades-section {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--navy-blue);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .grades-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .grades-table th, .grades-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .grades-table th {
+            font-weight: 600;
+            color: var(--navy-blue);
+            background-color: rgba(29, 52, 97, 0.05);
+        }
+
+        .grades-table tr:hover td {
+            background-color: rgba(245, 241, 232, 0.5);
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .present {
+            background-color: #e8f5e9;
+            color: var(--success-green);
+        }
+
+        .absent {
+            background-color: #fdecea;
+            color: #c62828;
+        }
+
+        .late {
+            background-color: #fff8e1;
+            color: #ffa000;
+        }
+
+        .excused {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                padding: 10px;
+            }
+
+            .sidebar-nav ul {
+                display: flex;
+                overflow-x: auto;
+            }
+
+            .sidebar-nav li {
+                margin-right: 15px;
+                white-space: nowrap;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            /* Responsive Design */
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 992px) {
+    .sidebar {
+        width: 80px;
+        padding: 20px 0;
+    }
+    
+    .logo {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .school-name {
+        display: none;
+    }
+    
+    .sidebar-nav a i {
+        font-size: 20px;
+    }
+    
+    .sidebar-nav a span {
+        display: none;
+    }
+    
+    .main-content {
+        margin-left: 80px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        overflow-x: auto;
+    }
+    
+    .logo-container {
+        padding: 0;
+        margin-right: 15px;
+        flex-direction: row;
+    }
+    
+    .logo {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .school-name {
+        display: block;
+        margin-top: 0;
+        margin-left: 10px;
+        font-size: 14px;
+    }
+    
+    .sidebar-nav {
+        width: 100%;
+    }
+    
+    .sidebar-nav ul {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 0 10px;
+    }
+    
+    .sidebar-nav li {
+        margin: 0 5px;
+        white-space: nowrap;
+    }
+    
+    .sidebar-nav a {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+    
+    .sidebar-nav a i {
+        margin-right: 5px;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+    
+    .term-selector {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .term-option {
+        width: 100%;
+    }
+    
+    .grades-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .user-menu {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 576px) {
+    .main-content {
+        padding: 15px;
+    }
+    
+    .top-bar {
+        margin-bottom: 20px;
+    }
+    
+    .welcome-text h1 {
+        font-size: 24px;
+    }
+    
+    .user-menu {
+        gap: 10px;
+    }
+    
+    .user-info h3 {
+        font-size: 14px;
+    }
+    
+    .user-info p {
+        font-size: 10px;
+    }
+}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo-container">
+                <img src="logo.png" alt="School Logo" class="logo">
+                <div class="school-name">MCA Montessori School</div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="#"><i class="fas fa-th-large"></i><span>DASHBOARD</span></a></li>
+                    <li><a href="#"><i class="fas fa-chart-bar"></i><span>VIEW MY GRADES</span></a></li>
+                    <li><a href="#"><i class="fas fa-book"></i><span>SUBJECTS</span></a></li>
+                    <li><a href="#"><i class="fas fa-file-alt"></i><span>MY DOCUMENTS</span></a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="welcome-text">
+                    <h1>Attendance Report</h1>
+                </div>
+            </header>
+
+            <section class="grades-section">
+                <h2 class="section-title">My Attendance</h2>
+                <table class="grades-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>May 5, 2025</td>
+                            <td>Mathematics</td>
+                            <td><span class="status present">Present</span></td>
+                            <td>On time</td>
+                        </tr>
+                        <tr>
+                            <td>May 4, 2025</td>
+                            <td>English</td>
+                            <td><span class="status late">Late</span></td>
+                            <td>10 minutes late</td>
+                        </tr>
+                        <tr>
+                            <td>May 3, 2025</td>
+                            <td>Science</td>
+                            <td><span class="status absent">Absent</span></td>
+                            <td>Medical leave</td>
+                        </tr>
+                        <tr>
+                            <td>May 2, 2025</td>
+                            <td>Filipino</td>
+                            <td><span class="status excused">Excused</span></td>
+                            <td>School event</td>
+                        </tr>
+                        <tr>
+                            <td>May 1, 2025</td>
+                            <td>Social Studies</td>
+                            <td><span class="status present">Present</span></td>
+                            <td>On time</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

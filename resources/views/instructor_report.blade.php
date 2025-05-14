@@ -130,6 +130,55 @@
 
             </div>
 
+            @if($coreStudent)
+              <div class="table-container">
+                <div class="table-header" style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;background:#050a30;color:#fff;">
+                  <div>
+                    <label for="studentSelect" style="margin-right:1rem;color:#fff;font-weight:600;">Pick Student:</label>
+                    <select id="studentSelect" onchange="location = '?student='+this.value" style="padding:0.5rem;border-radius:4px;border:none;">
+                      @foreach($rows as $row)
+                        @php $s = $row['student']; @endphp
+                        <option value="{{ $s->student_id }}" {{ optional($coreStudent)->student_id==$s->student_id?'selected':'' }}>
+                          {{ $s->full_name }}
+                        </option>
+                      @endforeach
+                    </select>
+                  </div>
+                  
+                </div>
+
+                <form method="POST" action="{{ route('instructor.evaluations.save') }}">
+                  @csrf
+                  <input type="hidden" name="student_id" value="{{ $coreStudent->student_id }}">
+                  <table class="student-table core-values-table">
+                    <thead>
+                      <tr>
+                        <th>Core Value</th>
+                        <th>Score (0–100)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @foreach($coreValues as $cv)
+                        <tr>
+                          <td>{{ $cv->name }}</td>
+                          <td>
+                            <input type="number"
+                                  name="scores[{{ $cv->id }}]"
+                                  value="{{ old('scores.'.$cv->id, $evaluations[$cv->id] ?? '') }}"
+                                  min="0" max="100" step="0.1"
+                                  style="width:80px;padding:0.25rem;border:1px solid #ccc;border-radius:4px;">
+                          </td>
+                        </tr>
+                      @endforeach
+                    </tbody>
+                  </table>
+                  <div style="padding:1rem 1.5rem; text-align:right;">
+                    <button type="submit" class="btn btn-primary">Save Evaluations</button>
+                  </div>
+                </form>
+              </div>
+            @endif
+
         </div>
     </div>
 

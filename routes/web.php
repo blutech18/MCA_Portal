@@ -25,6 +25,7 @@ use App\Http\Controllers\NewEnrollmentController;
 use App\Http\Controllers\OldEnrollmentController;
 use App\Http\Controllers\StudentSubjectController;
 use App\Http\Controllers\AdminInstructorController;
+use App\Http\Controllers\StudentDocumentController;
 use App\Http\Controllers\AdminNewEnrolleeController;
 use App\Http\Controllers\AdminOldEnrolleeController;
 use App\Http\Controllers\StrandAssessmentController;
@@ -33,6 +34,7 @@ use App\Http\Controllers\InstructorStudentController;
 use App\Http\Controllers\StudentReportCardController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\InstructorScheduleController;
+use App\Http\Controllers\CoreValueEvaluationController;
 use App\Http\Controllers\InstructorDashboardController;
 use App\Http\Controllers\InstructorAttendanceController;
 use App\Http\Controllers\InstructorAnnouncementController;
@@ -128,12 +130,13 @@ Route::prefix('student')
     Route::get('/student/dashboard', [StudentDashboardController::class, 'dashboard'])->name('student.dashboard');
 
     Route::get('/student/grades', [StudentReportCardController::class, 'reportCard'])->name('student.grades');
+     Route::get('/student/evaluations', [CoreValueEvaluationController::class,'show'])
+     ->name('student.evaluations.show');
 
     Route::get('/student/subjects', [StudentSubjectController::class, 'subjects'])->name('student.subjects');
     
-    Route::get('/documents', function () {
-        return view('my_docs');
-    })->name('documents');
+    Route::get('/student/documents', [StudentDocumentController::class, 'index'])
+     ->name('student.documents');
 
     // Route to handle online upload (ensure this is protected if needed)
     Route::post('/documents/upload', [DocumentController::class, 'uploadOnline'])->name('documents.upload');
@@ -246,6 +249,11 @@ Route::prefix('instructor')
         
     Route::get('/instructor/reports',[InstructorStudentGradeController::class, 'gradeSheet'])->name('instructor.report');
     Route::post('/instructor/reports/grade',[InstructorStudentGradeController::class, 'saveGrade'])->name('instructor.grade.save');
+ 
+    Route::post(
+     '/instructor/reports/evaluations',
+     [InstructorStudentGradeController::class,'saveEvaluations']
+     )->name('instructor.evaluations.save');
 
     Route::get('/instructor/announcement',[InstructorAnnouncementController::class, 'index'])->name('instructor.announcement');
     Route::post('/instructor/announcement',[InstructorAnnouncementController::class, 'store'])->name('instructor.announcement.store');

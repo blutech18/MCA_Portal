@@ -1,6 +1,11 @@
 body {
     font-family: 'Garet', 'Times New Roman', Times, serif;
-    background: #f8f7f2;
+    background-image: url('/images/bglogin.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: #2b0f12;
+    line-height: 1.6;  ;
     margin: 0;
     padding: 0;
     display: flex;

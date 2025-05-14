@@ -79,4 +79,15 @@ class SchoolClass extends Model
             'section_id'        // the other model’s FK
         )->withTimestamps();
     }
+    
+    public function dashboard()
+    {
+        $classes = SchoolClass::with([
+            'subject',
+            'schedules',
+            'instructors'    // ← load instructors
+        ])->get();
+
+        return view('dashboard', compact('classes'));
+    }
 }

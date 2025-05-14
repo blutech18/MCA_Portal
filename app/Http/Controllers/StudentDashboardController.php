@@ -13,7 +13,8 @@ class StudentDashboardController extends Controller
 {
     public function dashboard()
     {
-        $student = Student::where('user_id', Auth::id())->first();
+        $student = Student::with('gradeLevel', 'studentID')->where('user_id', Auth::id())->first();
+
 
         if (!$student) {
             return redirect()->back()->with('error', 'Student not found.');
@@ -34,6 +35,7 @@ class StudentDashboardController extends Controller
                             ->get();
 
         return view('student_dashboard', compact(
+            'student',
             'classes',
             'grades',
             'announcements'
