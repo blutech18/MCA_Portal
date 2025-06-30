@@ -1,26 +1,57 @@
-🎓 MCA Montessori School Management Portal
-A Full-Stack Web Application designed to streamline and digitize school operations such as online enrollment, grade management, attendance tracking, and role-based access for admins, instructors, and students.
+# 🎓 MCA Montessori School Management Portal
 
-🚀 Features
-✅ Online Enrollment System
-Accept and manage new student applications digitally.
 
-✅ Real-Time Grade Access
-Instructors can submit grades, and students/guardians can view them securely.
 
-✅ Attendance Tracking
-Instructors can mark and monitor student attendance.
+![Laravel](https://img.shields.io/badge/Laravel-Framework-red?style=for-the-badge&logo=laravel)  
+![MySQL](https://img.shields.io/badge/Database-MySQL-blue?style=for-the-badge&logo=mysql)  
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen?style=for-the-badge)  
+![License](https://img.shields.io/badge/License-MIT-lightgrey?style=for-the-badge)
 
-✅ Multi-Role Access Control
+> A full-stack school management system for online enrollment, grade tracking, attendance management, and secure multi-role access, built with **Laravel** and **MySQL**.
 
-Admin: Manage users, enrollment records, subjects, schedules
+---
 
-Instructor: View and manage assigned classes, input grades, attendance
+## 🚀 Features
 
-Student: View grades, attendance, and announcements
+- ✅ **Online Enrollment System**  
+- ✅ **Real-Time Grade Access**  
+- ✅ **Attendance Tracking**  
+- ✅ **Role-Based Access** (Admin, Instructor, Student)  
+- ✅ **Responsive UI (Bootstrap + Laravel Blade)**  
+- ✅ **Secure Login & Session Handling**  
+- ✅ **Deployed on Hostinger**
 
-✅ Mobile-Friendly Interface
-Built with responsive UI using Bootstrap and Laravel Blade templates.
+---
 
-✅ Secure Authentication System
-Login system for each role with session protection and validation.
+## 🛠 Technologies Used
+
+| Category   | Tech Stack                                  |
+|------------|---------------------------------------------|
+| **Backend**   | PHP (Laravel Framework)                     |
+| **Frontend**  | HTML, CSS, JavaScript, Bootstrap, Blade     |
+| **Database**  | MySQL                                       |
+| **Dev Tools** | Git, GitHub, XAMPP (for local development)  |
+| **Hosting**   | Hostinger (Shared Web Hosting)              |
+
+---
+
+## 🌐 Live Deployment
+
+🔗 **Hostinger IP or Domain (Coming Soon)**  
+_(Add your production URL here if deployed)_
+
+---
+
+## 📁 Project Structure
+
+```bash
+├── app/
+├── database/
+├── public/
+│   ├── css/
+│   └── js/
+├── resources/
+│   └── views/         # Blade templates
+├── routes/
+│   └── web.php
+├── .env               # Environment configuration
