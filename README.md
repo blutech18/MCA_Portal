@@ -13,13 +13,13 @@
 
 ## 🚀 Features
 
-- ✅ **Online Enrollment System**  
-- ✅ **Real-Time Grade Access**  
-- ✅ **Attendance Tracking**  
-- ✅ **Role-Based Access** (Admin, Instructor, Student)  
-- ✅ **Responsive UI (Bootstrap + Laravel Blade)**  
-- ✅ **Secure Login & Session Handling**  
-- ✅ **Deployed on Hostinger**
+- **Online Enrollment System**  
+- **Real-Time Grade Access**  
+- **Attendance Tracking**  
+- **Role-Based Access** (Admin, Instructor, Student)  
+- **Responsive UI (Bootstrap + Laravel Blade)**  
+- **Secure Login & Session Handling**  
+- **Deployed on Hostinger**
 
 ---
 
