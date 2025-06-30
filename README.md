@@ -33,25 +33,5 @@
 | **Dev Tools** | Git, GitHub, XAMPP (for local development)  |
 | **Hosting**   | Hostinger (Shared Web Hosting)              |
 
----
 
-## 🌐 Live Deployment
 
-🔗 **Hostinger IP or Domain (Coming Soon)**  
-_(Add your production URL here if deployed)_
-
----
-
-## 📁 Project Structure
-
-```bash
-├── app/
-├── database/
-├── public/
-│   ├── css/
-│   └── js/
-├── resources/
-│   └── views/         # Blade templates
-├── routes/
-│   └── web.php
-├── .env               # Environment configuration
