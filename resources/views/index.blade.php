@@ -14,7 +14,7 @@
     
     <form action="{{ url('/login') }}" class="login-form" method="POST" id="loginForm">
       @csrf
-      <h1>MCA MONTESSORI SCHOOL</h1>
+      <h1>MCA MONTESSORI SCHOOLL</h1>
       <div class="input-box">
         <input type="text" id = "username" name = "username"  placeholder ="Username" required autofocus>
         <i class='bx bxs-user'></i>
