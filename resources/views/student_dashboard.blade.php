@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @if($student)
+        <meta name="student-id" content="{{ $student->student_id }}">
+    @endif
     <title>MCA Montessori School - Student Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -319,7 +323,7 @@ body {
 }
 
 .banner {
-    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('school2.jpg');
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('{{ asset('images/school2.jpg') }}');
     background-size: cover;
     background-position: center;
     border-radius: var(--border-radius);
@@ -759,6 +763,228 @@ body {
             background: gray;
             color: white;
         }
+
+        /* Assessment History Section Styles */
+        .assessment-section {
+            margin-bottom: 30px;
+        }
+
+        .assessment-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid #7a222b;
+        }
+
+        .assessment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .assessment-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #7a222b, #551a25);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .assessment-icon i {
+            color: white;
+            font-size: 20px;
+        }
+
+        .assessment-info {
+            flex: 1;
+        }
+
+        .assessment-info h3 {
+            margin: 0 0 5px 0;
+            color: #2b0f12;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .assessment-date {
+            color: #666;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .assessment-status {
+            margin-left: 15px;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: white;
+        }
+
+        .status-badge.stem { background: #28a745; }
+        .status-badge.abm { background: #007bff; }
+        .status-badge.gas { background: #6f42c1; }
+        .status-badge.humss { background: #fd7e14; }
+        .status-badge.ict { background: #20c997; }
+        .status-badge.he { background: #e83e8c; }
+
+        .assessment-details {
+            margin-bottom: 20px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #2b0f12;
+            font-size: 14px;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .detail-value.recommended {
+            color: #7a222b;
+            font-weight: 600;
+        }
+
+        .detail-value.score {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .detail-value.current {
+            font-weight: 600;
+        }
+
+        .match-indicator {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        .override-indicator {
+            background: #ffc107;
+            color: #212529;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        .assessment-scores {
+            margin-top: 20px;
+        }
+
+        .scores-breakdown summary {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #7a222b;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .scores-breakdown summary:hover {
+            background: #e9ecef;
+            border-color: #7a222b;
+        }
+
+        .scores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: white;
+            border-radius: 6px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .score-item:hover {
+            border-color: #7a222b;
+            box-shadow: 0 2px 8px rgba(122, 34, 43, 0.1);
+        }
+
+        .score-item.stem { border-left: 4px solid #28a745; }
+        .score-item.abm { border-left: 4px solid #007bff; }
+        .score-item.gas { border-left: 4px solid #6f42c1; }
+        .score-item.humss { border-left: 4px solid #fd7e14; }
+        .score-item.ict { border-left: 4px solid #20c997; }
+        .score-item.he { border-left: 4px solid #e83e8c; }
+
+        .strand-name {
+            font-weight: 600;
+            color: #2b0f12;
+            font-size: 13px;
+        }
+
+        .strand-percentage {
+            font-weight: 700;
+            color: #7a222b;
+            font-size: 14px;
+        }
+
+        /* Responsive Design for Assessment Section */
+        @media (max-width: 768px) {
+            .assessment-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .assessment-status {
+                margin-left: 0;
+                align-self: flex-end;
+            }
+
+            .detail-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .scores-grid {
+                grid-template-columns: 1fr;
+            }
+        }
 </style>
 </head>
 <body>
@@ -781,7 +1007,7 @@ body {
         <main class="main-content">
             <header class="top-bar">
                 <div class="welcome-text">
-                    <h1>Welcome, Krystal!</h1>
+                    <h1>Welcome, {{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}!</h1>
                 </div>
                 <div class="user-menu">
                     <div class="notifications">
@@ -843,44 +1069,44 @@ body {
                     <div class="user-profile">
                         <!-- Profile Picture -->
                         <img 
-                        src="{{ asset($student->picture ? 'storage/'.$student->picture : 'images/student_user.png') }}"
-                        alt="{{ $student->first_name }} {{ $student->last_name }}"
+                        src="{{ asset(optional($student)->picture ? 'storage/'.optional($student)->picture : 'images/student_user.png') }}"
+                        alt="{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}"
                         class="profile-pic"
                         >
 
                         <!-- Basic Info -->
                         <div class="user-info">
-                            <h3>{{ $student->first_name }} {{ $student->last_name }}</h3>
-                            <p>Grade {{ $student->gradeLevel->name ?? '—' }}</p>
+                            <h3>{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}</h3>
+                            <p>{{ optional(optional($student)->gradeLevel)->name ?? '—' }}</p>
                         </div>
 
                         <!-- Expanded Mini Profile -->
                         <div class="mini-profile">
                             <div class="mini-profile-header">
                             <img
-                                src="{{ asset($student->picture ? 'storage/'.$student->picture : 'images/student_user.png') }}"
-                                alt="{{ $student->first_name }} {{ $student->last_name }}"
+                                src="{{ asset(optional($student)->picture ? 'storage/'.optional($student)->picture : 'images/student_user.png') }}"
+                                alt="{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}"
                                 class="mini-profile-pic"
                             >
-                            <h3 class="mini-profile-name">{{ $student->first_name }} {{ $student->last_name }}</h3>
+                            <h3 class="mini-profile-name">{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}</h3>
                             <p>
                                 Student ID: 
-                                {{ optional($student->studentID)->student_number ?? '—' }}
+                                {{ optional(optional($student)->studentID)->student_number ?? '—' }}
                             </p>
                             </div>
 
                             <div class="mini-profile-details">
                             <div class="detail-row">
                                 <div class="detail-label">Grade Level:</div>
-                                <div class="detail-value"> {{ $student->gradeLevel->name ?? '—' }}</div>
+                                <div class="detail-value"> {{ optional(optional($student)->gradeLevel)->name ?? '—' }}</div>
                             </div>
                             <div class="detail-row">
                                 <div class="detail-label">Section:</div>
-                                <div class="detail-value">{{ $student->section->section_name ?? '—' }}</div>
+                                <div class="detail-value">{{ optional(optional($student)->section)->section_name ?? '—' }}</div>
                             </div>
                             <div class="detail-row">
                                 <div class="detail-label">Email:</div>
-                                <div class="detail-value">{{ $student->email }}</div>
+                                <div class="detail-value">{{ optional($student)->email ?? '—' }}</div>
                             </div>
                             </div>
                         </div>
@@ -923,19 +1149,19 @@ body {
                 <div class="subject-card">
                     <img
                     src="{{ asset('images/study' . $fileNum . '.jpg') }}"
-                    alt="{{ $class->subject->name }}"
+                    alt="{{ $class->subject->name ?? 'Unknown Subject' }}"
                     class="subject-image"
                     >
 
                     <div class="subject-info">
-                    <h3>{{ $class->subject->name }}</h3>
+                    <h3>{{ $class->subject->name ?? 'Unknown Subject' }}</h3>
 
                     {{-- Instructors --}}
                     @if($class->instructors->isNotEmpty())
                         <p class="instructor">
                         <strong>Instructor{{ $class->instructors->count() > 1 ? 's' : '' }}:</strong>
                         {{ $class->instructors
-                            ->map(fn($i) => $i->first_name . ' ' . $i->last_name)
+                            ->map(fn($i) => $i->short_name)
                             ->implode(', ')
                         }}
                         </p>
@@ -959,7 +1185,78 @@ body {
             </div>
             </section>
 
-
+            {{-- Assessment History Section --}}
+            @if($assessmentResult)
+            <section class="assessment-section">
+                <div class="section-header">
+                    <h2>STRAND ASSESSMENT HISTORY</h2>
+                </div>
+                
+                <div class="assessment-card">
+                    <div class="assessment-header">
+                        <div class="assessment-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="assessment-info">
+                            <h3>Assessment Results</h3>
+                            <p class="assessment-date">
+                                Completed: {{ $assessmentResult->completed_at->format('F d, Y') }}
+                            </p>
+                        </div>
+                        <div class="assessment-status">
+                            <span class="status-badge {{ strtolower($assessmentResult->recommended_strand) }}">
+                                {{ $assessmentResult->recommended_strand }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="assessment-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Recommended Strand:</span>
+                            <span class="detail-value recommended">{{ $assessmentResult->recommended_strand }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Assessment Score:</span>
+                            <span class="detail-value score">
+                                {{ $assessmentResult->scores[$assessmentResult->recommended_strand] }}/25 
+                                ({{ number_format($assessmentResult->getScorePercentage(), 1) }}%)
+                            </span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Academic Year:</span>
+                            <span class="detail-value">{{ $assessmentResult->academicYear?->year_name ?? 'Unknown' }}</span>
+                        </div>
+                        @if($student && $student->strand)
+                        <div class="detail-row">
+                            <span class="detail-label">Your Current Strand:</span>
+                            <span class="detail-value current {{ strtolower($student->strand->strand_name) }}">
+                                {{ $student->strand->strand_name }}
+                                @if($student->strand->strand_name === $assessmentResult->recommended_strand)
+                                    <span class="match-indicator">✓ Followed Recommendation</span>
+                                @else
+                                    <span class="override-indicator">⚠ Different Choice</span>
+                                @endif
+                            </span>
+                        </div>
+                        @endif
+                    </div>
+                    
+                    <div class="assessment-scores">
+                        <details class="scores-breakdown">
+                            <summary>View All Strand Scores</summary>
+                            <div class="scores-grid">
+                                @foreach($assessmentResult->getAllScorePercentages() as $strandName => $percentage)
+                                <div class="score-item {{ strtolower($strandName) }}">
+                                    <span class="strand-name">{{ $strandName }}</span>
+                                    <span class="strand-percentage">{{ number_format($percentage, 1) }}%</span>
+                                </div>
+                                @endforeach
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </section>
+            @endif
 
             <section class="announcements-section">
                 <div class="section-header">
@@ -1050,11 +1347,11 @@ body {
                     <form id="personalInfoForm">
                         <div class="form-group">
                             <label for="displayName">Display Name</label>
-                            <input type="text" id="displayName" value="Krystal Mendez"disabled>
+                            <input type="text" id="displayName" value="{{ optional($student)->short_name ?? (Auth::user()->name ?? '') }}" disabled>
                         </div>
                         <div class="form-group">
                             <label for="emailAddress">Email Address</label>
-                            <input type="email" id="emailAddress" value="krystal.mendez@student.mca.edu" disabled>
+                            <input type="email" id="emailAddress" value="{{ optional($student)->email ?? (Auth::user()->email ?? '') }}" disabled>
                             <p class="field-note">Email cannot be changed. Contact administration for updates.</p>
                         </div>
                         <div class="form-group">
@@ -1431,86 +1728,111 @@ body {
     </style>
 
     <script>
-        
+        // Profile settings modal functionality - only initialize if modal exists
         const profileSettingsModal = document.getElementById("profileSettingsModal");
-        const profileSettingsBtn = document.getElementById("profileSettingsBtn");
-        const closeModal = document.querySelector(".close-modal");
-        const cancelBtn = document.querySelector(".cancel-btn");
-        const saveBtn = document.querySelector(".save-btn");
-        const uploadBtn = document.getElementById("uploadPhotoBtn");
-        const photoUpload = document.getElementById("photoUpload");
-        const currentProfilePic = document.getElementById("currentProfilePic");
-        const presetAvatars = document.querySelectorAll(".preset-avatar");
-        const viewProfileBtn = document.getElementById("viewProfileBtn");
-
         
-        profileSettingsBtn.addEventListener("click", function(e) {
-            e.preventDefault();
-            profileSettingsModal.style.display = "block";
-            document.body.style.overflow = "hidden"; // Prevent scrolling behind modal
-        });
+        if (profileSettingsModal) {
+            const profileSettingsBtn = document.getElementById("profileSettingsBtn");
+            const closeModal = document.querySelector(".close-modal");
+            const cancelBtn = document.querySelector(".cancel-btn");
+            const saveBtn = document.querySelector(".save-btn");
+            const uploadBtn = document.getElementById("uploadPhotoBtn");
+            const photoUpload = document.getElementById("photoUpload");
+            const currentProfilePic = document.getElementById("currentProfilePic");
+            const presetAvatars = document.querySelectorAll(".preset-avatar");
+            const viewProfileBtn = document.getElementById("viewProfileBtn");
 
-        
-        function closeProfileModal() {
-            profileSettingsModal.style.display = "none";
-            document.body.style.overflow = "auto"; // Re-enable scrolling
-        }
-
-        closeModal.addEventListener("click", closeProfileModal);
-        cancelBtn.addEventListener("click", closeProfileModal);
-
-        
-        window.addEventListener("click", function(e) {
-            if (e.target === profileSettingsModal) {
-                closeProfileModal();
-            }
-        });
-
-       
-        uploadBtn.addEventListener("click", function() {
-            photoUpload.click();
-        });
-
-        
-        photoUpload.addEventListener("change", function() {
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    currentProfilePic.src = e.target.result;
-                    
-                    document.querySelector(".profile-pic").src = e.target.result;
-                    document.querySelector(".mini-profile-pic").src = e.target.result;
-                }
-                
-                reader.readAsDataURL(this.files[0]);
-            }
-        });
-
-        
-        presetAvatars.forEach(avatar => {
-            avatar.addEventListener("click", function() {
-                const avatarSrc = this.src;
-                currentProfilePic.src = avatarSrc;
-                
-                document.querySelector(".profile-pic").src = avatarSrc;
-                document.querySelector(".mini-profile-pic").src = avatarSrc;
-            });
-        });
-
-       
-        saveBtn.addEventListener("click", function() {
-    
-            alert("Profile settings saved successfully!");
-            closeProfileModal();
-        });
-
-        
-        viewProfileBtn.addEventListener("click", function(e) {
-            e.preventDefault();
-            alert("Navigate to full profile page");
             
-        });
+            // Check if elements exist before adding event listeners
+            if (profileSettingsBtn) {
+                profileSettingsBtn.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    profileSettingsModal.style.display = "block";
+                    document.body.style.overflow = "hidden"; // Prevent scrolling behind modal
+                });
+            }
+        
+            
+            function closeProfileModal() {
+                if (profileSettingsModal) {
+                    profileSettingsModal.style.display = "none";
+                    document.body.style.overflow = "auto"; // Re-enable scrolling
+                }
+            }
+
+            if (closeModal) {
+                closeModal.addEventListener("click", closeProfileModal);
+            }
+            if (cancelBtn) {
+                cancelBtn.addEventListener("click", closeProfileModal);
+            }
+
+            
+            window.addEventListener("click", function(e) {
+                if (e.target === profileSettingsModal) {
+                    closeProfileModal();
+                }
+            });
+
+           
+            if (uploadBtn && photoUpload) {
+                uploadBtn.addEventListener("click", function() {
+                    photoUpload.click();
+                });
+
+                photoUpload.addEventListener("change", function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            if (currentProfilePic) {
+                                currentProfilePic.src = e.target.result;
+                            }
+                            
+                            const profilePic = document.querySelector(".profile-pic");
+                            const miniProfilePic = document.querySelector(".mini-profile-pic");
+                            if (profilePic) profilePic.src = e.target.result;
+                            if (miniProfilePic) miniProfilePic.src = e.target.result;
+                        }
+                        
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
+
+            
+            if (presetAvatars) {
+                presetAvatars.forEach(avatar => {
+                    avatar.addEventListener("click", function() {
+                        const avatarSrc = this.src;
+                        if (currentProfilePic) {
+                            currentProfilePic.src = avatarSrc;
+                        }
+                        
+                        const profilePic = document.querySelector(".profile-pic");
+                        const miniProfilePic = document.querySelector(".mini-profile-pic");
+                        if (profilePic) profilePic.src = avatarSrc;
+                        if (miniProfilePic) miniProfilePic.src = avatarSrc;
+                    });
+                });
+            }
+
+           
+            if (saveBtn) {
+                saveBtn.addEventListener("click", function() {
+                    alert("Profile settings saved successfully!");
+                    closeProfileModal();
+                });
+            }
+
+            
+            if (viewProfileBtn) {
+                viewProfileBtn.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    alert("Navigate to full profile page");
+                });
+            }
+        } // End of profileSettingsModal check
         function confirmExit() {
             document.getElementById("confirm-modals").style.display = "flex";
         }
@@ -1524,6 +1846,6 @@ body {
         
     </script>
 
-    <script src="db.js"></script>
+    {{-- <script src="{{ asset('js/db.js') }}"></script> --}}
 </body>
 </html>

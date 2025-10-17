@@ -12,9 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        
-    
-
+        // Add username column
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('username')->unique()->after('name');
+        });
 
         // Rename the primary key column from 'id' to 'user_id'
         // (This uses a raw SQL statement; it works with MySQL)

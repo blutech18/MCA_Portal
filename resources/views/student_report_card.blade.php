@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>MCA Montessori School - View My Grades</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1759179376">
     
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -1006,33 +1007,33 @@ body {
                         </div>
                     </div>
                     <div class="user-profile">
-                        <img src="{{asset ('images/student_user.png')}}" alt="Krystal Mendez" class="profile-pic">
+                        <img src="{{ asset(optional($student)->picture ? 'storage/'.optional($student)->picture : 'images/student_user.png') }}" alt="{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}" class="profile-pic">
                         <div class="user-info">
-                            <h3>Krystal Mendez</h3>
-                            <p>Grade 12</p>
+                            <h3>{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}</h3>
+                            <p>{{ optional(optional($student)->gradeLevel)->name ?? '—' }}</p>
                         </div>
                         <div class="mini-profile">
                             <div class="mini-profile-header">
-                                <img src="{{asset ('images/student_user.png')}}" alt="Krystal Mendez" class="mini-profile-pic">
-                                <h3 class="mini-profile-name">Krystal Mendez</h3>
-                                <p>Student ID: STU-12-4875</p>
+                                <img src="{{ asset(optional($student)->picture ? 'storage/'.optional($student)->picture : 'images/student_user.png') }}" alt="{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}" class="mini-profile-pic">
+                                <h3 class="mini-profile-name">{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}</h3>
+                                <p>Student ID: {{ optional(optional($student)->studentID)->student_number ?? (optional($student)->school_student_id ?? '—') }}</p>
                             </div>
                             <div class="mini-profile-details">
                                 <div class="detail-row">
-                                    <div class="detail-label">Year Level:</div>
-                                    <div class="detail-value">Grade 12</div>
+                                    <div class="detail-label">Grade Level:</div>
+                                    <div class="detail-value">{{ optional(optional($student)->gradeLevel)->name ?? '—' }}</div>
                                 </div>
                                 <div class="detail-row">
                                     <div class="detail-label">Section:</div>
-                                    <div class="detail-value">Wisdom</div>
+                                    <div class="detail-value">{{ optional(optional($student)->section)->section_name ?? '—' }}</div>
                                 </div>
                                 <div class="detail-row">
                                     <div class="detail-label">Adviser:</div>
-                                    <div class="detail-value">Ms. Christine Santos</div>
+                                    <div class="detail-value">{{ optional($student)->adviser_name ?? '—' }}</div>
                                 </div>
                                 <div class="detail-row">
                                     <div class="detail-label">Email:</div>
-                                    <div class="detail-value">krystal.mendez@student.mca.edu</div>
+                                    <div class="detail-value">{{ optional($student)->email ?? (Auth::user()->email ?? '—') }}</div>
                                 </div>
                             </div>
                             
@@ -1069,7 +1070,12 @@ body {
             </div>
 
             <section class="grades-section first-term-content">
-                <h2 class="section-title">Academic Performance <!--- 1st Term--></h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 class="section-title" style="margin: 0;">Academic Performance <!--- 1st Term--></h2>
+                    <button onclick="fetchLatestGrades()" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-weight: 500; transition: all 0.3s;">
+                        <i class="fas fa-sync-alt"></i> Refresh Grades
+                    </button>
+                </div>
                 @php
                 
                 function gradeStatusClass($value) {
@@ -1110,7 +1116,7 @@ body {
                         $gf = number_format($grade->final_grade, 1);
                     @endphp
                     <tr>
-                        <td class="subject-name">{{ $grade->subject->name ?? 'Unknown Subject' }}</td>
+                        <td class="subject-name">{{ $grade->subjectModel->name ?? 'Unknown Subject' }}</td>
 
                         <td class="{{ gradeStatusClass($g1) }}">
                         {{ $g1 ?? 'N/A' }}
@@ -1272,6 +1278,172 @@ document.querySelectorAll('.term-option').forEach(option => {
         printButton.addEventListener('click', function () {
             window.print();
         });
+    }
+</script>
+
+<script>
+    // Real-time grade fetching functionality
+    const studentId = {{ $student->student_id ?? 'null' }};
+    
+    if (studentId) {
+        // Function to fetch and update grades in real-time
+        async function fetchLatestGrades() {
+            try {
+                const response = await fetch(`{{ route('api.student.grades') }}?student_id=${studentId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.grades) {
+                        updateGradesTable(data.grades);
+                        console.log('Grades updated successfully at:', data.timestamp);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching grades:', error);
+            }
+        }
+
+        // Function to update the grades table with new data
+        function updateGradesTable(grades) {
+            const tbody = document.querySelector('.grades-table tbody');
+            if (!tbody || grades.length === 0) return;
+
+            // Create a map of current grades for easy lookup
+            const gradesMap = {};
+            grades.forEach(grade => {
+                gradesMap[grade.subject_name] = grade;
+            });
+
+            // Update existing rows
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const subjectCell = row.querySelector('.subject-name');
+                if (subjectCell) {
+                    const subjectName = subjectCell.textContent.trim();
+                    const grade = gradesMap[subjectName];
+                    
+                    if (grade) {
+                        const cells = row.querySelectorAll('td');
+                        
+                        // Update quarter grades with animation
+                        updateCell(cells[1], grade.first_quarter, gradeStatusClass(grade.first_quarter));
+                        updateCell(cells[2], grade.second_quarter, gradeStatusClass(grade.second_quarter));
+                        updateCell(cells[3], grade.third_quarter, gradeStatusClass(grade.third_quarter));
+                        updateCell(cells[4], grade.fourth_quarter, gradeStatusClass(grade.fourth_quarter));
+                        
+                        // Update final grade
+                        const finalCell = cells[5];
+                        if (finalCell && grade.final_grade !== null) {
+                            const displayValue = parseFloat(grade.final_grade).toFixed(1);
+                            if (finalCell.textContent.trim() !== displayValue) {
+                                finalCell.classList.add('grade-updated');
+                                finalCell.textContent = displayValue;
+                                finalCell.className = 'final-grade ' + gradeStatusClass(grade.final_grade);
+                                
+                                setTimeout(() => {
+                                    finalCell.classList.remove('grade-updated');
+                                }, 2000);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Helper function to update individual cell
+        function updateCell(cell, value, statusClass) {
+            if (!cell) return;
+            
+            const displayValue = value !== null && value !== undefined ? value : 'N/A';
+            if (cell.textContent.trim() !== displayValue.toString()) {
+                cell.classList.add('grade-updated');
+                cell.textContent = displayValue;
+                cell.className = statusClass;
+                
+                setTimeout(() => {
+                    cell.classList.remove('grade-updated');
+                }, 2000);
+            }
+        }
+
+        // Helper function to determine grade status class
+        function gradeStatusClass(value) {
+            if (value === null || value === undefined) {
+                return '';
+            }
+            value = parseFloat(value);
+            if (value >= 90) {
+                return 'excellent';
+            } else if (value >= 85) {
+                return 'very-good';
+            } else if (value >= 80) {
+                return 'good';
+            } else if (value >= 75) {
+                return 'fair';
+            } else {
+                return 'poor';
+            }
+        }
+
+        // Fetch grades immediately on page load
+        fetchLatestGrades();
+
+        // Set up periodic fetching (every 30 seconds)
+        setInterval(fetchLatestGrades, 30000);
+
+        // Add visual feedback for grade updates
+        const style = document.createElement('style');
+        style.textContent = `
+            .grade-updated {
+                animation: gradeHighlight 2s ease;
+            }
+            
+            @keyframes gradeHighlight {
+                0% {
+                    background-color: #fff3cd;
+                    transform: scale(1);
+                }
+                50% {
+                    background-color: #ffc107;
+                    transform: scale(1.05);
+                }
+                100% {
+                    background-color: transparent;
+                    transform: scale(1);
+                }
+            }
+            
+            .new-grade-notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #28a745;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                z-index: 9999;
+                animation: slideIn 0.3s ease;
+            }
+            
+            @keyframes slideIn {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
     }
 </script>
 

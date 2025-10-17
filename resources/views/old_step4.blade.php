@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MCA Montessori School Confirmation - Existing Students</title>
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -622,7 +626,7 @@ button:active {
                 <div class="summary-item">
                     <div class="summary-label">Full Name:</div>
                     <div class="summary-value">
-                      {{ $enrollee->surname }}, {{ $enrollee->given_name }} {{ $enrollee->middle_name }}
+                      {{ $enrollee->display_name }}
                     </div>
                 </div>
                 <div class="summary-item">
@@ -631,7 +635,7 @@ button:active {
                 </div>
                 <div class="summary-item">
                     <div class="summary-label">Intended Grade Level:</div>
-                    <div class="summary-value">Grade {{ $enrollee->grade_level_applying }}</div>
+                    <div class="summary-value">{{ $enrollee->grade_level_applying }}</div>
                 </div>
                 <!--<div class="summary-item">
                     <div class="summary-label">School Year:</div>
@@ -705,31 +709,47 @@ button:active {
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Set progress indicator to step 4
             setProgress(4);
             
-            // Print functionality
-            document.getElementById('printButton').addEventListener('click', function() {
-                window.print();
-            });
+            // Print functionality -> open formatted summary and print it
+            const printBtn = document.getElementById('printButton');
+            if (printBtn) {
+                printBtn.addEventListener('click', function() {
+                    const reportUrl = '{{ route('enroll.confirmation.report', ['type' => 'old', 'id' => ($enrollee->id ?? 0)]) }}';
+                    const printWindow = window.open(reportUrl, '_blank');
+                    
+                    if (printWindow) {
+                        // Wait for the window to load, then trigger print
+                        printWindow.onload = function() {
+                            setTimeout(function() {
+                                printWindow.print();
+                            }, 500); // Small delay to ensure content is fully loaded
+                        };
+                        
+                        // Fallback: if onload doesn't fire, try after a delay
+                        setTimeout(function() {
+                            if (printWindow && !printWindow.closed) {
+                                try {
+                                    printWindow.print();
+                                } catch (e) {
+                                    console.log('Print dialog could not be opened automatically');
+                                }
+                            }
+                        }, 2000);
+                    } else {
+                        // If popup was blocked, redirect to the report page
+                        window.location.href = reportUrl;
+                    }
+                });
+            }
             
             // Download as PDF functionality
             document.getElementById('downloadButton').addEventListener('click', function() {
-                // Configure pdf options
-                const element = document.getElementById('enrollmentSummary');
-                const options = {
-                    margin: 10,
-                    filename: 'MCA_Enrollment_Confirmation.pdf',
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2 },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                };
-                
-                // Generate the PDF
-                html2pdf().from(element).set(options).save();
+                // Use server-side DomPDF generation
+                window.location.href = '{{ route('enroll.confirmation.report', ['type' => 'old', 'id' => ($enrollee->id ?? 0)]) }}?format=pdf';
             });
             
             // Home button functionality

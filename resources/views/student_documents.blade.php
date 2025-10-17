@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCA Montessori School - My Documents</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1759179376">
+    <link rel="stylesheet" href="{{ asset('css/add-student-modal.css') }}">
     
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -876,7 +877,7 @@ body {
         <main class="main-content">
             <header class="top-bar">
                 <div class="welcome-text">
-                    <h1>Hello, Krystal!</h1>
+                    <h1>Hello, {{ optional($student)->first_name ?? (Auth::user()->name ?? 'Student') }}!</h1>
                 </div>
                 <div class="user-menu">
                     <div class="notifications">
@@ -891,33 +892,33 @@ body {
                         </div>
                     </div>
                     <div class="user-profile">
-                        <img src="{{asset ('images/student_user.png')}}" alt="Krystal Mendez" class="profile-pic">
+                        <img src="{{ asset(optional($student)->picture ? 'storage/'.optional($student)->picture : 'images/student_user.png') }}" alt="{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}" class="profile-pic">
                         <div class="user-info">
-                            <h3>Krystal Mendez</h3>
-                            <p>Grade 12</p>
+                            <h3>{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}</h3>
+                            <p>{{ optional(optional($student)->gradeLevel)->name ?? '—' }}</p>
                         </div>
                         <div class="mini-profile">
                             <div class="mini-profile-header">
-                                <img src="{{asset ('images/student_user.png')}}" alt="Krystal Mendez" class="mini-profile-pic">
-                                <h3 class="mini-profile-name">Krystal Mendez</h3>
-                                <p>Student ID: STU-12-4875</p>
+                                <img src="{{ asset(optional($student)->picture ? 'storage/'.optional($student)->picture : 'images/student_user.png') }}" alt="{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}" class="mini-profile-pic">
+                                <h3 class="mini-profile-name">{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}</h3>
+                                <p>Student ID: {{ optional(optional($student)->studentID)->student_number ?? (optional($student)->school_student_id ?? '—') }}</p>
                             </div>
                             <div class="mini-profile-details">
                                 <div class="detail-row">
-                                    <div class="detail-label">Year Level:</div>
-                                    <div class="detail-value">Grade 12</div>
+                                    <div class="detail-label">Grade Level:</div>
+                                    <div class="detail-value">{{ optional(optional($student)->gradeLevel)->name ?? '—' }}</div>
                                 </div>
                                 <div class="detail-row">
                                     <div class="detail-label">Section:</div>
-                                    <div class="detail-value">Wisdom</div>
+                                    <div class="detail-value">{{ optional(optional($student)->section)->section_name ?? '—' }}</div>
                                 </div>
-                                <div class="detail-row">
-                                    <div class="detail-label">Adviser:</div>
-                                    <div class="detail-value">Ms. Christine Santos</div>
-                                </div>
+                                    <div class="detail-row">
+                                        <div class="detail-label">Adviser:</div>
+                                        <div class="detail-value">{{ optional($student)->adviser_name ?? '—' }}</div>
+                                    </div>
                                 <div class="detail-row">
                                     <div class="detail-label">Email:</div>
-                                    <div class="detail-value">krystal.mendez@student.mca.edu</div>
+                                    <div class="detail-value">{{ optional($student)->email ?? (Auth::user()->email ?? '—') }}</div>
                                 </div>
                             </div>
                         </div>
@@ -935,14 +936,14 @@ body {
             <section class="documents-filters">
                 
                 <div class="filter-item">
-                    <label for="documentType">Document Type:</label>
+                    <label for="documentType">Document Category:</label>
                     <select id="documentType" class="filter-select">
                     <option value="all">All Documents</option>
-                    <option value="transcript-of-records">Transcript of Records</option>
-                    <option value="certificate-of-good-moral">Certificates</option>
-                    <option value="birth-certificate">Legal Documents</option>
-                    <option value="id-picture">Identification</option>
-                    <option value="payment-receipt">Payment Proof</option>
+                    <option value="academic">Academic Records</option>
+                    <option value="administrative">Administrative Documents</option>
+                    <option value="legal">Legal Documents</option>
+                    <option value="identification">Identification</option>
+                    <option value="payment">Payment Proof</option>
                     </select>
                 </div>
                 <div class="filter-item">
@@ -965,9 +966,11 @@ body {
                     
                     <div
                     class="document-card"
-                    data-type="{{ Str::slug($doc['type']) }}"
+                    data-type="{{ $doc['category'] ?? Str::slug($doc['type']) }}"
                     data-status="{{ Str::after($doc['status'], 'status-') }}"
                     data-name="{{ strtolower($doc['name']) }}"
+                    data-category="{{ $doc['category'] ?? 'other' }}"
+                    data-exists="{{ isset($doc['exists']) && $doc['exists'] ? '1' : '0' }}"
                     >
                     <div class="document-icon">
                         <i class="fas {{ $doc['icon'] }}"></i>
@@ -984,22 +987,157 @@ body {
                         <div class="document-actions">
                         <button
                             class="document-btn view-btn"
-                            onclick="window.open('{{ $doc['url'] }}','_blank')"
+                            onclick="safeOpenDocPreview(this, '{{ $doc['url'] }}')"
                         ><i class="fas fa-eye"></i> View</button>
                         <button
                             class="document-btn download-btn"
-                            onclick="window.location.href='{{ $doc['url'] }}'"
+                            onclick="safeDownloadDoc(this, '{{ $doc['url'] }}')"
                         ><i class="fas fa-download"></i> Download</button>
                         </div>
                     </div>
                     </div>
                 @empty
-                    <p class="no-documents">No documents have been uploaded yet.</p>
+                    <div class="no-documents-container">
+                        <div class="no-documents-icon">
+                            <i class="fas fa-folder-open"></i>
+                        </div>
+                        <p class="no-documents">No documents have been uploaded yet.</p>
+                        <p class="no-documents-hint">Documents uploaded during enrollment will appear here automatically.</p>
+                    </div>
                 @endforelse
             </section>
 
 
 
+
+                <!-- Document Preview Modal -->
+                <div id="doc-preview-overlay" class="overlay" style="display:none;">
+                  <div class="add-student-modal" style="max-width:1000px;width:90vw;height:90vh;display:flex;flex-direction:column;overflow:hidden;">
+                    <div class="modal-header">
+                      <div class="header-content">
+                        <div class="icon">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                          </svg>
+                        </div>
+                        <div class="header-text">
+                          <h2>Document Preview</h2>
+                          <p>View your uploaded document</p>
+                        </div>
+                      </div>
+                      <button type="button" class="close-btn" onclick="closeDocPreview()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
+                    </div>
+                    <div class="modal-body" style="flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0;background:#0f172a;">
+                      <div id="doc-preview-wrapper" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:12px;">
+                        <iframe id="doc-preview-frame" src="about:blank" style="display:none;width:100%;height:100%;border:none;background:#fff;border-radius:8px;"></iframe>
+                        <img id="doc-preview-image" src="" alt="Document" style="display:none;max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.35);">
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <div class="footer-info">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <path d="m9 12 2 2 4-4"></path>
+                        </svg>
+                        <span>If the preview fails, use Download to open the file.</span>
+                      </div>
+                      <div class="footer-actions">
+                        <button id="doc-download-btn" type="button" class="btn btn-primary">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                          </svg>
+                          Download
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeDocPreview()">Close</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <script>
+                  function safeOpenDocPreview(btn, url){
+                    var card = btn.closest('.document-card');
+                    if (card && card.dataset.exists === '0'){
+                      alert('This document file is not available. Please re-upload or contact support.');
+                      return;
+                    }
+                    openDocPreview(url);
+                  }
+
+                  function openDocPreview(url){
+                    var overlay = document.getElementById('doc-preview-overlay');
+                    var frame   = document.getElementById('doc-preview-frame');
+                    var img     = document.getElementById('doc-preview-image');
+                    var dbtn    = document.getElementById('doc-download-btn');
+                    dbtn.dataset.url = url;
+                    // decide viewer by extension
+                    var lower = (url || '').toLowerCase();
+                    var isImage = /(\.png|\.jpg|\.jpeg|\.gif|\.webp)(\?|$)/.test(lower);
+                    if (isImage){
+                      frame.style.display = 'none';
+                      img.style.display = 'block';
+                      img.src = url;
+                    } else {
+                      img.style.display = 'none';
+                      frame.style.display = 'block';
+                      frame.src = url;
+                    }
+                    overlay.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                    overlay.onclick = function(e){ if(e.target === overlay){ closeDocPreview(); } };
+                  }
+                  function closeDocPreview(){
+                    var overlay = document.getElementById('doc-preview-overlay');
+                    var frame   = document.getElementById('doc-preview-frame');
+                    var img     = document.getElementById('doc-preview-image');
+                    overlay.style.display = 'none';
+                    frame.src = 'about:blank';
+                    img.src   = '';
+                    document.body.style.overflow = '';
+                  }
+
+                  function safeDownloadDoc(btn, url){
+                    var card = btn.closest('.document-card');
+                    if (card && card.dataset.exists === '0'){
+                      alert('This document file is not available.');
+                      return;
+                    }
+                    downloadDoc(url);
+                  }
+
+                  async function downloadDoc(url){
+                    try {
+                      const res = await fetch(url, { credentials: 'same-origin' });
+                      if (!res.ok) throw new Error('Download failed');
+                      const blob = await res.blob();
+                      const link = document.createElement('a');
+                      const fname = (url.split('/').pop() || 'document').split('?')[0];
+                      link.href = URL.createObjectURL(blob);
+                      link.download = fname || 'document';
+                      document.body.appendChild(link);
+                      link.click();
+                      URL.revokeObjectURL(link.href);
+                      link.remove();
+                    } catch (e) {
+                      alert('Unable to download document.');
+                    }
+                  }
+
+                  document.addEventListener('click', function(e){
+                    if (e.target && e.target.id === 'doc-download-btn'){
+                      const url = e.target.dataset.url;
+                      if (url) downloadDoc(url);
+                    }
+                  });
+                </script>
 
                 <!--<div class="document-card">
                     <div class="document-icon">
@@ -1204,7 +1342,7 @@ body {
       const query  = searchInput.value.trim().toLowerCase();
 
       cards.forEach(card => {
-        const matchesType   = (type === 'all') || (card.dataset.type === type);
+        const matchesType   = (type === 'all') || (card.dataset.category === type) || (card.dataset.type === type);
         const matchesStatus = (status === 'all') || (card.dataset.status === status);
         const matchesSearch = (!query) || card.dataset.name.includes(query);
 

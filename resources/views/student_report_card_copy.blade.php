@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCA Montessori School - Progress Report</title>
-    <link rel="stylesheet" href="{{ asset('css/styles_student_report_card.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ secure_asset('css/styles_student_report_card.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1759179376">
     <link href="https://fonts.cdnfonts.com/css/garet" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <aside class="sidebar">
             <div class="logo-container">
-                <img src="{{ asset('images/schoollogo.png') }}" alt="MCA Montessori School Logo" class="logo">
+                <img src="{{ secure_asset('images/schoollogo.png') }}?v={{ time() }}" alt="MCA Montessori School Logo" class="logo">
             </div>
             <nav class="sidebar-nav">
                 <ul>
@@ -37,11 +37,11 @@
                 </div>
                 <div class="user-menu">
                     <div class="notifications">
-                        <img src="{{ asset('images/bell_student.png') }}" alt="Notifications" class="icon">
+                        <img src="{{ secure_asset('images/bell_student.png') }}?v={{ time() }}" alt="Notifications" class="icon">
                         <span class="notification-badge">3</span>
                     </div>
                     <div class="settings">
-                        <img src="{{asset('images/settings_student.png')}}" alt="Settings" class="icon">
+                        <img src="{{ secure_asset('images/settings_student.png') }}?v={{ time() }}" alt="Settings" class="icon">
                     </div>
                     <div class="user-profile">
                         <img src="" alt="Krystal Mendez" class="profile-pic">
@@ -127,7 +127,7 @@
                 <div class="subjects-container">
                     <div class="subject-card">
                         <div class="subject-image">
-                            <img src="{{asset('images/study1.jpg')}}" alt="Math and Science" class="study-img">
+                            <img src="{{ secure_asset('images/study1.jpg') }}?v={{ time() }}" alt="Math and Science" class="study-img">
                         </div>
                         <div class="subject-info">
                             <h3>Core Subjects</h3>
@@ -143,7 +143,7 @@
                     </div>
                     <div class="subject-card">
                         <div class="subject-image">
-                            <img src="{{asset('images/study2.jpg')}}" alt="Electives" class="study-img">
+                            <img src="{{ secure_asset('images/study2.jpg') }}?v={{ time() }}" alt="Electives" class="study-img">
                         </div>
                         <div class="subject-info">
                             <h3>Elective Subjects</h3>
@@ -166,6 +166,6 @@
         <i class="fas fa-bars"></i>
     </div>
 
-    <script src="{{asset('js/script_student_report_card.js')}}"></script>
+    <script src="{{ secure_asset('js/script_student_report_card.js') }}?v={{ time() }}"></script>
 </body>
 </html>

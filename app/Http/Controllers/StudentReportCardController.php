@@ -8,28 +8,40 @@ use App\Models\SchoolClass;
 use Illuminate\Http\Request;
 use App\Models\ClassAnnouncement;
 use App\Models\CoreValueEvaluation;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Auth;
 
 class StudentReportCardController extends Controller
 {
     public function reportCard()
     {
-        $student = Student::where('user_id', Auth::id())->first();
+        $student = Student::with(['gradeLevel','studentID','section'])
+            ->where('user_id', Auth::id())
+            ->first();
 
         if (!$student) {
-            return redirect()->back()->with('error', 'Student not found.');
+            // Return view with empty data instead of redirect to avoid loops
+            return view('student_report_card', [
+                'student' => null,
+                'grades' => collect(),
+                'evaluations' => collect(),
+            ]);
         }
 
         $grades = Grade::where('student_id', $student->student_id)
-                    ->with('subject')
+                    ->with('subjectModel')
                     ->get();
 
-        // ✅ Get core value evaluations for the current student
-        $evaluations = CoreValueEvaluation::with('coreValue')
-                        ->where('student_id', $student->student_id)
-                        ->get();
+        // ✅ Get core value evaluations for the current student (if table exists)
+        if (Schema::hasTable('core_value_evaluations')) {
+            $evaluations = CoreValueEvaluation::with('coreValue')
+                            ->where('student_id', $student->student_id)
+                            ->get();
+        } else {
+            $evaluations = collect();
+        }
 
-        return view('student_report_card', compact('grades', 'evaluations'));
+        return view('student_report_card', compact('student', 'grades', 'evaluations'));
     }
 
 

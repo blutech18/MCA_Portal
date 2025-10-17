@@ -27,200 +27,235 @@
                     </ul>
                 </li>
                 <li><a href="{{ route('instructor.attendance') }}" class="nav-item active">ATTENDANCE REPORTS</a></li>
+                <li><a href="{{ route('instructor.attendance.mark.form') }}" class="nav-item">MARK ATTENDANCE</a></li>
                 <li><a href="{{ route('instructor.report') }}" class="nav-item">GRADE REPORTS</a></li>
                 <li><a href="{{ route('instructor.announcement') }}" class="nav-item">ANNOUNCEMENTS</a></li>
             </ul>
-            <div class="logout">
-                <a href="javascript:void(0)" class="nav-item" onclick="confirmExit()">LOGOUT</a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                    @csrf
-                </form>
-            </div>  
           </nav>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <div class="mobile-menu-btn">
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
 
         <!-- Main Content -->
         <div class="main-content">
             <div class="header">
-                <h1>ATTENDANCE</h1>
+                <h1>ATTENDANCE REPORTS</h1>
                 <div class="user-actions">
                     <div class="user-profile">
-                        <img src="examplepic.png" alt="User Profile" class="profile-pic">
+                        <img src="{{ asset('images/instructor_user.png') }}" alt="User Profile" class="profile-pic">
                         <div class="user-info">
-                            <p class="user-name">Krystal Mendez</p>
+                            <p class="user-name">{{ $instructor->short_name }}</p>
                             <p class="user-grade">INSTRUCTOR</p>
                         </div>
                     </div>
                     <div class="icons">
-                        <a href="#" class="icon-link"><img src="bell.png" alt="Notifications" class="icon"></a>
-                        <a href="#" class="icon-link"><img src="settings.png" alt="Settings" class="icon"></a>
+                        <a href="#" class="icon-link"><img src="{{ asset('images/bell.png') }}" alt="Notifications" class="icon"></a>
+                        <a href="#" class="icon-link"><img src="{{ asset('images/settings.png') }}" alt="Settings" class="icon"></a>
+                    <a href="javascript:void(0)" class="icon-link logout-btn" onclick="confirmExit()" title="Logout">
+                        <i class="fas fa-sign-out-alt" style="font-size: 20px; color: #1A2B49;"></i>
+                    </a>
                     </div>
                 </div>
             </div>
-
-            
-            <div class="search-container">
-                <input type="text" placeholder="Search" class="search-bar">
-                <button class="search-button"><i class="fas fa-search"></i></button>
-            </div>
+          
+            <!-- Attendance Content -->
+            <div class="content-section">
+                <div class="page-header">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h2><i class="fas fa-clipboard-check"></i> Attendance Reports</h2>
+                            <p>Track and manage student attendance</p>
+                            @if(isset($attendances) && $attendances->count() > 0)
+                                <p style="color: #666; font-size: 12px;">Showing {{ $attendances->count() }} attendance records</p>
+                            @endif
+                        </div>
+                        <div>
+                            <a href="{{ route('instructor.attendance.mark.form') }}" class="btn" style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: 600;">
+                                <i class="fas fa-plus"></i> Mark Attendance
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 
-            <div class="controls">
-                <form id="filterForm" method="GET" action="{{ route('instructor.attendance') }}">
-                  @csrf
-                  <!-- Section dropdown -->
-                  <select name="class_id" onchange="document.getElementById('filterForm').submit()">
-                    @foreach($instructor->instructorClasses as $ic)
-                      <option value="{{ $ic->id }}"
-                        {{ $ic->id == $iclass->id ? 'selected' : '' }}>
-                        {{ $ic->class->name }} — {{ $ic->class->section->section_name }}
-                      </option>
-                    @endforeach
-                  </select>
-              
-                  <!-- Date picker -->
-                  <input type="date" name="date"
-                         value="{{ old('date',$date) }}"
-                         onchange="document.getElementById('filterForm').submit()">
-                </form>
-            </div>
-
-            <div class="stats-container">
-                <div class="stat-card">
-                    <div class="stat-icon">                
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                        </svg>
+                <div class="attendance-filters">
+                    <div class="filters-container">
+                        <form method="GET" action="{{ route('instructor.attendance') }}" class="filters-form">
+                            <div class="filter-group">
+                                <label for="class-select"><i class="fas fa-chalkboard-teacher"></i> Select Class:</label>
+                                <select id="class-select" name="class_id">
+                                    <option value="">All Classes</option>
+                                    @if(isset($classes) && count($classes) > 0)
+                                        @foreach($classes as $class)
+                                            <option value="{{ $class['id'] }}" {{ $selectedClassId == $class['id'] ? 'selected' : '' }}>
+                                                {{ $class['name'] }} - {{ $class['section'] }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="date-range"><i class="fas fa-calendar-alt"></i> Date Range:</label>
+                                <div class="date-range">
+                                    <input type="date" id="date-from" name="date_from" value="{{ $dateFrom }}">
+                                    <span>to</span>
+                                    <input type="date" id="date-to" name="date_to" value="{{ $dateTo }}">
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="search-button"><i class="fas fa-search"></i> Search</button>
+                        </form>
                     </div>
-                  <div class="stat-info">
-                    <h3>Present</h3>
-                    <p>{{ $present }}</p>
-                  </div>
                 </div>
-                <div class="stat-card">
-                  <div class="stat-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                    </svg>
-                  </div>
-                  <div class="stat-info">
-                    <h3>Absent</h3>
-                    <p>{{ $absent }}</p>
-                  </div>
+                
+                <div class="attendance-table">
+                    <div class="table-header">
+                        <h3><i class="fas fa-table"></i> Attendance Records</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-user"></i> Student Name</th>
+                                <th><i class="fas fa-chalkboard-teacher"></i> Class</th>
+                                <th><i class="fas fa-calendar-day"></i> Date</th>
+                                <th><i class="fas fa-info-circle"></i> Status</th>
+                                <th><i class="fas fa-sign-in-alt"></i> Time In</th>
+                                <th><i class="fas fa-sign-out-alt"></i> Time Out</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if(isset($attendances) && $attendances->count() > 0)
+                                @foreach($attendances as $attendance)
+                                    <tr>
+                                        <td>
+                                            @if($attendance->student)
+                                                {{ $attendance->student->first_name }} {{ $attendance->student->last_name }}
+                                            @else
+                                                <span style="color: red;">Student not found (ID: {{ $attendance->student_id }})</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $attendance->instructorClass->class->name ?? 'N/A' }}</td>
+                                        <td>{{ $attendance->date ? \Carbon\Carbon::parse($attendance->date)->format('M d, Y') : 'N/A' }}</td>
+                                        <td>
+                                            <span class="status {{ strtolower($attendance->status ?? 'present') }}">
+                                                {{ ucfirst($attendance->status ?? 'Present') }}
+                                            </span>
+                                        </td>
+                                        <td>{{ $attendance->time_in ?? 'N/A' }}</td>
+                                        <td>{{ $attendance->time_out ?? 'N/A' }}</td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="6" class="no-data">No attendance records found for the selected criteria.</td>
+                                </tr>
+                            @endif
+                        </tbody>
+                    </table>
                 </div>
-                <div class="stat-card">
-                  <div class="stat-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                  </div>
-                  <div class="stat-info">
-                    <h3>Late</h3>
-                    <p>{{ $late }}</p>
-                  </div>
-                </div>
-                <div class="stat-card">
-                  <div class="stat-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                  </div>
-                  <div class="stat-info">
-                    <h3>Total Classes</h3>
-                    <p>{{ $total  }}</p>
-                  </div>
-                </div>
+                
+                @if(isset($attendances) && $attendances->count() > 0)
+                    <div class="attendance-summary">
+                        <div class="summary-header">
+                            <h3><i class="fas fa-chart-bar"></i> Attendance Summary</h3>
+                        </div>
+                        <div class="summary-stats">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <span class="stat-value">{{ $totalRecords }}</span>
+                                    <span class="stat-label">Total Records</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <span class="stat-value">{{ $presentCount }}</span>
+                                    <span class="stat-label">Present</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-times-circle"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <span class="stat-value">{{ $absentCount }}</span>
+                                    <span class="stat-label">Absent</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <span class="stat-value">{{ $lateCount }}</span>
+                                    <span class="stat-label">Late</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
-              
-            <div class="date-display">
-                Today's Date: {{ Carbon\Carbon::now()->format('F j, Y') }}
-            </div>
-              
-            <div class="table-container student-info-container">
-                <h2>Class: {{ $iclass->class->name }} — {{ $iclass->class->section->section_name }}</h2>
-            </div>
-              
-            <div class="table-container attendance-container">
-                <table class="attendance-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @foreach($students as $student)
-                      @php
-                        $att = $existing->get($student->student_id);
-                      @endphp
-              
-                      <form method="POST" action="{{ route('instructor.attendance.mark') }}">
-                        @csrf
-                        <input type="hidden" name="student_id"          value="{{ $student->student_id }}">
-                        <input type="hidden" name="instructor_class_id" value="{{ $iclass->id }}">
-                        <input type="hidden" name="date"                 value="{{ $date }}">
-              
-                        <tr>
-                          <td>{{ $student->full_name }}</td>
-                          <td>
-                            <select name="status" onchange="this.form.submit()">
-                              <option value=""    @if(!$att)    selected @endif>—</option>
-                              <option value="present" @if($att?->status=='present') selected @endif>P</option>
-                              <option value="absent"  @if($att?->status=='absent')  selected @endif>A</option>
-                              <option value="late"    @if($att?->status=='late')    selected @endif>L</option>
-                            </select>
-                          </td>
-                        </tr>
-                      </form>
-                    @endforeach
-                  </tbody>
-                </table>
-            </div>
-              
-            @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
+        </div>
+    </div>
 
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content">
+            <p>Are you sure you want to log out?</p>
+            <button class="confirm-btn" onclick="logout(event)">Yes, Logout</button>
+            <button class="cancel-btn" onclick="closeModal()">No</button>
+        </div>
+    </div>
     
-    <script>
-        
-        function updateDate() {
-            const now = new Date();
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            const formattedDate = now.toLocaleDateString('en-US', options);
-            document.getElementById('current-date').textContent = formattedDate;
-        }
+    <!-- Hidden logout form -->
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        @csrf
+    </form>
 
-        
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
-            updateDate();
+            // Mobile menu toggle
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    document.querySelector('.sidebar').classList.toggle('active');
+                });
+            }
             
+            // Auto-submit form when filters change
+            const classSelect = document.getElementById('class-select');
+            const dateFrom = document.getElementById('date-from');
+            const dateTo = document.getElementById('date-to');
             
-            document.getElementById('present-count').textContent = '25';
-            document.getElementById('absent-count').textContent = '3';
-            document.getElementById('late-count').textContent = '2';
-            document.getElementById('total-classes').textContent = '45';
+            if (classSelect) {
+                classSelect.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            }
             
+            if (dateFrom) {
+                dateFrom.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            }
             
-            document.querySelector('.search-button').addEventListener('click', function() {
-                const searchValue = document.querySelector('.search-bar').value;
-                console.log('Searching for:', searchValue);
-            });
-            
-            
-            document.querySelector('.update-button').addEventListener('click', function() {
-                alert('Attendance records updated successfully!');
-            });
+            if (dateTo) {
+                dateTo.addEventListener('change', function() {
+                    this.form.submit();
+                });
+            }
         });
     </script>
 
-
+    <script src="{{ asset('js/logout.js') }}"></script>
 </body>
 </html>

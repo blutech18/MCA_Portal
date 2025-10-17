@@ -1,6 +1,7 @@
 <?php
 namespace App\Models;
 
+use App\Models\Strands;
 use Illuminate\Database\Eloquent\Model;
 
 class SchoolClass extends Model
@@ -30,7 +31,7 @@ class SchoolClass extends Model
 
     public function strand()
     {
-        return $this->belongsTo(Strand::class);
+        return $this->belongsTo(Strands::class);
     }
 
 

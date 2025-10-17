@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCA Montessori School - Schedule More</title>
-    <link rel="stylesheet" href="{{ asset('css/ins_class_schedmore.css') }}">
+    <link rel="stylesheet" href="{{ secure_asset('css/ins_class_schedmore.css') }}?v={{ time() }}">
     <link href="https://fonts.cdnfonts.com/css/garet" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1759179376">
                 
     
 </head>
@@ -15,7 +15,7 @@
         
         <div class="sidebar">
             <div class="logo-container">
-                <img src="logo.png" alt="MCA Montessori School" class="logo">
+                <img src="{{ asset('images/logo.png') }}?v={{ time() }}" alt="MCA Montessori School" class="logo">
                 <h2 class="school-name">MCA MONTESSORI SCHOOL</h2>
             </div>
             <nav class="sidebar-nav">
@@ -113,7 +113,7 @@
     </script>
 
 
-    <script src="{{ asset('js/script_instructor_schedule.js') }}"></script>
+    <script src="{{ secure_asset('js/script_instructor_schedule.js') }}?v={{ time() }}"></script>
     
 </body>
 </html>

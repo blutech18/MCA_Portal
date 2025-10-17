@@ -25,7 +25,7 @@
 
     <p>Thank you for submitting your online enrollment application. Below are your details and your new Student ID.</p>
 
-    <p><strong>Your Student ID:</strong> {{ $enrollee->application_number }}</p>
+    <p><strong>Your Student ID:</strong> {{ $studentNumber ?? $enrollee->application_number }}</p>
 
     <div class="summary">
       <h4>Application Summary</h4>
@@ -34,7 +34,7 @@
         <dd>{{ $enrollee->surname }}, {{ $enrollee->given_name }} {{ $enrollee->middle_name }}</dd>
 
         <dt>Strand / Track</dt>
-        <dd>{{ $enrollee->strand }}</dd>
+        <dd>{{ $enrollee->strand ?? 'N/A' }}</dd>
 
         <dt>Semester</dt>
         <dd>{{ $enrollee->semester }}</dd>
@@ -43,7 +43,13 @@
         <dd>{{ $enrollee->lrn }}</dd>
 
         <dt>Grade Level</dt>
-        <dd>{{ $enrollee->previous_grade }}</dd>
+        <dd>
+            @if($enrollee->shs_grade)
+                {{ $enrollee->shs_grade }}
+            @else
+                {{ $enrollee->previous_grade }}
+            @endif
+        </dd>
 
         <dt>School Year</dt>
         <dd>{{ now()->year }} – {{ now()->addYear()->year }}</dd>
@@ -55,7 +61,7 @@
         <dd>{{ $enrollee->email }}</dd>
 
         <dt>Payment Reference</dt>
-        <dd>{{ $enrollee->payment_reference }}</dd>
+        <dd>{{ $enrollee->payment_reference ?? 'CASH' }}</dd>
 
         <dt>Date Submitted</dt>
         <dd>{{ $enrollee->created_at->format('F j, Y') }}</dd>

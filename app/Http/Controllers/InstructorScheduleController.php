@@ -26,14 +26,16 @@ class InstructorScheduleController extends Controller
             ->join('grade_level', 'classes.grade_level_id', '=', 'grade_level.grade_level_id')
             ->join('section', 'classes.section_id', '=', 'section.id')
             ->select([
+                'classes.name as class_name',
                 'classes.code as code',
-                'subjects.name as subject',
+                'subjects.name as subject_name',
                 'grade_level.name as grade',
                 'section.section_name as section',
                 'schedules.day_of_week as day',
-                'schedules.start_time as start',
-                'schedules.end_time as end',
+                'schedules.start_time as start_time',
+                'schedules.end_time as end_time',
                 'schedules.room as room',
+                DB::raw('ROUND(TIME_TO_SEC(TIMEDIFF(schedules.end_time, schedules.start_time))/3600, 2) as duration'),
             ])
             ->where('instructor_classes.instructor_id', $instructor->instructor_id)
             ->get();

@@ -1,3 +1,4 @@
+/* MCA Portal CSS - Version: 2025-09-29 22:56:16 - Cache Busted */
 
 body {
     font-family: 'Arial', sans-serif;
@@ -176,6 +177,35 @@ body {
   .cancel-btn {
     background: gray;
     color: white;
+  }
+
+  /* Enhanced empty state */
+  .no-documents-container {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 2px dashed #cbd5e1;
+  }
+
+  .no-documents-icon {
+    font-size: 64px;
+    color: #94a3b8;
+    margin-bottom: 20px;
+  }
+
+  .no-documents {
+    font-size: 18px;
+    color: #475569;
+    margin: 10px 0;
+    font-weight: 500;
+  }
+
+  .no-documents-hint {
+    font-size: 14px;
+    color: #64748b;
+    margin-top: 8px;
   }
   
   

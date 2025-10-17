@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Strand;
+use App\Models\Strands;
 use App\Models\Subject;
 use App\Models\Enrollment;
 use App\Models\SchoolClass;
+use App\Models\Student; 
 use Illuminate\Http\Request;
 use App\Models\StudentSection;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ class ChartController extends Controller
     {
         // ————————————————————————————————
         // Chart data (as you already have)
-        $strands  = Strand::all();
+        $strands  = Strands::all();
         $labels   = $strands->pluck('name');              // e.g. ["STEM", "ABM", …]
         $sections = $strands->pluck('no_of_sections');
         $classes = SchoolClass::with('subject')->get();    // e.g. [3, 5, …]
@@ -26,26 +27,24 @@ class ChartController extends Controller
         // User counts
         $users = User::all();
 
-        // Students
-        $studentCount = $users
-            ->where('user_type', 'student')
-            ->count();
+        // Students (count from students table so accepted enrollees appear)
+        $studentCount = Student::count();
 
         // Instructors (exclude your admin account)
         $instructorCount = $users
             ->where('user_type', 'faculty')             // or 'instructor' if that's your code
-            ->reject(fn($u) => $u->username === 'admin_mca' || $u->name === 'Administrator')
+            ->reject(fn($u) => $u->username === 'admin_mca' || ($u->name && $u->name === 'Administrator'))
             ->count();
 
         // Total
         $totalCount = $studentCount + $instructorCount;
 
-        $strands = Strand::all();
+        $strands = Strands::all();
         $labels   = $strands->pluck('name');
         $sections = $strands->pluck('no_of_sections');
 
-        // 2) count students / instructors (your existing logic)…
-        $studentCount    = User::where('user_type','student')->count();
+        // 2) count students / instructors (students from students table)
+        $studentCount    = Student::count();
         $instructorCount = User::where('user_type','instructor')
                                 ->whereNotIn('username',['admin_mca'])
                                 ->count();
@@ -67,16 +66,29 @@ class ChartController extends Controller
 
             // Group by grade level and strand, and count the sections
             $juniorSections = $sections->filter(function($section) {
-                return $section->gradeLevel->name <= 10;  // Assuming junior high is grades 1-10
+                if (!$section->gradeLevel || !$section->gradeLevel->name) {
+                    return false;
+                }
+                // Extract numeric part from grade level name (e.g., "Grade 7" -> 7, "7" -> 7)
+                $gradeNumber = (int)filter_var($section->gradeLevel->name, FILTER_SANITIZE_NUMBER_INT);
+                return $gradeNumber >= 7 && $gradeNumber <= 10;  // Junior high is grades 7-10
             });
 
             $seniorSections = $sections->filter(function($section) {
-                return $section->gradeLevel->name >= 11;  // Assuming senior high is grades 11-12
+                if (!$section->gradeLevel || !$section->gradeLevel->name) {
+                    return false;
+                }
+                // Extract numeric part from grade level name (e.g., "Grade 11" -> 11, "11" -> 11)
+                $gradeNumber = (int)filter_var($section->gradeLevel->name, FILTER_SANITIZE_NUMBER_INT);
+                return $gradeNumber >= 11 && $gradeNumber <= 12;  // Senior high is grades 11-12
             });
             
 
             // Prepare data for charts
             $juniorLabels = $juniorSections
+                ->filter(function($section) {
+                    return $section->gradeLevel && $section->gradeLevel->name;
+                })
                 ->pluck('gradeLevel.name')  // e.g. Collection ['7', '8',  '7', ...]
                 ->unique()                  // keeps only ['7','8']
                 ->values()                  // re-indexes to [0=>'7',1=>'8']
@@ -84,13 +96,25 @@ class ChartController extends Controller
 
             $juniorData = collect($juniorLabels)
                 ->map(fn($label) => 
-                    $juniorSections->where('gradeLevel.name', $label)->count()
+                    $juniorSections->filter(function($section) use ($label) {
+                        return $section->gradeLevel && $section->gradeLevel->name == $label;
+                    })->count()
                 )
                 ->toArray();
 
-            $seniorLabels = $seniorSections->pluck('strand.name')->unique()->values()->toArray();
+            $seniorLabels = $seniorSections
+                ->filter(function($section) {
+                    return $section->strand && $section->strand->name;
+                })
+                ->pluck('strand.name')
+                ->unique()
+                ->values()
+                ->toArray();
+                
             $seniorData = collect($seniorLabels)->map(function($label) use ($seniorSections) {
-                return $seniorSections->where('strand.name', $label)->count();
+                return $seniorSections->filter(function($section) use ($label) {
+                    return $section->strand && $section->strand->name == $label;
+                })->count();
             })->values()->toArray();
         
             return view('admin_dashboard', compact(

@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Progress Report Card</title>
-  <link rel="stylesheet" href="{{ asset('css/styles-subjects.css') }}">
+  <link rel="stylesheet" href="{{ secure_asset('css/styles-subjects.css') }}?v={{ time() }}">
 </head>
 <body>
   <div class="dashboard-container">
     <!-- Sidebar -->
     <aside class="sidebar">
-      <img src="{{ asset('images/schoollogo.png') }}" alt="School Logo" class="logo">
+      <img src="{{ secure_asset('images/schoollogo.png') }}?v={{ time() }}" alt="School Logo" class="logo">
       <h2>MCA Montessori School</h2>
       <nav class="menu">
         <ul>
@@ -35,11 +35,11 @@
           <h3>My Subjects</h3>
         </div>
         <div class="profile">
-          <img src="{{asset('images/me.jpg')}}" alt="User" class="user-img">
+          <img src="{{ secure_asset('images/me.jpg') }}?v={{ time() }}" alt="User" class="user-img">
           <span class="name"><strong> {{ Auth::user()->name }} </strong></span>
           <span class="grade">Grade 12</span>
-          <img src="{{asset('images/bell.png')}}" alt="Notifications" class="icon">
-          <img src="{{asset('images/settings.png')}}" alt="Settings" class="icon">
+          <img src="{{ secure_asset('images/bell.png') }}?v={{ time() }}" alt="Notifications" class="icon">
+          <img src="{{ secure_asset('images/settings.png') }}?v={{ time() }}" alt="Settings" class="icon">
         </div>
       </header>
 
@@ -77,7 +77,7 @@
     </main>
   </div>
 
-  <script src="{{asset('js/logout.js')}}"></script>
+  <script src="{{ secure_asset('js/logout.js') }}?v={{ time() }}"></script>
 
 </body>
 </html>

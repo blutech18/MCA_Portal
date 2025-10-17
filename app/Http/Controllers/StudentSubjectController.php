@@ -11,20 +11,34 @@ class StudentSubjectController extends Controller
 {
     public function subjects()
     {
-        $student = Student::where('user_id', Auth::id())->first();
-
-        if (!$student) {
-            return redirect()->back()->with('error', 'Student not found.');
+        if (!Auth::check()) {
+            return redirect()->route('login');
         }
 
-        $section = $student->section;
+        $student = Student::with(['section','gradeLevel','studentID'])
+            ->where('user_id', Auth::id())
+            ->first();
 
-        $classes = SchoolClass::where('section_id', $section->id)
-                    ->with(['subject', 'schedules'])
-                    ->get();
+        if (!$student) {
+            // Return view with empty data instead of redirect to avoid loops
+            return view('student_subjects', [
+                'student' => null,
+                'classes' => collect(),
+            ]);
+        }
+
+        $section = $student->section; // may be null
+
+        $classes = collect();
+        if ($section) {
+            $classes = SchoolClass::where('section_id', $section->id)
+                ->with(['subject', 'schedules'])
+                ->get();
+        }
        
 
         return view('student_subjects', compact(
+            'student',
             'classes'
         ));
     }

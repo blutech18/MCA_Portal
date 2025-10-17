@@ -27,7 +27,8 @@ class Instructor extends Model
       'email',
       'address',
       'job_start_date',
-      'status'
+      'status',
+      'advisory_section_id'
     ];
 
     public function schoolId()
@@ -68,7 +69,54 @@ class Instructor extends Model
                     ->with(['class.gradeLevel','class.strand','class.section']);
     }
 
+    public function advisorySection()
+    {
+        return $this->belongsTo(StudentSection::class, 'advisory_section_id', 'id')
+                    ->with(['gradeLevel', 'strand']);
+    }
 
+    /**
+     * Get the full name of the instructor
+     * Format: "First Name Middle Name Last Name Suffix"
+     */
+    public function getFullNameAttribute()
+    {
+        return ucwords(trim("{$this->first_name} {$this->middle_name} {$this->last_name} {$this->suffix}"));
+    }
+
+    /**
+     * Get the standardized display name for the instructor
+     * Format: "Last Name, First Name Middle Name"
+     */
+    public function getDisplayNameAttribute()
+    {
+        $name = trim("{$this->last_name}, {$this->first_name}");
+        
+        if (!empty($this->middle_name)) {
+            $name .= " {$this->middle_name}";
+        }
+        
+        if (!empty($this->suffix)) {
+            $name .= " {$this->suffix}";
+        }
+        
+        return ucwords($name);
+    }
+
+    /**
+     * Get the short display name (First Name Last Name)
+     * Used for profile displays and cards
+     */
+    public function getShortNameAttribute()
+    {
+        $name = trim("{$this->first_name} {$this->last_name}");
+        
+        if (!empty($this->suffix)) {
+            $name .= " {$this->suffix}";
+        }
+        
+        return ucwords($name);
+    }
 
 }
 

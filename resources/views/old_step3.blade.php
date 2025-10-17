@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MCA Montessori School Clearances - Existing Students</title>
+  <link rel="stylesheet" href="{{ asset('css/mobile-compatibility.css') }}">
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
@@ -632,7 +633,8 @@ button[disabled] {
             </div>
         </div>
   
-        <form id="clearanceForm" action="#" method="post">
+        <form id="clearanceForm" action="{{ route('enroll.old.step3.post') }}" method="post">
+          @csrf
             <h2>STEP 3. CLEARANCES</h2>
             
             <div class="message-section">
@@ -736,13 +738,33 @@ button[disabled] {
             </div>
             
             <div class="button-group">
-                <button type="button" class="back-button" onclick="window.location.href='{{ url()->previous() }}'">Back</button>
+                <button type="button" class="back-button" onclick="handleBackButton(event)">Back</button>
                 <button type="submit" id="nextButton" disabled>Next</button>
             </div>
         </form>
     </div>
 
+    <!-- Mobile Compatibility Script -->
+    <script src="{{ asset('js/mobile-compatibility.js') }}"></script>
+    
     <script>
+        // Global back button function
+        function handleBackButton(event) {
+            // Prevent default button behavior
+            if (event) {
+                event.preventDefault();
+            }
+            
+            // Check if there's a previous page in history and it's not the current page
+            if (window.history.length > 1 && document.referrer && document.referrer !== window.location.href) {
+                window.history.back();
+            } else {
+                // Fallback to route navigation
+                window.location.href = '{{ route('enroll.old.step2') }}';
+            }
+            return false;
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Set progress indicator to step 3
             setProgress(3);
@@ -803,12 +825,21 @@ button[disabled] {
             
             // Enable/disable the Next button based on clearance status
             function checkAllClearances() {
-                if (areAllRequiredCheckboxesChecked()) {
-                    nextButton.disabled = false;
+                const allChecked = areAllRequiredCheckboxesChecked();
+                nextButton.disabled = !allChecked;
+                
+                // Update button styling based on state
+                if (allChecked) {
+                    nextButton.style.backgroundColor = '#7a222b';
+                    nextButton.style.cursor = 'pointer';
                 } else {
-                    nextButton.disabled = true;
+                    nextButton.style.backgroundColor = '#d1a1a6';
+                    nextButton.style.cursor = 'not-allowed';
                 }
             }
+
+            // Initial validation check on page load
+            checkAllClearances();
             
             // Set progress indicator
             function setProgress(stepNumber) {
@@ -827,6 +858,30 @@ button[disabled] {
                     accountingCheckbox.dispatchEvent(new Event('change'));
                 }
             }, 1000);
+            
+            
+            // Handle browser back button
+            window.addEventListener('popstate', function(event) {
+                // Allow browser back button to work naturally
+                if (event.state && event.state.step) {
+                    // Handle step navigation if needed
+                }
+                // Re-validate form state immediately after navigation
+                checkAllClearances();
+            });
+
+            // Handle page visibility change (when user navigates back/forward)
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    // Page is now visible, re-validate form state immediately
+                    checkAllClearances();
+                }
+            });
+
+            // Also handle window focus for immediate response
+            window.addEventListener('focus', function() {
+                checkAllClearances();
+            });
         });
     </script>
 </body>

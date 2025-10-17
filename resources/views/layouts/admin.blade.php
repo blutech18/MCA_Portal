@@ -4,13 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin - Classes</title>
-  <link rel="stylesheet" href="{{ asset('css/style_admin_courses.css') }}">
 </head>
 <body>
     <div class="dashboard-container">
         <!-- Sidebar -->
         <aside class="sidebar">
-        <img src="{{ asset('images/schoollogo.png') }}" alt="School Logo" class="logo">
+        <img src="{{ secure_asset('images/schoollogo.png') }}?v={{ time() }}" alt="School Logo" class="logo">
         <h2>MCA Montessori School</h2>
         <nav class="menu">
           <ul>
@@ -21,11 +20,12 @@
               <ul class="submenu hidden">
                 <li><a href="{{ route('admin.instructors') }}" class="{{ Route::currentRouteName() == 'admin.instructors' ? 'active' : '' }}">All Instructors</a></li>
                 <li><a href="{{ route('admin.subjects') }}" class="{{ Route::currentRouteName() == 'admin.subjects' ? 'activee' : '' }}">Subjects</a></li>
-                <li><a href="{{ route('admin.courses.index') }}" class="{{ Route::currentRouteName() == 'admin.courses.index' ? 'active' : '' }}">Courses</a></li>
               </ul>
             </li>
             <li><a href="{{ route('admin.classes') }}" class="{{ Route::currentRouteName() == 'admin.classes' ? 'active' : '' }}">Students & Sections</a></li>
             <li><a href="{{ route('admin.enrollees') }}" class="{{ Route::currentRouteName() == 'admin.enrollees' ? 'active' : '' }}">Enrollees</a></li>
+            <li><a href="{{ route('admin.declined.enrollees') }}" class="{{ Route::currentRouteName() == 'admin.declined.enrollees' ? 'active' : '' }}">Declined Enrollees</a></li>
+            <li><a href="{{ route('admin.archive') }}" class="{{ Route::currentRouteName() == 'admin.archive' ? 'active' : '' }}">Archive</a></li>
           </ul>
         </nav>
         </aside>
@@ -35,8 +35,8 @@
           <header class="top-bar">
             <div class="welcome"><h3>Manage Enrollees</h3></div>
             <div class="user-info">
-              <img src="{{ asset('images/bell.png') }}" alt="Notifications" class="icon">
-              <img src="{{ asset('images/settings.png') }}" alt="Settings" class="icon">
+              <img src="{{ secure_asset('images/bell.png') }}?v={{ time() }}" alt="Notifications" class="icon">
+              <img src="{{ secure_asset('images/settings.png') }}?v={{ time() }}" alt="Settings" class="icon">
             </div>
           </header> 
         
@@ -56,7 +56,7 @@
       });
     </script>
 
-    <script src="{{ asset('js/script_admin_course.js') }}"></script>
+    
     
     <script>
       function toggleSubMenu(event) {
@@ -66,7 +66,7 @@
         }
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js?v=1759179376"></script>
 
 </body>
 </html>

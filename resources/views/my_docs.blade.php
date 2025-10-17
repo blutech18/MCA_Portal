@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Documents</title>
-  <link rel="stylesheet" href="{{ asset('css/styles-docs.css') }}">
+  <link rel="stylesheet" href="{{ secure_asset('css/styles-docs.css') }}?v={{ time() }}">
 </head>
 <body>
   <div class="dashboard-container">
     <!-- Sidebar -->
     <aside class="sidebar">
-      <img src="{{ asset('images/schoollogo.png') }}" alt="School Logo" class="logo">
+      <img src="{{ secure_asset('images/schoollogo.png') }}?v={{ time() }}" alt="School Logo" class="logo">
       <h2>MCA Montessori School</h2>
       <nav class="menu">
         <ul>
@@ -35,11 +35,11 @@
           <h3>Important Documents</h3>
         </div>
         <div class="profile">
-          <img src="{{asset('images/me.jpg')}}" alt="User" class="user-img">
+          <img src="{{ secure_asset('images/me.jpg') }}?v={{ time() }}" alt="User" class="user-img">
           <span class="name"><strong> {{ Auth::user()->name }} </strong></span>
           <span class="grade">Grade 12</span>
-          <img src="{{asset('images/bell.png')}}" alt="Notifications" class="icon">
-          <img src="{{asset('images/settings.png')}}" alt="Settings" class="icon">
+          <img src="{{ secure_asset('images/bell.png') }}?v={{ time() }}" alt="Notifications" class="icon">
+          <img src="{{ secure_asset('images/settings.png') }}?v={{ time() }}" alt="Settings" class="icon">
         </div>
       </header>
 
@@ -49,7 +49,7 @@
         <div class="docs-container">
             <div class="docs-card">
                 <!-- You can conditionally display the image and status -->
-                <img src="{{ asset('images/form-138.png') }}" alt="Form 138">
+                <img src="{{ secure_asset('images/form-138.png') }}?v={{ time() }}" alt="Form 138">
                 @php
                     // Retrieve document record for this student and type 'Form 138'
                     $doc = \App\Models\Document::where('user_id', Auth::id())
@@ -77,7 +77,7 @@
             </div>
             
             <div class="docs-card">
-                <img src="{{ asset('images/psa.png') }}" alt="PSA">
+                <img src="{{ secure_asset('images/psa.png') }}?v={{ time() }}" alt="PSA">
                 @php
                     // Retrieve document record for this student and type 'Form 138'
                     $doc = \App\Models\Document::where('user_id', Auth::id())
@@ -119,7 +119,7 @@
     </main>
   </div>
 
-  <script src="{{asset('js/logout.js')}}"></script>
+  <script src="{{ secure_asset('js/logout.js') }}?v={{ time() }}"></script>
 
 </body>
 </html>

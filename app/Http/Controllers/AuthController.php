@@ -35,6 +35,17 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+        // Normalize username (our system creates lowercase usernames)
+        $credentials['username'] = strtolower(trim($credentials['username']));
+
+        // If another user is already authenticated and it's a different username, switch account
+        if (Auth::check() && strtolower(Auth::user()->username) !== $credentials['username']) {
+            Log::debug('[LOGIN] Switching account from ' . Auth::user()->username . ' to ' . $credentials['username']);
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             $type = Auth::user()->user_type;

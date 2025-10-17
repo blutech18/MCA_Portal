@@ -5,13 +5,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard</title>
-  <link rel="stylesheet" href="{{ asset('css/styles_admin_users.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/styles_admin_users.css') }}?v={{ time() }}">
 </head>
 <body>
   <div class="dashboard-container">
     <!-- Sidebar -->
     <aside class="sidebar">
-      <img src="{{ asset('images/schoollogo.png') }}" alt="School Logo" class="logo">
+      <img src="{{ asset('images/schoollogo.png') }}?v={{ time() }}" alt="School Logo" class="logo">
       <h2>MCA Montessori School</h2>
       <nav class="menu">
         <ul>
@@ -22,11 +22,12 @@
             <ul class="submenu hidden">
               <li><a href="{{ route('admin.instructors') }}" class="{{ Route::currentRouteName() == 'admin.instructors' ? 'active' : '' }}">All Instructors</a></li>
               <li><a href="{{ route('admin.subjects') }}" class="{{ Route::currentRouteName() == 'admin.subjects' ? 'active' : '' }}">Subjects</a></li>
-              <li><a href="{{ route('admin.courses.index') }}" class="{{ Route::currentRouteName() == 'admin.courses.index' ? 'active' : '' }}">Courses</a></li>
             </ul>
           </li>
           <li><a href="{{ route('admin.classes') }}" class="{{ Route::currentRouteName() == 'admin.classes' ? 'active' : '' }}">Students & Sections</a></li>
-          <li><a href="{{ route('admin.enrollees') }}" class="{{ Route::currentRouteName() == 'admin.enrollees' ? 'active' : '' }}">Enrollees</a></li>
+            <li><a href="{{ route('admin.enrollees') }}" class="{{ Route::currentRouteName() == 'admin.enrollees' ? 'active' : '' }}">Enrollees</a></li>
+            <li><a href="{{ route('admin.declined.enrollees') }}" class="{{ Route::currentRouteName() == 'admin.declined.enrollees' ? 'active' : '' }}">Declined Enrollees</a></li>
+            <li><a href="{{ route('admin.archive') }}" class="{{ Route::currentRouteName() == 'admin.archive' ? 'active' : '' }}">Archive</a></li>
         </ul>
       </nav>
        
@@ -39,7 +40,7 @@
           <h3> Manage Users</h3>
         </div>
         <div class="user-info">
-          <img src="{{ asset('images/settings.png') }}" class="icon" id="settingsToggle">
+          <img src="{{ asset('images/settings.png') }}?v={{ time() }}" class="icon" id="settingsToggle">
           <div class="dropdown-menu" id="settingsMenu">
             <button class="dropdown-item" onclick="confirmExit()">
               <svg class="dropdown-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -59,7 +60,7 @@
     </main>
   </div>
 
-  <script src="{{asset('js/logout.js')}}"></script>
+  <script src="{{ asset('js/logout.js') }}?v={{ time() }}"></script>
 
   <script>
     function toggleSubMenu(event) {

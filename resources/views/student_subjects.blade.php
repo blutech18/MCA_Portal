@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCA Montessori School - My Subjects</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1759179376">
     
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -1118,33 +1118,33 @@ body {
                         </div>
                     </div>
                     <div class="user-profile">
-                        <img src="{{asset ('images/student_user.png')}}" alt="Krystal Mendez" class="profile-pic">
+                        <img src="{{ asset(optional($student)->picture ? 'storage/'.optional($student)->picture : 'images/student_user.png') }}" alt="{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}" class="profile-pic">
                         <div class="user-info">
-                            <h3>Krystal Mendez</h3>
-                            <p>Grade 12</p>
+                            <h3>{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}</h3>
+                            <p>{{ optional(optional($student)->gradeLevel)->name ?? '—' }}</p>
                         </div>
                         <div class="mini-profile">
                             <div class="mini-profile-header">
-                                <img src="{{asset ('images/student_user.png')}}" alt="Krystal Mendez" class="mini-profile-pic">
-                                <h3 class="mini-profile-name">Krystal Mendez</h3>
-                                <p>Student ID: STU-12-4875</p>
+                                <img src="{{ asset(optional($student)->picture ? 'storage/'.optional($student)->picture : 'images/student_user.png') }}" alt="{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}" class="mini-profile-pic">
+                                <h3 class="mini-profile-name">{{ optional($student)->short_name ?? (Auth::user()->name ?? 'Student') }}</h3>
+                                <p>Student ID: {{ optional(optional($student)->studentID)->student_number ?? (optional($student)->school_student_id ?? '—') }}</p>
                                                         </div>
                                 <div class="mini-profile-details">
                                     <div class="detail-row">
-                                        <div class="detail-label">Year Level:</div>
-                                        <div class="detail-value">Grade 12</div>
+                                        <div class="detail-label">Grade Level:</div>
+                                        <div class="detail-value">{{ optional(optional($student)->gradeLevel)->name ?? '—' }}</div>
                                     </div>
                                     <div class="detail-row">
                                         <div class="detail-label">Section:</div>
-                                        <div class="detail-value">Wisdom</div>
+                                        <div class="detail-value">{{ optional(optional($student)->section)->section_name ?? '—' }}</div>
                                     </div>
                                     <div class="detail-row">
                                         <div class="detail-label">Adviser:</div>
-                                        <div class="detail-value">Ms. Christine Santos</div>
+                                        <div class="detail-value">{{ optional($student)->adviser_name ?? '—' }}</div>
                                     </div>
                                     <div class="detail-row">
                                         <div class="detail-label">Email:</div>
-                                        <div class="detail-value">krystal.mendez@student.mca.edu</div>
+                                        <div class="detail-value">{{ optional($student)->email ?? (Auth::user()->email ?? '—') }}</div>
                                     </div>
                                 </div>
                             <div class="mini-profile-footer">
@@ -1176,7 +1176,7 @@ body {
                                 ->implode(' | ');
                             // Prepare instructor list
                             $instructors = $class->instructors
-                                ->map(fn($i) => "{$i->first_name} {$i->last_name}")
+                                ->map(fn($i) => $i->short_name)
                                 ->implode(', ');
                         @endphp
 
@@ -1216,7 +1216,7 @@ body {
                                 )
                                 ->implode(' | ');
                             $instructors = $class->instructors
-                                ->map(fn($i) => "{$i->first_name} {$i->last_name}")
+                                ->map(fn($i) => $i->short_name)
                                 ->implode(', ');
                         @endphp
                         <div class="subject-list-item">

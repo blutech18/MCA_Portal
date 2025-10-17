@@ -1,3 +1,4 @@
+/* MCA Portal JS - Version: 2025-09-29 22:56:16 - Cache Busted */
 // Show modal with overlay
 document.getElementById('add-subject-btn').addEventListener('click', function() {
   document.getElementById('overlay').style.display = 'block';
@@ -64,4 +65,33 @@ sortSelect.addEventListener('change', () => {
 
     // Re-append sorted items
     itemsArray.forEach(item => subjectList.appendChild(item));
+});
+
+// Handle Reset to Default Subjects button
+document.getElementById('reset-default-btn').addEventListener('click', function() {
+    if (confirm('This will assign all default subjects to all students. Are you sure you want to continue?')) {
+        // Get the reset URL from data attribute
+        const resetUrl = this.getAttribute('data-reset-url');
+        if (!resetUrl) {
+            console.error('Reset URL not found');
+            return;
+        }
+        
+        // Create a form to submit the reset request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = resetUrl;
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        // Submit the form
+        document.body.appendChild(form);
+        form.submit();
+    }
 });

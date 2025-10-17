@@ -12,12 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('enrollments', function (Blueprint $table) {
+            // Add missing columns first
+            $table->unsignedBigInteger('student_id')->nullable();
+            $table->unsignedBigInteger('class_id')->nullable();
+            
+            // Then add foreign keys
             $table->foreign('student_id')
                   ->references('student_id')
                   ->on('students')
                   ->cascadeOnDelete();
 
-            // 2) class_id → classes.id
             $table->foreign('class_id')
                   ->references('id')
                   ->on('classes')

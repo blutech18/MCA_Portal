@@ -1,3 +1,4 @@
+/* MCA Portal JS - Version: 2025-09-29 22:56:16 - Cache Busted */
 function updateDate() {
   const now = new Date();
   const options = { year: 'numeric', month: 'long', day: 'numeric' };

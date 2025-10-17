@@ -1,3 +1,4 @@
+/* MCA Portal JS - Version: 2025-09-29 22:56:16 - Cache Busted */
 document.addEventListener('DOMContentLoaded', function() {
     // Mobile sidebar toggle functionality
     const addMobileSidebarToggle = () => {
@@ -648,6 +649,45 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         document.head.appendChild(darkThemeStyles);
     }
+
+    // Lightweight polling for real-time grades (if grades container exists)
+    const gradesContainer = document.querySelector('#student-grades-container');
+    const studentIdMeta = document.querySelector('meta[name="student-id"]');
+    const studentId = studentIdMeta ? studentIdMeta.getAttribute('content') : null;
+
+    async function fetchLatestGrades() {
+        if (!gradesContainer || !studentId) return;
+        try {
+            const res = await fetch('/api/student/grades?student_id=' + encodeURIComponent(studentId), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await res.json();
+            if (data && data.success && Array.isArray(data.grades)) {
+                renderGrades(data.grades);
+            }
+        } catch (e) {
+            // Ignore transient errors
+        }
+    }
+
+    function renderGrades(grades) {
+        // Expect a simple list render; adjust selectors to real markup as needed
+        const list = document.createElement('div');
+        list.className = 'grades-live-list';
+        list.innerHTML = grades.map(g => `
+            <div class="grade-card">
+                <div class="grade-card-row"><strong>Subject:</strong> ${g.subject_name || ''}</div>
+                <div class="grade-card-row"><strong>Q1:</strong> ${g.first_quarter ?? '-'} | <strong>Q2:</strong> ${g.second_quarter ?? '-'} | <strong>Q3:</strong> ${g.third_quarter ?? '-'} | <strong>Q4:</strong> ${g.fourth_quarter ?? '-'}</div>
+                <div class="grade-card-row"><strong>Final:</strong> ${g.final_grade ?? '-'} <span style="margin-left:8px;opacity:.7;">${g.updated_at || ''}</span></div>
+            </div>
+        `).join('');
+        gradesContainer.innerHTML = '';
+        gradesContainer.appendChild(list);
+    }
+
+    // Initial fetch and interval refresh every 5s for near real-time updates
+    fetchLatestGrades();
+    setInterval(fetchLatestGrades, 5000);
 
     
     

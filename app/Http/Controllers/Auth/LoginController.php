@@ -26,9 +26,9 @@ class LoginController extends Controller
         $user = Auth::user();
 
         if ($user->user_type === 'instructor') {
-            return '/instructor/instructor/dashboard';
+            return '/instructor/dashboard';
         } elseif ($user->user_type === 'student') {
-            return '/student/student/dashboard';
+            return '/student/dashboard';
         }
 
         // Default fallback

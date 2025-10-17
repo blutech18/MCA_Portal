@@ -5,17 +5,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login Form MCA</title>
-  <link rel="stylesheet" href="{{ asset('css/styles_login.css') }}">
+  <link rel="stylesheet" href="{{ secure_asset('css/styles_login.css') }}?v={{ time() }}">
 </head>
 <body>
   <div class = "bg-container">
     <div class="building">
-      <img src="{{ asset('images/bglogin.jpg') }}" alt="Building" class="building-pic">
+      <img src="{{ secure_asset('images/bglogin.jpg') }}?v={{ time() }}" alt="Building" class="building-pic">
     </div>
     
     <div class="wrapper">
         <div class="reset-form">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="logo">
+            <img src="{{ secure_asset('images/logo.png') }}?v={{ time() }}" alt="Logo" class="logo">
             <h1>MCA MONTESORRI SCHOOL</h1>
         </div>
         
@@ -24,7 +24,7 @@
     </div>
   </div>
   
-  <script src="{{ asset('js/script.js') }}"></script>
+  <script src="{{ secure_asset('js/script.js') }}?v={{ time() }}"></script>
 
 </body>
 </html>

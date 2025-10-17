@@ -30,12 +30,7 @@
                   <li><a href="{{ route('instructor.report') }}" class="nav-item">GRADE REPORTS</a></li>
                   <li><a href="{{ route('instructor.announcement') }}" class="nav-item">ANNOUNCEMENTS</a></li>
               </ul>
-              <div class="logout">
-                  <a href="javascript:void(0)" class="nav-item" onclick="confirmExit()">LOGOUT</a>
-                  <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                      @csrf
-                  </form>
-              </div>  
+              <!-- Logout moved to header -->  
           </nav>
           
       </div>
@@ -55,13 +50,16 @@
                 <div class="user-profile">
                     <img src="{{ asset('images/instructor_user.png') }}" alt="User Profile" class="profile-pic">
                     <div class="user-info">
-                        <p class="user-name">{{ $instructor->first_name }} {{ $instructor->last_name }}</p>
+                        <p class="user-name">{{ $instructor->short_name }}</p>
                         <p class="user-grade">INSTRUCTOR</p>
                     </div>
                 </div>
                 <div class="icons">
                     <a href="#" class="icon-link"><img src="{{ asset('images/bell.png') }}" alt="Notifications" class="icon"></a>
                     <a href="#" class="icon-link"><img src="{{ asset('images/settings.png') }}" alt="Settings" class="icon"></a>
+                    <a href="javascript:void(0)" class="icon-link logout-btn" onclick="confirmExit()" title="Logout">
+                        <i class="fas fa-sign-out-alt" style="font-size: 20px; color: #1A2B49;"></i>
+                    </a>
                 </div>
               </div>
             </div>
@@ -116,7 +114,7 @@
                           @if ($students && $students->count())
                             <div class="student-list">
                               @foreach ($students as $student)
-                                <span class="student-badge">{{ $student->first_name }} {{ $student->last_name }}</span>
+                                <span class="student-badge">{{ $student->short_name }}</span>
                               @endforeach
                             </div>
                           @else
@@ -140,6 +138,11 @@
                     <button class="cancel-btn" onclick="closeModal()">No</button>
                 </div>
             </div>
+            
+            <!-- Hidden logout form -->
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                @csrf
+            </form>
         </div>
     </div>
 

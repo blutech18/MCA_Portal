@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('core_value_evaluations', function (Blueprint $table) {
+        if (!Schema::hasTable('core_value_evaluations')) {
+            Schema::create('core_value_evaluations', function (Blueprint $table) {
              $table->id();
             $table->foreignId('student_id')->constrained('students','student_id')->cascadeOnDelete();
             $table->foreignId('core_value_id')->constrained('core_values')->cascadeOnDelete();
@@ -19,7 +20,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['student_id','core_value_id']);
-        });
+            });
+        }
     }
 
     /**

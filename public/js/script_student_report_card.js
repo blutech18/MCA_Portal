@@ -1,3 +1,4 @@
+/* MCA Portal JS - Version: 2025-09-29 22:56:16 - Cache Busted */
 document.addEventListener('DOMContentLoaded', function() {
     
     const mobileToggle = document.querySelector('.mobile-toggle');

@@ -36,12 +36,12 @@
         }
 
         .selection-container {
-          max-width: 600px;
+          max-width: 500px;
           width: 90%;
-          padding: 30px;
+          padding: 20px;
           background-color: rgba(244, 233, 234, 0.95);
-          border-radius: 10px;
-          box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+          border-radius: 8px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
           text-align: center;
         }
 
@@ -50,10 +50,10 @@
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: 30px;
-          padding: 20px;
+          margin-bottom: 20px;
+          padding: 15px;
           background-color: transparent;
-          border-radius: 10px;
+          border-radius: 8px;
           color: #7a222b;
           text-align: center;
         }
@@ -63,11 +63,11 @@
 }
 
 .school-logo img {
-    width: 90px;
-    height: 90px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%; 
     object-fit: cover; 
-    margin-right: 15px;
+    margin-right: 12px;
 }
 
 .school-name {
@@ -75,57 +75,57 @@
 }
 
 .school-name h2 {
-    font-size: 24px;
+    font-size: 20px;
     margin: 0;
 }
 
 .school-name p {
-    font-size: 14px;
+    font-size: 13px;
     margin: 0;
     color: #550404;
 }
 
         h3 {
           color: #5a1a20;
-          margin: 20px 0 15px;
-          padding-bottom: 8px;
+          margin: 15px 0 10px;
+          padding-bottom: 6px;
           font-weight: 600;
-          font-size: 18px;
+          font-size: 16px;
         }
 
         .selection-title {
-          margin-bottom: 30px;
+          margin-bottom: 20px;
         }
 
         .selection-title h3 {
           border-bottom: 2px solid #bd8c91;
           display: inline-block;
-          padding: 0 10px 8px;
+          padding: 0 8px 6px;
         }
 
         .button-container {
           display: flex;
           flex-direction: column;
-          gap: 20px;
-          max-width: 300px;
+          gap: 15px;
+          max-width: 280px;
           margin: 0 auto;
         }
 
         .selection-btn {
           display: block;
           width: 100%;
-          padding: 12px;
+          padding: 10px;
           background-color: #7a222b;
           color: #f4e9ea;
           border: none;
-          border-radius: 30px;
-          font-size: 16px;
+          border-radius: 25px;
+          font-size: 15px;
           font-weight: 600;
           cursor: pointer;
           transition: background-color 0.3s, transform 0.2s;
           text-transform: uppercase;
-          letter-spacing: 1px;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          letter-spacing: 0.5px;
+          box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
         }
 
         .selection-btn:hover {
@@ -139,8 +139,19 @@
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
+        .assessment-btn {
+          background-color: #4CAF50;
+          font-size: 16px;
+          padding: 12px;
+          margin-bottom: 15px;
+        }
+
+        .assessment-btn:hover {
+          background-color: #45a049;
+        }
+
         .back-btn {
-          margin-top: 40px;
+          margin-top: 25px;
           background-color: #bd8c91;
           color: #fff;
         }
@@ -152,31 +163,63 @@
         /* Responsive Design */
         @media (max-width: 768px) {
           .selection-container {
-            padding: 20px;
-            margin: 15px;
+            padding: 15px;
+            margin: 10px;
+            max-width: 400px;
           }
           
           .header {
             flex-direction: column;
             text-align: center;
-            padding: 15px 5px;
+            padding: 10px 5px;
+            margin-bottom: 15px;
           }
           
           .school-logo {
             margin-right: 0;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
           }
           
           .school-logo img {
-            max-width: 60px;
+            width: 60px;
+            height: 60px;
           }
           
           .school-name h2 {
-            font-size: 20px;
+            font-size: 18px;
           }
           
           .school-name p {
+            font-size: 12px;
+          }
+
+          h3 {
+            font-size: 15px;
+            margin: 12px 0 8px;
+          }
+
+          .selection-title {
+            margin-bottom: 15px;
+          }
+
+          .button-container {
+            gap: 12px;
+            max-width: 260px;
+          }
+
+          .selection-btn {
+            padding: 8px;
             font-size: 14px;
+          }
+
+          .assessment-btn {
+            font-size: 15px;
+            padding: 10px;
+            margin-bottom: 12px;
+          }
+
+          .back-btn {
+            margin-top: 20px;
           }
         }
 
@@ -223,21 +266,57 @@
 
         /* Additional Breakpoint for Very Small Screens */
         @media (max-width: 480px) {
+          .selection-container {
+            padding: 12px;
+            margin: 8px;
+            max-width: 350px;
+          }
+
+          .header {
+            padding: 8px 5px;
+            margin-bottom: 12px;
+          }
+
+          .school-logo img {
+            width: 50px;
+            height: 50px;
+          }
+
           .school-name h2 {
-            font-size: 18px;
+            font-size: 16px;
           }
           
           .school-name p {
-            font-size: 12px;
+            font-size: 11px;
           }
           
           .selection-btn {
-            padding: 10px;
-            font-size: 14px;
+            padding: 8px;
+            font-size: 13px;
           }
           
           h3 {
-            font-size: 16px;
+            font-size: 14px;
+            margin: 10px 0 6px;
+          }
+
+          .selection-title {
+            margin-bottom: 12px;
+          }
+
+          .button-container {
+            gap: 10px;
+            max-width: 240px;
+          }
+
+          .assessment-btn {
+            font-size: 14px;
+            padding: 9px;
+            margin-bottom: 10px;
+          }
+
+          .back-btn {
+            margin-top: 15px;
           }
         }
     </style>
@@ -257,7 +336,15 @@
         </div>
 
         <div class="selection-title">
-            <h3>Applying as:</h3>
+            <h3>Take Assessment First (Recommended)</h3>
+        </div>
+
+        <div class="button-container">
+            <button class="selection-btn assessment-btn" onclick="window.location.href='{{ route('strand.assessment') }}'">Take Strand Assessment</button>
+        </div>
+
+        <div class="selection-title">
+            <h3>Or Apply Directly:</h3>
         </div>
 
         <div class="button-container">
@@ -284,6 +371,35 @@
         
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Page loaded successfully');
+            
+            // Clear all cached data when user visits enrollment selection page
+            function clearAllCachedData() {
+                // Clear form data cache - use the correct cache key
+                localStorage.removeItem('new_step1_form_cache_v1');
+                localStorage.removeItem('new_step2_form_data');
+                localStorage.removeItem('new_step3_form_data');
+                localStorage.removeItem('old_step1_form_data');
+                localStorage.removeItem('old_step2_form_data');
+                localStorage.removeItem('old_step3_form_data');
+                
+                // Clear file caches
+                const newFileInputs = ['reportCard', 'goodMoral', 'birthCertificate', 'idPicture'];
+                newFileInputs.forEach(inputId => {
+                    localStorage.removeItem(`new_step2_${inputId}`);
+                });
+                localStorage.removeItem(`new_step3_receiptUpload`);
+                localStorage.removeItem(`old_step2_receiptUpload`);
+                
+                // Clear session data
+                sessionStorage.removeItem('new_enrollee_id');
+                sessionStorage.removeItem('old_enrollee_id');
+                sessionStorage.removeItem('enrollment_in_progress');
+                
+                console.log('All cached data cleared - fresh start');
+            }
+            
+            // Clear cached data when visiting selection page
+            clearAllCachedData();
         });
 
         function confirmExit() {

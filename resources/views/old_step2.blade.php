@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MCA Montessori School Payment - Existing Students</title>
+  <link rel="stylesheet" href="{{ asset('css/mobile-compatibility.css') }}">
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
@@ -682,7 +683,7 @@ button[disabled] {
                         </div>
                         <div>
                             <span class="label">Amount:</span> 
-                            <span>PHP 1,000.00</span>
+                            <span>{{ $currentFee->formatted_amount }}</span>
                         </div>
                     </div>
                 </div>
@@ -708,14 +709,14 @@ button[disabled] {
                                   id="fullName" 
                                   name="fullName" 
                                   class="form-control" 
-                                  value="{{ old('fullName', $enrollee->surname . ', ' . $enrollee->given_name) }}" 
+                                  value="{{ old('fullName', $enrollee->display_name) }}" 
                                   required>
                             <div class="validation-message" id="fullNameValidation">Please enter your full name</div>
                         </div>
                         
                         <div class="form-group">
                             <label for="paymentRef">Payment Reference Number <span class="required-mark">*Required</span></label>
-                            <input type="text" id="paymentRef" name="paymentRef" class="form-control" placeholder="Enter payment reference number" required>
+                            <input type="text" id="paymentRef" name="paymentRef" class="form-control" value="{{ old('paymentRef', $enrollee->payment_reference) }}" placeholder="Enter payment reference number" required>
                             <div class="validation-message" id="paymentRefValidation">Please enter the payment reference number</div>
                         </div>
                         
@@ -732,10 +733,21 @@ button[disabled] {
                                 </div>
                                 <p>Choose file or drag here</p>
                                 <small>Supported formats: JPG, PNG, PDF</small>
-                                <input type="file" id="receiptUpload" name="receiptUpload" accept=".jpg,.jpeg,.png,.pdf" required>
+                                <input type="file" id="receiptUpload" name="receiptUpload" accept=".jpg,.jpeg,.png,.pdf" {{ $enrollee->payment_receipt_path ? '' : 'required' }}>
                             </div>
                             <div class="validation-message" id="receiptValidation">Please upload your payment receipt</div>
                             <div class="receipt-preview" id="receiptPreview"></div>
+                            
+                            @if($enrollee->payment_receipt_path)
+                                <div class="existing-receipt" id="existingReceipt" style="background-color: #e8f5e8; padding: 15px; border-radius: 5px; margin-top: 10px;">
+                                    <h4 style="color: #2d5a2d; margin-bottom: 10px;">📄 Previously Uploaded Receipt</h4>
+                                    <p style="margin: 5px 0; word-break: break-all; overflow-wrap: break-word;"><strong>File:</strong> {{ basename($enrollee->payment_receipt_path) }}</p>
+                                    <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #2d5a2d;">✓ File Attached</span></p>
+                                    <button type="button" id="replaceReceiptBtn" style="background-color: #7a222b; color: white; border: none; padding: 8px 15px; border-radius: 3px; cursor: pointer; margin-top: 10px;">
+                                        Replace Receipt
+                                    </button>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -765,13 +777,33 @@ button[disabled] {
             </div>
             
             <div class="button-group">
-                <button type="button" class="back-button" onclick="window.location.href='{{ url()->previous() }}'">Back</button>
+                <button type="button" class="back-button" onclick="handleBackButton(event)">Back</button>
                 <button type="submit" id="nextButton" disabled>Next</button>
             </div>
         </form>
     </div>
 
+    <!-- Mobile Compatibility Script -->
+    <script src="{{ asset('js/mobile-compatibility.js') }}"></script>
+    
     <script>
+        // Global back button function
+        function handleBackButton(event) {
+            // Prevent default button behavior
+            if (event) {
+                event.preventDefault();
+            }
+            
+            // Check if there's a previous page in history and it's not the current page
+            if (window.history.length > 1 && document.referrer && document.referrer !== window.location.href) {
+                window.history.back();
+            } else {
+                // Fallback to route navigation
+                window.location.href = '{{ route('enroll.old.step1') }}';
+            }
+            return false;
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             
             setProgress(2);
@@ -793,6 +825,8 @@ button[disabled] {
                     validationMessage.style.display = 'none';
                     this.classList.remove('is-invalid');
                 }
+                // Cache form data on input
+                cacheUserInput();
                 checkAllFieldsFilled();
             });
             
@@ -806,6 +840,8 @@ button[disabled] {
                     validationMessage.style.display = 'none';
                     this.classList.remove('is-invalid');
                 }
+                // Cache form data on input
+                cacheUserInput();
                 checkAllFieldsFilled();
             });
             
@@ -819,19 +855,27 @@ button[disabled] {
                     validationMessage.style.display = 'none';
                     this.classList.remove('is-invalid');
                 }
+                // Cache form data on input
+                cacheUserInput();
                 checkAllFieldsFilled();
             });
             
             // Receipt upload validation
             receiptInput.addEventListener('change', function(e) {
+                console.log('File input changed, files:', e.target.files.length);
                 const file = e.target.files[0];
                 const previewContainer = document.getElementById('receiptPreview');
                 const validationMessage = document.getElementById('receiptValidation');
                 
                 if (file) {
+                    console.log('Processing file:', file.name, file.type, file.size);
                     validationMessage.style.display = 'none';
                     previewContainer.style.display = 'block';
                     previewContainer.innerHTML = '';
+                    
+                    // Cache the file data
+                    console.log('About to cache file...');
+                    cacheFileData(file);
                     
                     const fileExtension = file.name.split('.').pop().toLowerCase();
                     
@@ -870,7 +914,8 @@ button[disabled] {
                 e.preventDefault();
                 
                 if (checkAllFieldsFilled()) {
-                  alert('All documents uploaded successfully! Proceeding to payment page.');
+                  alert('Payment pending verification. Your enrollment will be processed once payment is confirmed. Proceeding to next step.');
+                  clearCachedData(); // Clear all cached data on successful submission
                   this.submit(); 
                 }
             });
@@ -902,7 +947,11 @@ button[disabled] {
                 const files = dt.files;
                 
                 if (files.length) {
+                    console.log('File dropped:', files[0].name);
                     receiptInput.files = files;
+                    // Cache the dropped file
+                    console.log('About to cache dropped file...');
+                    cacheFileData(files[0]);
                     // Trigger change event
                     const event = new Event('change', { bubbles: true });
                     receiptInput.dispatchEvent(event);
@@ -926,6 +975,8 @@ button[disabled] {
                     receiptInput.value = ''; // Clear the file input
                     container.innerHTML = '';
                     container.style.display = 'none';
+                    // Only clear file cache, keep form data
+                    localStorage.removeItem('old_enroll_step2_files');
                     checkAllFieldsFilled();
                 });
 
@@ -938,12 +989,273 @@ button[disabled] {
                 const isFullNameFilled = fullNameInput.value.trim() !== '';
                 const isPaymentRefFilled = paymentRefInput.value.trim() !== '';
                 const isReceiptUploaded = receiptInput.files.length > 0;
+                const hasExistingReceipt = document.getElementById('existingReceipt') !== null;
 
-                const allValid = isStudentIdFilled && isFullNameFilled && isPaymentRefFilled && isReceiptUploaded;
+                console.log('Validation check:', {
+                    studentId: isStudentIdFilled,
+                    fullName: isFullNameFilled,
+                    paymentRef: isPaymentRefFilled,
+                    receipt: isReceiptUploaded,
+                    hasExistingReceipt: hasExistingReceipt,
+                    receiptFiles: receiptInput.files.length,
+                    receiptFileNames: Array.from(receiptInput.files).map(f => f.name)
+                });
+
+                // Receipt is valid if either uploaded or already exists in database
+                const isReceiptValid = isReceiptUploaded || hasExistingReceipt;
+                const allValid = isStudentIdFilled && isFullNameFilled && isPaymentRefFilled && isReceiptValid;
                 nextButton.disabled = !allValid;
+
+                // Update button styling based on state
+                if (allValid) {
+                    nextButton.style.backgroundColor = '#7a222b';
+                    nextButton.style.cursor = 'pointer';
+                } else {
+                    nextButton.style.backgroundColor = '#d1a1a6';
+                    nextButton.style.cursor = 'not-allowed';
+                }
 
                 return allValid;
             }
+
+            // Restore cached file data on page load
+            function restoreCachedFiles() {
+                try {
+                    console.log('Attempting to restore cached files...');
+                    const cached = JSON.parse(localStorage.getItem('old_enroll_step2_files') || '{}');
+                    console.log('Cached data:', cached);
+                    
+                    // Check if there's an existing receipt in database
+                    const hasExistingReceipt = document.getElementById('existingReceipt') !== null;
+                    
+                    // Only restore if no file is currently selected and no existing receipt
+                    if (cached.receiptData && cached.receiptName && receiptInput.files.length === 0 && !hasExistingReceipt) {
+                        console.log('Found cached file:', cached.receiptName);
+                        
+                        // Convert base64 data back to blob
+                        const base64Data = cached.receiptData.split(',')[1];
+                        const byteCharacters = atob(base64Data);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const blob = new Blob([byteArray], { type: cached.receiptType });
+                        
+                        // Create file from blob
+                        const restoredFile = new File([blob], cached.receiptName, { type: cached.receiptType });
+                        console.log('Restored file:', restoredFile.name, restoredFile.size);
+                        
+                        // Try multiple methods to set the file
+                        try {
+                            // Method 1: DataTransfer (modern browsers)
+                            const dt = new DataTransfer();
+                            dt.items.add(restoredFile);
+                            receiptInput.files = dt.files;
+                            console.log('File set via DataTransfer');
+                        } catch (dtError) {
+                            console.log('DataTransfer failed, trying alternative method');
+                            // Method 2: Direct assignment (fallback)
+                            Object.defineProperty(receiptInput, 'files', {
+                                value: [restoredFile],
+                                writable: false
+                            });
+                            console.log('File set via direct assignment');
+                        }
+                        
+                        // Show preview without triggering change event (to avoid re-caching)
+                        setTimeout(() => {
+                            showFilePreview(restoredFile);
+                        }, 50);
+                        console.log('File restored and preview shown');
+                    } else if (receiptInput.files.length > 0) {
+                        console.log('File already exists, skipping restoration');
+                    } else if (hasExistingReceipt) {
+                        console.log('Existing receipt found in database, skipping restoration');
+                    } else {
+                        console.log('No valid cached file data found');
+                    }
+                } catch (e) {
+                    console.log('Error restoring cached files:', e);
+                }
+            }
+
+            // Show file preview without caching
+            function showFilePreview(file) {
+                const previewContainer = document.getElementById('receiptPreview');
+                const validationMessage = document.getElementById('receiptValidation');
+                
+                validationMessage.style.display = 'none';
+                previewContainer.style.display = 'block';
+                previewContainer.innerHTML = '';
+                
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                
+                if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+                    // Create image preview
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const img = document.createElement('img');
+                        img.src = event.target.result;
+                        previewContainer.appendChild(img);
+                        
+                        // Add filename and remove button
+                        addFileDetails(previewContainer, file.name);
+                    };
+                    reader.readAsDataURL(file);
+                } else if (fileExtension === 'pdf') {
+                    // PDF Document preview
+                    const pdfIcon = document.createElement('div');
+                    pdfIcon.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2Z" stroke="#7a222b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 2V8H20" stroke="#7a222b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 10V18" stroke="#7a222b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 14H8" stroke="#7a222b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                    previewContainer.appendChild(pdfIcon);
+                    
+                    // Add filename and remove button
+                    addFileDetails(previewContainer, file.name);
+                }
+                
+                checkAllFieldsFilled();
+            }
+
+            // Cache file data when file is selected
+            function cacheFileData(file) {
+                if (file) {
+                    console.log('Caching file:', file.name, file.type);
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const fileData = {
+                            receiptData: e.target.result,
+                            receiptName: file.name,
+                            receiptType: file.type,
+                            size: file.size
+                        };
+                        localStorage.setItem('old_enroll_step2_files', JSON.stringify(fileData));
+                        console.log('File cached successfully:', file.name);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            // Cache form data (only if user has made changes)
+            function cacheFormData() {
+                const formData = {
+                    studentId: studentIdInput.value,
+                    fullName: fullNameInput.value,
+                    paymentRef: paymentRefInput.value
+                };
+                localStorage.setItem('old_enroll_step2_form', JSON.stringify(formData));
+                console.log('Form data cached:', formData);
+            }
+
+            // Cache form data only when user types (not on server population)
+            function cacheUserInput() {
+                // Only cache if this is user input, not server population
+                if (studentIdInput.value.trim() !== '' || fullNameInput.value.trim() !== '' || paymentRefInput.value.trim() !== '') {
+                    cacheFormData();
+                }
+            }
+
+            // Restore cached form data (smart restoration)
+            function restoreCachedFormData() {
+                try {
+                    console.log('Attempting to restore cached form data...');
+                    const cached = JSON.parse(localStorage.getItem('old_enroll_step2_form') || '{}');
+                    console.log('Cached form data:', cached);
+                    
+                    // Always restore payment reference if it was user-entered (preserve user input)
+                    // Override server data with user input
+                    if (cached.paymentRef && cached.paymentRef.trim() !== '') {
+                        paymentRefInput.value = cached.paymentRef;
+                        console.log('Restored payment ref (user input):', cached.paymentRef);
+                    }
+                    
+                    // Only restore student ID and full name if current field is empty (server data takes priority)
+                    if (cached.studentId && studentIdInput.value.trim() === '') {
+                        studentIdInput.value = cached.studentId;
+                        console.log('Restored student ID:', cached.studentId);
+                    }
+                    if (cached.fullName && fullNameInput.value.trim() === '') {
+                        fullNameInput.value = cached.fullName;
+                        console.log('Restored full name:', cached.fullName);
+                    }
+                    
+                    // Re-validate after restoring form data
+                    checkAllFieldsFilled();
+                } catch (e) {
+                    console.log('Error restoring form data:', e);
+                }
+            }
+
+            // Clear cached files and form data when form is successfully submitted
+            function clearCachedData() {
+                localStorage.removeItem('old_enroll_step2_files');
+                localStorage.removeItem('old_enroll_step2_form');
+                console.log('All cached data cleared');
+            }
+
+            // Populate form with server data (don't cache server data)
+            function populateFromServerData() {
+                console.log('Populating form with server data...');
+                
+                // Don't cache server data - only cache user input
+                // Initial validation check
+                checkAllFieldsFilled();
+            }
+
+            // Handle replace receipt button
+            const replaceReceiptBtn = document.getElementById('replaceReceiptBtn');
+            if (replaceReceiptBtn) {
+                replaceReceiptBtn.addEventListener('click', function() {
+                    // Hide existing receipt info
+                    const existingReceipt = document.getElementById('existingReceipt');
+                    if (existingReceipt) {
+                        existingReceipt.style.display = 'none';
+                    }
+                    
+                    // Show upload area
+                    const uploadContainer = document.querySelector('.receipt-upload-container');
+                    if (uploadContainer) {
+                        uploadContainer.style.display = 'block';
+                    }
+                    
+                    // Make file input required again
+                    receiptInput.required = true;
+                    
+                    // Clear any cached files to force new upload
+                    localStorage.removeItem('old_enroll_step2_files');
+                    
+                    // Re-validate
+                    checkAllFieldsFilled();
+                });
+            }
+
+            // Initial validation check on page load
+            populateFromServerData();
+            
+            // Optimized restoration system to prevent flickering
+            let restorationInProgress = false;
+            
+            function performRestoration() {
+                if (restorationInProgress) {
+                    console.log('Restoration already in progress, skipping...');
+                    return;
+                }
+                
+                restorationInProgress = true;
+                console.log('Starting restoration...');
+                
+                restoreCachedFormData();
+                restoreCachedFiles();
+                checkAllFieldsFilled();
+                
+                // Reset flag after restoration
+                setTimeout(() => {
+                    restorationInProgress = false;
+                    console.log('Restoration completed');
+                }, 100);
+            }
+
+            // Single restoration attempt on page load (no multiple attempts to prevent flickering)
+            setTimeout(performRestoration, 150);
 
             // Set progress indicator
             function setProgress(stepNumber) {
@@ -951,6 +1263,60 @@ button[disabled] {
                 progressBar.classList.remove('step-1', 'step-2', 'step-3', 'step-4');
                 progressBar.classList.add(`step-${stepNumber}`);
             }
+            
+            
+            // Optimized navigation event listeners (single restoration to prevent flickering)
+            window.addEventListener('popstate', function(event) {
+                // Allow browser back button to work naturally
+                if (event.state && event.state.step) {
+                    // Handle step navigation if needed
+                }
+                // Re-validate form state immediately after navigation
+                checkAllFieldsFilled();
+                // Single restoration attempt when navigating back
+                setTimeout(performRestoration, 200);
+            });
+
+            // Handle page visibility change (when user navigates back/forward)
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    // Page is now visible, re-validate form state immediately
+                    checkAllFieldsFilled();
+                    // Single restoration attempt when page becomes visible
+                    setTimeout(performRestoration, 200);
+                }
+            });
+
+            // Also handle window focus for immediate response
+            window.addEventListener('focus', function() {
+                checkAllFieldsFilled();
+                // Single restoration attempt when window gains focus
+                setTimeout(performRestoration, 200);
+            });
+
+            // Reduced frequency monitoring system (every 5 seconds instead of 2 to prevent flickering)
+            setInterval(function() {
+                if (restorationInProgress) return;
+                
+                const cached = JSON.parse(localStorage.getItem('old_enroll_step2_form') || '{}');
+                const hasExistingReceipt = document.getElementById('existingReceipt') !== null;
+                
+                // Check if payment reference needs restoration
+                if (cached.paymentRef && cached.paymentRef.trim() !== '' && paymentRefInput.value.trim() === '') {
+                    console.log('Real-time: Restoring payment reference');
+                    paymentRefInput.value = cached.paymentRef;
+                    checkAllFieldsFilled();
+                }
+                
+                // Check if file needs restoration (only if no existing receipt)
+                if (!hasExistingReceipt && receiptInput.files.length === 0) {
+                    const cachedFile = JSON.parse(localStorage.getItem('old_enroll_step2_files') || '{}');
+                    if (cachedFile.receiptData && cachedFile.receiptName) {
+                        console.log('Real-time: Attempting file restoration');
+                        restoreCachedFiles();
+                    }
+                }
+            }, 5000);
 
         }); // DOMContentLoaded
     </script>

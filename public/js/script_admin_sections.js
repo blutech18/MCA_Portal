@@ -1,3 +1,4 @@
+/* MCA Portal JS - Version: 2025-09-29 22:56:16 - Cache Busted */
 
 document.addEventListener("DOMContentLoaded", function () {
     const addStudentBtn = document.querySelector(".add-student-btn");
@@ -7,36 +8,88 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // Toggle add-student form
-    if (addStudentBtn && overlay && addStudentForm) {
+    if (addStudentBtn && overlay) {
         addStudentBtn.addEventListener("click", () => {
-            const wasHidden = overlay.style.display === "none";
-            overlay.style.display = wasHidden ? "flex" : "none";
-            console.log("Submit triggered");
-           
+            overlay.style.display = "flex";
+            // Reset form when opening
+            document.getElementById('add-student-form').reset();
+            // Reset photo to default
+            document.getElementById('student-photo').src = '/images/student_user.png';
+            console.log("Add Student modal opened");
         });
 
         overlay.addEventListener("click", event => {
             if (event.target === overlay) {
-                overlay.style.display = "none";
+                closeStudentModal();
             }
         });
     } else {
-        console.error("Add Student button, overlay, or form not found.");
+        console.error("Add Student button or overlay not found.");
     }
 
     const appIdInput = document.getElementById('student_school_id');
     const photoImg   = document.getElementById('student-photo');
+    const pictureInput = document.getElementById('picture-input');
 
     if (!appIdInput) return console.error('No #student_school_id found');
 
+    // Handle image preview when file is selected
+    if (pictureInput) {
+        pictureInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    photoImg.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Add keyboard support for radio buttons
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeStudentModal();
+        }
+    });
+
+    // Auto-generate student ID for manual additions
+    function generateStudentId() {
+        const fname = document.getElementById('fname')?.value || '';
+        const lname = document.getElementById('lname')?.value || '';
+        
+        if (fname && lname && !appIdInput.value) {
+            const year = new Date().getFullYear();
+            const initials = (fname.charAt(0) + lname.slice(0, 3)).toUpperCase();
+            const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            const studentId = `MCA-${initials}-${year}-${random}`;
+            
+            appIdInput.value = studentId;
+            console.log('Auto-generated student ID:', studentId);
+        }
+    }
+
+    // Generate ID when names are filled (debounced)
+    let generateTimeout;
+    ['fname', 'lname'].forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('input', () => {
+                clearTimeout(generateTimeout);
+                generateTimeout = setTimeout(generateStudentId, 800);
+            });
+        }
+    });
+
     appIdInput.addEventListener('blur', () => {
         const appNum = appIdInput.value.trim();
-        console.log('Blurring ID, appNum =', appNum);        // 🔥 debug
+        console.log('Blurring ID, appNum =', appNum);
         if (!appNum) return;
 
-        // build the URL via Laravel so it’s always correct
+        // Try to fetch enrollee data (if it exists)
         const url = `${window.enrolleeApiBase}/${encodeURIComponent(appNum)}`;
-        console.log('Fetching', url);
+        console.log('Fetching enrollee data from:', url);
 
         fetch(url)
         .then(res => {
@@ -45,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return res.json();
         })
         .then(data => {
-            console.log('Enrollee data', data);
+            console.log('Enrollee data found, auto-filling:', data);
             document.getElementById('fname').value   = data.given_name   || '';
             document.getElementById('mname').value   = data.middle_name  || '';
             document.getElementById('lname').value   = data.surname      || '';
@@ -55,24 +108,21 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById('address').value = data.address      || '';
 
             if (data.id_picture_path) {
-            photoImg.src = `/storage/${data.id_picture_path}`;
+                photoImg.src = `/storage/${data.id_picture_path}`;
             } else {
-            photoImg.src = '/images/student_user.png';
+                photoImg.src = '/images/student_user.png';
             }
         })
         .catch(err => {
-            console.warn('Lookup failed:', err);
-            ['fname','mname','lname','email','dob','contact','address']
-            .forEach(id => document.getElementById(id).value = '');
-            photoImg.src = '/images/student_user.png';
+            console.log('No enrollee found (manual addition mode):', err.message);
+            // Don't clear fields for manual addition - just keep what user entered
         });
     });
     
-    const grade   = document.getElementById('grade');
     const strand  = document.getElementById('strand');
     const sem     = document.getElementById('semester');
     const section = document.getElementById('section');
-
+    const gradeRadios = document.querySelectorAll('input[name="grade_level_id"]');
 
     function resetAll() {
         strand.value  = '';
@@ -80,41 +130,51 @@ document.addEventListener("DOMContentLoaded", function () {
         section.innerHTML = '<option value="">-- Select Section --</option>';
     }
 
-    grade.addEventListener('change', e => {
-        const gradeId  = e.target.value;                                  // 1–6
-        const gradeNum = parseInt(e.target.selectedOptions[0].dataset.grade, 10); // 7–12
-        resetAll();
+    // Handle grade level radio button changes
+    gradeRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            const gradeId  = radio.value;
+            const gradeNum = parseInt(radio.dataset.grade, 10);
+            resetAll();
 
-        if (!gradeId) {
-        strand.disabled  = true;
-        sem.disabled     = true;
-        section.disabled = true;
-        return;
-        }
+            if (!gradeId) {
+                strand.disabled  = true;
+                sem.disabled     = true;
+                section.disabled = true;
+                return;
+            }
 
-        if (gradeNum < 11) {
-        // Junior High: sections only
-        strand.disabled  = true;
-        sem.disabled     = true;
-        section.disabled = false;
-        fetchSections({ grade_level_id: gradeId });
-        } else {
-        // Senior High: strand & semester, wait for strand
-        strand.disabled  = false;
-        sem.disabled     = false;
-        section.disabled = true;
-        }
+            if (gradeNum < 11) {
+                // Junior High (7-10): sections only
+                strand.disabled  = true;
+                strand.required  = false;
+                sem.disabled     = true;
+                section.disabled = false;
+                section.required = true;
+                fetchSections({ grade_level_id: gradeId });
+            } else {
+                // Senior High (11-12): strand & semester required
+                strand.disabled  = false;
+                strand.required  = true;
+                sem.disabled     = false;
+                sem.required     = true;
+                section.disabled = true;
+            }
+        });
     });
 
     strand.addEventListener('change', () => {
-        const gradeId = grade.value;
+        const selectedGradeRadio = document.querySelector('input[name="grade_level_id"]:checked');
+        const gradeId = selectedGradeRadio?.value;
         const strandId = strand.value;
-        console.log("Selected grade:", grade.value);
-        console.log("Selected strand:", strand.value);
+        
+        console.log("Selected grade:", gradeId);
+        console.log("Selected strand:", strandId);
         
         if (gradeId && strandId) {
-        section.disabled = false;
-        fetchSections({ grade_level_id: gradeId, strand_id: strandId });
+            section.disabled = false;
+            section.required = true;
+            fetchSections({ grade_level_id: gradeId, strand_id: strandId });
         }
     });
 
@@ -124,11 +184,96 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(r => r.json())
         .then(json => {
             section.innerHTML = '<option value="">-- Select Section --</option>';
-            json.sections.forEach(sec => {
-            section.append(new Option(sec.section_name, sec.id));
-            });
+            
+            if (json.sections.length === 0) {
+                section.innerHTML = '<option value="">No sections available - Create one first</option>';
+            } else {
+                json.sections.forEach(sec => {
+                    section.append(new Option(sec.section_name, sec.id));
+                });
+            }
         })
-        .catch(console.error);
+        .catch(err => {
+            console.error('Error fetching sections:', err);
+            section.innerHTML = '<option value="">Error loading sections</option>';
+        });
+    }
+
+    // Add section capacity check when section is selected
+    section.addEventListener('change', () => {
+        const sectionId = section.value;
+        const selectedGradeRadio = document.querySelector('input[name="grade_level_id"]:checked');
+        const gradeId = selectedGradeRadio?.value;
+        
+        if (sectionId && gradeId) {
+            // Check section capacity
+            checkSectionCapacity(sectionId, gradeId);
+        }
+    });
+
+    // Close modal function
+    window.closeStudentModal = function() {
+        const overlay = document.querySelector('.overlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+            // Reset form when closing
+            const form = document.getElementById('add-student-form');
+            if (form) {
+                form.reset();
+            }
+            // Reset photo to default
+            const photo = document.getElementById('student-photo');
+            if (photo) {
+                photo.src = '/images/student_user.png';
+            }
+            console.log("Add Student modal closed");
+        }
+    };
+
+    // Form submission with loading state
+    const studentForm = document.getElementById('add-student-form');
+    if (studentForm) {
+        studentForm.addEventListener('submit', function(e) {
+            const submitBtn = studentForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12a9 9 0 11-6.219-8.56"></path>
+                    </svg>
+                    Adding Student...
+                `;
+                
+                // Re-enable button after 10 seconds as fallback
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        Add Student
+                    `;
+                }, 10000);
+            }
+        });
+    }
+
+    function checkSectionCapacity(sectionId, gradeLevelId) {
+        // This will be validated server-side, but we can show a warning
+        fetch(`/admin/api/section-capacity?section_id=${sectionId}&grade_level_id=${gradeLevelId}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.count >= 25) {
+                alert(`⚠️ Warning: This section is at maximum capacity (${data.count}/25 students). Please select a different section or create a new one.`);
+                section.value = '';
+            } else if (data.count >= 20) {
+                console.log(`Section is nearly full: ${data.count}/25 students`);
+            }
+        })
+        .catch(err => {
+            console.log('Could not check section capacity:', err);
+        });
     }
 
     const sectionLinks = document.querySelectorAll('.section-link');
@@ -171,7 +316,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     const row = `
                         <tr>
                             <td>${student.user_id}</td>
-                            <td>${student.first_name} ${student.last_name}</td>
+                            <td>${student.display_name || `${student.first_name} ${student.last_name}`}</td>
                             <td>${data.strand}</td>
                             <td>${data.grade}</td>
                             <td>${data.section}</td>

@@ -1,62 +1,124 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard</title>
-  @vite(['resources/js/app.js', 'resources/css/app.scss'])
-  <link rel="stylesheet" href="{{ asset('css/styles_admin_dashboard.css') }}">
-</head>
-<body>
-  <div class="dashboard-container">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <img src="{{ asset('images/schoollogo.png') }}" alt="School Logo" class="logo">
-      <h2>MCA Montessori School</h2>
-      <nav class="menu">
-        <ul>
-          <li><a href="{{ route('admin.dashboard') }}" class="{{ Route::currentRouteName() == 'admin.dashboard' ? 'active' : '' }}">Dashboard</a></li>
-          <li><a href="{{ route('admin.users') }}" class="{{ Route::currentRouteName() == 'admin.users' ? 'active' : '' }}">Users</a></li>
-          <li>
-            <a href="#" onclick="toggleSubMenu(event)">Instructors ▾</a>
-            <ul class="submenu hidden">
-              <li><a href="{{ route('admin.instructors') }}" class="{{ Route::currentRouteName() == 'admin.instructors' ? 'active' : '' }}">All Instructors</a></li>
-              <li><a href="{{ route('admin.subjects') }}" class="{{ Route::currentRouteName() == 'admin.subjects' ? 'active' : '' }}">Subjects</a></li>
-              <li><a href="{{ route('admin.courses.index') }}" class="{{ Route::currentRouteName() == 'admin.courses.index' ? 'active' : '' }}">Courses</a></li>
-            </ul>
-          </li>
-          <li><a href="{{ route('admin.classes') }}" class="{{ Route::currentRouteName() == 'admin.classes' ? 'active' : '' }}">Students & Sections</a></li>
-          <li><a href="{{ route('admin.enrollees') }}" class="{{ Route::currentRouteName() == 'admin.enrollees' ? 'active' : '' }}">Enrollees</a></li>
-        </ul>
-        
-      </nav>
-      
-    </aside>
+@extends('layouts.admin_base')
 
-    <!-- Main Content -->
-    <main class="main-content">
-      <header class="top-bar">
-        <div class="welcome">
-          <h3>Welcome, Administrator!</h3>
-        </div>
-        <div class="user-info">
-          <img src="{{ asset('images/settings.png') }}" class="icon" id="settingsToggle">
-          <div class="dropdown-menu" id="settingsMenu">
-            <button class="dropdown-item" onclick="confirmExit()">
-              <svg class="dropdown-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path d="M16 13v-2H7V8l-5 4 5 4v-3zM20 3h-8v2h8v14h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
-              </svg>
-              <span>Logout</span>
-            </button>
-            <form id="logout-form" action="{{ route('logout') }}" method="POST">
-              @csrf
-            </form>
-          </div>
-        </div>
-      </header>
-      
+@section('title', 'Dashboard')
+@section('header', 'Welcome, Administrator!')
 
-      <!-- Banner -->
+@push('head')
+  <style>
+    /* Layout spacing */
+    .admin-dashboard .container { max-width: 1200px; margin: 0 auto; padding: 12px; box-sizing: border-box; }
+    .admin-dashboard .dashboard-section { padding: 0; }
+    .admin-dashboard .banner,
+    .admin-dashboard .banner-subjects,
+    .admin-dashboard .banner-strands { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-auto-rows: 1fr; /* equal height rows */
+      gap: 12px; 
+      padding: 12px; 
+      box-sizing: border-box;
+      max-width: 100%;
+      width: 100%;
+      align-items: stretch;
+    }
+    /* 2x2 dashboard grid for tables and charts */
+    .admin-dashboard .dashboard-grid-2x2 { 
+      display: grid; 
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-rows: 1fr;
+      gap: 12px;
+      padding: 12px;
+      box-sizing: border-box;
+      width: 100%;
+      align-items: stretch;
+    }
+    /* Provide clear separation between tables and charts */
+    .admin-dashboard .banner-strands { margin-top: 16px; }
+    /* Stronger rule to ensure spacing is applied even if other styles exist */
+    .admin-dashboard .banner-subjects + .banner-strands { margin-top: 16px !important; }
+    .admin-dashboard .dashboard-separator { height: 16px; }
+
+    /* Simple card */
+    .admin-dashboard .card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; }
+    .admin-dashboard .users-box, 
+    .admin-dashboard .subjects-box { 
+      background: #ffffff; 
+      border: 1px solid #e5e7eb; 
+      border-radius: 8px; 
+      padding: 14px 16px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 8px; 
+      box-shadow: none; 
+      max-width: 100%;
+      box-sizing: border-box;
+      height: 100%; /* fill grid row height */
+    }
+    /* Stronger specificity: ensure all direct grid children fill height */
+    .admin-dashboard .banner > .subjects-box,
+    .admin-dashboard .banner-subjects > .subjects-box,
+    .admin-dashboard .banner-strands > .subjects-box { height: 100%; }
+    /* Ensure card/table sections have adequate height without page overflow */
+    .admin-dashboard .subjects-box { min-height: 420px; }
+    .admin-dashboard .dashboard-grid-2x2 .subjects-box { min-height: 420px; display: flex; flex-direction: column; }
+    /* Make card bodies flex-fill for equal heights across 2x2 */
+    .admin-dashboard .dashboard-grid-2x2 .subjects-box .subject-g11 { flex: 1 1 auto; min-height: 0; overflow: auto; }
+    /* Chart cards: keep consistent inner height */
+    /* Charts containers (Junior/Senior) */
+    .admin-dashboard .dashboard-grid-2x2 .subjects-box .logo-number {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0; /* allow flex container to control height */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px; /* consistent inner padding like tables */
+      overflow: hidden; /* prevent scrollbars around canvas */
+    }
+    .admin-dashboard .dashboard-grid-2x2 .subjects-box .logo-number canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+    /* Fixed-height scrollable tables for first two cards (All Subjects, All Classes) */
+    .admin-dashboard .dashboard-grid-2x2 > .subjects-box:nth-child(-n+2) .subject-g11 { height: 300px; overflow-y: auto; overflow-x: hidden; }
+    .admin-dashboard .dashboard-grid-2x2 > .subjects-box:nth-child(-n+2) table { width: 100%; border-collapse: collapse; }
+    .admin-dashboard .dashboard-grid-2x2 > .subjects-box:nth-child(-n+2) table thead th { position: sticky; top: 0; background: #f9fafb; z-index: 1; }
+    .admin-dashboard .users-box > *:last-child,
+    .admin-dashboard .subjects-box > *:last-child { margin-bottom: 0; }
+    .admin-dashboard .subject-box-title { display: flex; align-items: center; justify-content: space-between; margin: 0; }
+    .admin-dashboard .subject-box-title h3, 
+    .admin-dashboard .subject-box-title p { margin: 0; font-weight: 600; color: #111827; font-size: 14px; }
+    .admin-dashboard .subject-box-title a { color: #1f2937; text-decoration: none; font-size: 12px; }
+    .admin-dashboard .subject-box-title a:hover { text-decoration: underline; }
+
+    /* KPI blocks */
+    .admin-dashboard .logo-number { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .admin-dashboard .logo-number img { width: 40px; height: 40px; object-fit: contain; flex: 0 0 auto; }
+    .admin-dashboard .logo-number h2 { margin: 0; font-size: 20px; color: #111827; font-weight: 700; line-height: 1; }
+
+    /* Tables */
+    .admin-dashboard .subjects-box table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .admin-dashboard .subjects-box thead th { text-align: left; background: #f9fafb; color: #374151; font-size: 12px; padding: 10px 12px; border-bottom: 1px solid #e5e7eb; }
+    .admin-dashboard .subjects-box tbody td { padding: 8px 10px; border-bottom: 1px solid #f3f4f6; font-size: 13px; color: #111827; word-wrap: break-word; overflow-wrap: anywhere; }
+    .admin-dashboard .subjects-box tbody tr:hover { background: #f9fafb; }
+
+    /* Charts */
+    .admin-dashboard .logo-number canvas { width: 100% !important; height: 220px !important; display: block; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .admin-dashboard .banner, .admin-dashboard .banner-subjects, .admin-dashboard .banner-strands, .admin-dashboard .dashboard-grid-2x2 { padding: 10px; gap: 8px; }
+      .admin-dashboard .dashboard-separator { height: 10px; }
+      .admin-dashboard .logo-number img { width: 32px; height: 32px; }
+    }
+  </style>
+@endpush
+
+@section('content')
+      <div class="admin-dashboard">
+      <div class="container">
       <section class="banner">
         <!-- Student Users -->
         <div class="users-box">
@@ -97,7 +159,7 @@
       </section>
 
       <!-- Content Sections -->
-      <section class="banner-subjects">
+      <section class="dashboard-grid-2x2">
 
         <div class="subjects-box">
           <div class="subject-box-title">
@@ -126,8 +188,8 @@
         
         <div class="subjects-box">
           <div class="subject-box-title">
-            <h3>All courses</h3>
-            <a href="{{ route('admin.courses.index') }}">See more >></a>
+            <h3>All Classes</h3>
+            <a href="{{ route('admin.classes') }}">See more &gt;&gt;</a>
           </div>
           <div class="subject-g11">
             <table>
@@ -151,9 +213,6 @@
           </div>
         </div>
         
-      </section>
-
-      <section class="banner-strands">
         <div class="subjects-box">
           <div class="subject-box-title">
             <p>Junior High Sections</p>
@@ -161,7 +220,7 @@
           </div>
           <div class="logo-number">
             <canvas id="juniorChart"></canvas>
-          </div>
+      </div>
         </div>
         <div class="subjects-box">
           <div class="subject-box-title">
@@ -173,7 +232,6 @@
           </div>
         </div>
       </section>
-
       <div id="confirm-modal" class="modal">
         <div class="modal-content">
             <p>Are you sure you want to log out?</p>
@@ -181,9 +239,10 @@
             <button class="cancel-btn" onclick="closeModal()">No</button>
         </div>
       </div>
-    </main>
   </div>
+@endsection
 
+@push('scripts')
   <script>
     const juniorLabels = @json($juniorLabels);
     const juniorData = @json($juniorData);
@@ -193,13 +252,7 @@
     console.log("juniorLabels:", juniorLabels);
     console.log("seniorLabels:", seniorLabels);
 </script>
-  
-  <!-- 2) Then load Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
-  
-  <!-- 3) Finally your dashboard script -->
   <script src="{{ asset('js/script_admin_dashboard.js') }}"></script>
-  <script src="{{asset('js/logout.js')}}"></script>
-
-</body>
-</html>
+  <script src="{{ asset('js/logout.js') }}"></script>
+@endpush

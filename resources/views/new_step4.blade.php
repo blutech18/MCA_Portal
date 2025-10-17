@@ -720,12 +720,12 @@ legend {
                       <path d="M22 4L12 14.01L9 11.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
               </div>
-              <h3>Enrollment Complete!</h3>
-              <p>Your application has been successfully submitted and received.</p>
+              <h3>Application Successful!</h3>
+              <p>Your enrollment application has been successfully submitted and received.</p>
             </div>
               
             <div class="student-id">
-                Student ID: <span id="studentID">{{ $enrollee->application_number }}</span>
+                Student ID: <span id="studentID">{{ $studentNumber ?? (optional($enrollee)->application_number) }}</span>
             </div>
               
             <div class="email-notification">
@@ -749,13 +749,17 @@ legend {
               <div class="info-item">
                   <span class="info-label">Full Name</span>
                   <span class="info-value" id="fullName">
-                    {{ $enrollee->surname }}, {{ $enrollee->given_name }} {{ $enrollee->middle_name }}
+                    {{ $enrollee->display_name }}
                   </span>
               </div>
               <div class="info-item">
                   <span class="info-label">Grade Level</span>
                   <span class="info-value" id="gradeLevel">
-                     {{ $enrollee->previous_grade }}
+                     @if($enrollee->shs_grade)
+                         {{ $enrollee->shs_grade }}
+                     @else
+                         {{ $enrollee->previous_grade }}
+                     @endif
                   </span>
               </div>
               <div class="info-item">
@@ -840,17 +844,7 @@ legend {
         </div>
         
         <div class="button-group">
-          <button type="button" class="btn btn-secondary" id="downloadConfirmation">
-              <div class="icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-              </div>
-              Download Confirmation
-          </button>
-          <button type="button" class="btn btn-primary" id="printConfirmation">
+          <a href="{{ route('enroll.confirmation.report', ['type' => 'new', 'id' => $enrollee->id ?? 0]) }}" target="_blank" class="btn btn-primary" id="printConfirmation" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
               <div class="icon">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M6 9V2H18V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -858,15 +852,47 @@ legend {
                       <path d="M18 14H6V22H18V14Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
               </div>
-              Print Confirmation
-          </button>
+              Print Enrollment Form
+          </a>
+          <a href="{{ route('enroll.confirmation.report', ['type' => 'new', 'id' => $enrollee->id ?? 0]) }}?format=pdf" download="enrollment_form_{{ $enrollee->id ?? 0 }}.pdf" target="_blank" class="btn btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+              <div class="icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+              </div>
+              Download PDF
+          </a>
         </div> 
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
 <script>
   document.addEventListener('DOMContentLoaded', function () {
+    // Clear all cached data when enrollment is completed
+    function clearAllCachedData() {
+      // Clear form data cache - use the correct cache key
+      localStorage.removeItem('new_step1_form_cache_v1');
+      localStorage.removeItem('new_step2_form_data');
+      localStorage.removeItem('new_step3_form_data');
+      
+      // Clear file caches
+      const fileInputs = ['reportCard', 'goodMoral', 'birthCertificate', 'idPicture'];
+      fileInputs.forEach(inputId => {
+        localStorage.removeItem(`new_step2_${inputId}`);
+      });
+      localStorage.removeItem(`new_step3_receiptUpload`);
+      
+      // Clear session data
+      sessionStorage.removeItem('new_enrollee_id');
+      sessionStorage.removeItem('enrollment_in_progress');
+      
+      console.log('All cached data cleared - enrollment completed');
+    }
+    
+    // Clear cached data immediately when Step 4 loads
+    clearAllCachedData();
+    
     // Display print date
     document.getElementById('print-date').textContent = new Date().toLocaleDateString('en-US', {
       year: 'numeric', month: 'long', day: 'numeric'
@@ -894,25 +920,90 @@ legend {
 
    
     document.getElementById('printConfirmation').addEventListener('click', function () {
-      window.print();
+      // Open the enrollment report in a new window and print it
+      const reportUrl = '{{ route('enroll.confirmation.report', ['type' => 'new', 'id' => $enrollee->id ?? 0]) }}';
+      const printWindow = window.open(reportUrl, '_blank');
+      
+      if (printWindow) {
+        // Wait for the window to load, then trigger print
+        printWindow.onload = function() {
+          setTimeout(function() {
+            printWindow.print();
+          }, 500); // Small delay to ensure content is fully loaded
+        };
+        
+        // Fallback: if onload doesn't fire, try after a delay
+        setTimeout(function() {
+          if (printWindow && !printWindow.closed) {
+            try {
+              printWindow.print();
+            } catch (e) {
+              console.log('Print dialog could not be opened automatically');
+            }
+          }
+        }, 2000);
+      } else {
+        // If popup was blocked, redirect to the report page
+        window.location.href = reportUrl;
+      }
     });
 
     
-    document.getElementById('downloadConfirmation').addEventListener('click', function () {
-      const element = document.getElementById('confirmationContent');
-      const studentIdText = document.getElementById('studentID')?.textContent?.trim() || 'Confirmation';
-      const fileName = `MCA_Confirmation_${studentIdText}.pdf`;
-
-      const opt = {
-        margin:       0.5,
-        filename:     fileName,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-      };
-
-      html2pdf().set(opt).from(element).save();
-    });
+    // Add click handler for download PDF to ensure it works
+    const downloadPDFLink = document.querySelector('a[href*="format=pdf"]');
+    if (downloadPDFLink) {
+      downloadPDFLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        const url = this.href;
+        
+        // Show loading state
+        const originalText = this.innerHTML;
+        this.innerHTML = '<div class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 18V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.93 4.93L7.76 7.76" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.24 16.24L19.07 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 12H22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.93 19.07L7.76 16.24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.24 7.76L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div> Generating...';
+        this.disabled = true;
+        
+        // Try to download the file
+        fetch(url)
+          .then(response => {
+            const contentType = response.headers.get('content-type');
+            
+            if (contentType && contentType.includes('application/pdf')) {
+              // It's a PDF, download it
+              return response.blob();
+            } else {
+              // It's HTML (fallback), open in new tab
+              window.open(url, '_blank');
+              throw new Error('PDF not available, opening HTML version');
+            }
+          })
+          .then(blob => {
+            // Create a temporary URL for the blob
+            const blobUrl = window.URL.createObjectURL(blob);
+            
+            // Create a temporary link element to trigger download
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = 'enrollment_form_{{ $enrollee->id ?? 0 }}.pdf';
+            link.style.display = 'none';
+            
+            // Append to body, click, and remove
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Clean up the blob URL
+            window.URL.revokeObjectURL(blobUrl);
+          })
+          .catch(error => {
+            console.log('PDF download handling:', error.message);
+            // Fallback already handled above
+          })
+          .finally(() => {
+            // Restore button state
+            this.innerHTML = originalText;
+            this.disabled = false;
+          });
+      });
+    }
   });
 </script>
 </body>

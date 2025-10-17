@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('old_student_enrollees', function (Blueprint $table) {
+        if (!Schema::hasTable('old_student_enrollees')) {
+            Schema::create('old_student_enrollees', function (Blueprint $table) {
             $table->id();
 
             // Step 1: Pre-Registration
@@ -40,7 +41,8 @@ return new class extends Migration
             $table->string('application_number')->unique()->nullable();
 
             $table->timestamps();
-        });
+            });
+        }
     }
 
     /**

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MCA Montessori School Document Upload</title>
+  <link rel="stylesheet" href="{{ asset('css/mobile-compatibility.css') }}">
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
@@ -685,16 +686,215 @@ button[disabled] {
             </div>
             
             <div class="button-group">
-                <button type="button" class="back-button" onclick="window.location.href='new_form.html'">Back</button>
+                <button type="button" class="back-button" onclick="handleBackButton()">Back</button>
                 <button type="submit" id="nextButton" disabled>Next</button>
             </div>
         </form>
     </div>
 
+    <!-- Mobile Compatibility Script -->
+    <script src="{{ asset('js/mobile-compatibility.js') }}"></script>
+    
     <script>
+        // File caching functions
+        function cacheFileData(inputId, file) {
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const fileData = {
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        data: e.target.result,
+                        lastModified: file.lastModified
+                    };
+                    localStorage.setItem(`new_step2_${inputId}`, JSON.stringify(fileData));
+                    console.log(`Cached file data for ${inputId}:`, file.name);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function restoreCachedFiles() {
+            console.log('Attempting to restore cached files...');
+            const fileInputs = ['reportCard', 'goodMoral', 'birthCertificate', 'idPicture'];
+            let restoredCount = 0;
+            
+            fileInputs.forEach(inputId => {
+                const input = document.getElementById(inputId);
+                const cachedData = localStorage.getItem(`new_step2_${inputId}`);
+                
+                // Only restore if there's cached data and no existing file (prevent overwriting)
+                if (cachedData && input && (!input.files || input.files.length === 0)) {
+                    try {
+                        const fileData = JSON.parse(cachedData);
+                        console.log(`Restoring cached file for ${inputId}:`, fileData.name);
+                        
+                        // Convert base64 data back to file
+                        const byteCharacters = atob(fileData.data.split(',')[1]);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const blob = new Blob([byteArray], { type: fileData.type });
+                        const file = new File([blob], fileData.name, { 
+                            type: fileData.type,
+                            lastModified: fileData.lastModified 
+                        });
+                        
+                        // Set the file to the input
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        input.files = dataTransfer.files;
+                        
+                    // Trigger the change event to update UI
+                    const event = new Event('change', { bubbles: true });
+                    input.dispatchEvent(event);
+                    
+                    // Ensure preview is displayed
+                    setTimeout(() => {
+                        showFilePreview(inputId, fileData);
+                    }, 50);
+                    
+                    restoredCount++;
+                    console.log(`Successfully restored file for ${inputId}: ${fileData.name}`);
+                    } catch (error) {
+                        console.error(`Error restoring cached file for ${inputId}:`, error);
+                        localStorage.removeItem(`new_step2_${inputId}`);
+                    }
+                }
+            });
+            
+            if (restoredCount > 0) {
+                console.log(`File restoration completed: ${restoredCount} files restored`);
+            }
+            
+            return restoredCount;
+        }
+
+        function clearCachedFiles() {
+            const fileInputs = ['reportCard', 'goodMoral', 'birthCertificate', 'idPicture'];
+            fileInputs.forEach(inputId => {
+                localStorage.removeItem(`new_step2_${inputId}`);
+            });
+            console.log('Cleared all cached file data');
+        }
+
+        // Helper function to add remove option (moved to global scope)
+        function addRemoveOption(container, input, fileNameElement) {
+            const removeBtn = document.createElement('div');
+            removeBtn.className = 'remove-file';
+            removeBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+            removeBtn.addEventListener('click', function() {
+                // Clear file input and preview when remove is clicked
+                input.value = '';
+                fileNameElement.textContent = '';
+                container.innerHTML = '';
+                container.style.display = 'none';
+                
+                // Clear cached file data
+                localStorage.removeItem(`new_step2_${input.id}`);
+
+                // Re-check required files
+                checkAllFilesUploaded();
+            });
+            container.appendChild(removeBtn);
+        }
+
+        function showFilePreview(inputId, fileData) {
+            const fileNameElement = document.querySelector(`#${inputId}`).parentElement.querySelector('.file-name');
+            const previewContainer = document.getElementById(`${inputId}Preview`);
+            const validationMessage = document.getElementById(`${inputId}Validation`);
+            
+            if (fileNameElement && previewContainer && validationMessage) {
+                // Show filename
+                fileNameElement.textContent = fileData.name;
+                validationMessage.style.display = 'none';
+                previewContainer.style.display = 'block';
+                previewContainer.innerHTML = '';
+                
+                const fileExtension = fileData.name.split('.').pop().toLowerCase();
+                
+                if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+                    // Create image preview
+                    const img = document.createElement('img');
+                    img.src = fileData.data;
+                    img.className = 'preview-image';
+                    previewContainer.appendChild(img);
+                    
+                    // Add remove option
+                    const input = document.getElementById(inputId);
+                    addRemoveOption(previewContainer, input, fileNameElement);
+                } else {
+                    // Document preview (PDF or other)
+                    const docPreview = document.createElement('div');
+                    docPreview.className = 'document-preview';
+                    
+                    const docIcon = document.createElement('div');
+                    docIcon.className = 'doc-icon';
+                    docIcon.innerHTML = '📄';
+                    
+                    const docName = document.createElement('div');
+                    docName.className = 'doc-name';
+                    docName.textContent = fileData.name;
+                    
+                    docPreview.appendChild(docIcon);
+                    docPreview.appendChild(docName);
+                    previewContainer.appendChild(docPreview);
+                    
+                    // Add remove option
+                    const input = document.getElementById(inputId);
+                    addRemoveOption(previewContainer, input, fileNameElement);
+                }
+                
+                console.log(`File preview displayed for ${inputId}: ${fileData.name}`);
+            }
+        }
+
+        // Global handleBackButton function
+        window.handleBackButton = function() {
+            // Check if there's a previous page in history
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                // Fallback to route navigation
+                window.location.href = '{{ route('enroll.new.step1') }}';
+            }
+        };
+
+        // Global function to check if all required files are uploaded
+        function checkAllFilesUploaded() {
+            const fileInputs = document.querySelectorAll('.file-input');
+            const nextButton = document.getElementById('nextButton');
+            let allFilled = true;
+            
+            fileInputs.forEach(input => {
+                const validationMessage = document.getElementById(`${input.id}Validation`);
+                if (!input.files || !input.files.length) {
+                    if (validationMessage) {
+                        validationMessage.style.display = 'block';
+                    }
+                    allFilled = false;
+                } else {
+                    if (validationMessage) {
+                        validationMessage.style.display = 'none';
+                    }
+                }
+            });
+
+            if (nextButton) {
+                nextButton.disabled = !allFilled;
+            }
+            return allFilled;
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Set the active progress step
             setProgress(2);
+            
+            // Restore cached files on page load (delayed to prevent flickering)
+            setTimeout(restoreCachedFiles, 100);
             
             // Get all file inputs
             const fileInputs = document.querySelectorAll('.file-input');
@@ -707,6 +907,11 @@ button[disabled] {
                     const fileNameElement = this.parentElement.querySelector('.file-name');
                     const previewContainer = document.getElementById(`${this.id}Preview`);
                     const validationMessage = document.getElementById(`${this.id}Validation`);
+                    
+                    // Cache the file data
+                    if (e.target.files[0]) {
+                        cacheFileData(this.id, e.target.files[0]);
+                    }
                     
                     if (fileName) {
                         // Show filename
@@ -811,40 +1016,82 @@ button[disabled] {
                 }
             });
             
-            // Helper function to add remove option
-            function addRemoveOption(container, input, fileNameElement) {
-                const removeBtn = document.createElement('div');
-                removeBtn.className = 'remove-file';
-                removeBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-                removeBtn.addEventListener('click', function() {
-                                        // Clear file input and preview when remove is clicked
-                                        input.value = '';
-                    fileNameElement.textContent = '';
-                    container.innerHTML = '';
-                    container.style.display = 'none';
-
-                    // Re-check required files
-                    checkAllFilesUploaded();
-                });
-                container.appendChild(removeBtn);
+            // Optimized navigation event listeners (single restoration to prevent flickering)
+            window.addEventListener('popstate', function(event) {
+                setTimeout(performFileRestoration, 200);
+            });
+            
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    setTimeout(performFileRestoration, 200);
+                }
+            });
+            
+            window.addEventListener('focus', function() {
+                setTimeout(performFileRestoration, 200);
+            });
+            
+            // Clear cached files on successful form submission
+            document.getElementById('documentUploadForm').addEventListener('submit', function(e) {
+                if (checkAllFilesUploaded()) {
+                    // Clear cache only after successful validation
+                    setTimeout(clearCachedFiles, 1000);
+                }
+            });
+            
+            // Optimized restoration system to prevent flickering
+            let restorationInProgress = false;
+            
+            function performFileRestoration() {
+                if (restorationInProgress) {
+                    console.log('Restoration already in progress, skipping...');
+                    return;
+                }
+                
+                restorationInProgress = true;
+                console.log('Starting file restoration...');
+                
+                // Show subtle loading indicator (optional)
+                const restoredCount = restoreCachedFiles();
+                checkAllFilesUploaded();
+                
+                // Reset flag after restoration
+                setTimeout(() => {
+                    restorationInProgress = false;
+                    if (restoredCount > 0) {
+                        console.log(`File restoration completed: ${restoredCount} files restored`);
+                    }
+                }, 100);
             }
-
-            // Helper function to check if all required files are uploaded
-            function checkAllFilesUploaded() {
-                let allFilled = true;
-                fileInputs.forEach(input => {
-                    const validationMessage = document.getElementById(`${input.id}Validation`);
-                    if (!input.files.length) {
-                        validationMessage.style.display = 'block';
-                        allFilled = false;
-                    } else {
-                        validationMessage.style.display = 'none';
+            
+            // Single restoration attempt on page load (no multiple attempts to prevent flickering)
+            setTimeout(performFileRestoration, 150);
+            
+            // Reduced frequency monitoring (every 5 seconds instead of 2)
+            setInterval(function() {
+                if (restorationInProgress) return;
+                
+                const fileInputs = ['reportCard', 'goodMoral', 'birthCertificate', 'idPicture'];
+                let needsRestoration = false;
+                
+                fileInputs.forEach(inputId => {
+                    const input = document.getElementById(inputId);
+                    const cachedData = localStorage.getItem(`new_step2_${inputId}`);
+                    
+                    // If there's cached data but no file in input, restore it
+                    if (cachedData && input && (!input.files || input.files.length === 0)) {
+                        needsRestoration = true;
+                        console.log(`File missing for ${inputId}, will restore`);
                     }
                 });
+                
+                if (needsRestoration) {
+                    console.log('Performing automatic file restoration...');
+                    performFileRestoration();
+                }
+            }, 5000);
 
-                nextButton.disabled = !allFilled;
-                return allFilled;
-            }
+            // Helper function to check if all required files are uploaded moved to global scope
 
             // Set progress step (for visual bar)
             function setProgress(step) {
@@ -852,6 +1099,25 @@ button[disabled] {
                 progressBar.classList.remove('step-1', 'step-2', 'step-3', 'step-4');
                 progressBar.classList.add(`step-${step}`);
             }
+            
+            // Browser history handling (expose globally for onclick)
+            window.handleBackButton = function() {
+                // Check if there's a previous page in history
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    // Fallback to route navigation
+                    window.location.href = '{{ route('enroll.new.step1') }}';
+                }
+            }
+            
+            // Handle browser back button
+            window.addEventListener('popstate', function(event) {
+                // Allow browser back button to work naturally
+                if (event.state && event.state.step) {
+                    // Handle step navigation if needed
+                }
+            });
         });
     </script>
 </body>

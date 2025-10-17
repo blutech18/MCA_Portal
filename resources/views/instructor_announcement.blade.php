@@ -1,264 +1,301 @@
+@php
+use Illuminate\Support\Facades\Storage;
+@endphp
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCA Montessori School - Announcements</title>
-    <link rel="stylesheet" href="{{ asset('css/ins_announcement.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/instructor_announcement.css') }}?v={{ time() }}">
     <link href="https://fonts.cdnfonts.com/css/garet" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=1759179376">
 </head>
 <body>
     <div class="container">
         <!-- Sidebar -->
         <div class="sidebar">
-            <div class="logo-container">
-                <img src="{{asset('images/logo.png')}}" alt="MCA Montessori School" class="logo">
-                <h2 class="school-name">MCA MONTESSORI SCHOOL</h2>
-            </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li><a href="{{ route('instructor.dashboard') }}" class="nav-item">DASHBOARD</a></li>
-                    <li>
-                        <a href="{{ route('instructor.schedule') }}" class="nav-item">CLASSES</a>
-                        <ul class="sub-menu">
-                            <li><a href="{{ route('instructor.schedule') }}" class="sub-item">SCHEDULES</a></li>
-                            <li><a href="{{ route('instructor.student') }}" class="sub-item">STUDENTS</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="{{ route('instructor.attendance') }}" class="nav-item">ATTENDANCE REPORTS</a></li>
-                    <li><a href="{{ route('instructor.report') }}" class="nav-item">GRADE REPORTS</a></li>
-                    <li><a href="{{ route('instructor.announcement') }}" class="nav-item active">ANNOUNCEMENTS</a></li>
-                </ul>
-                <div class="logout">
-                    <a href="javascript:void(0)" class="nav-item" onclick="confirmExit()">LOGOUT</a>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                        @csrf
-                    </form>
-                </div>  
-            </nav>
+          <div class="logo-container">
+              <img src="{{ asset('images/logo.png') }}?v={{ time() }}" alt="MCA Montessori School" class="logo">
+              <h2 class="school-name">MCA MONTESSORI SCHOOL</h2>
+          </div>
+          <nav class="sidebar-nav">
+              <ul>
+                  <li><a href="{{ route('instructor.dashboard') }}" class="nav-item">DASHBOARD</a></li>
+                  <li>
+                      <a href="{{ route('instructor.schedule') }}" class="nav-item">CLASSES</a>
+                      <ul class="sub-menu">
+                          <li><a href="{{ route('instructor.schedule') }}" class="sub-item">SCHEDULES</a></li>
+                          <li><a href="{{ route('instructor.student') }}" class="sub-item">STUDENTS</a></li>
+                      </ul>
+                  </li>
+                  <li><a href="{{ route('instructor.attendance') }}" class="nav-item">ATTENDANCE REPORTS</a></li>
+                  <li><a href="{{ route('instructor.report') }}" class="nav-item">GRADE REPORTS</a></li>
+                  <li><a href="{{ route('instructor.announcement') }}" class="nav-item active">ANNOUNCEMENTS</a></li>
+              </ul>
+          </nav>
         </div>
 
-        
+        <!-- Mobile Menu Button -->
+        <div class="mobile-menu-btn">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <!-- Main Content -->
         <div class="main-content">
             <div class="header">
-                <h1>ANNOUNCEMENTS</h1>
-                <div class="user-actions">
-                    <div class="user-profile">
-                        <img src="examplepic.png" alt="User Profile" class="profile-pic">
-                        <div class="user-info">
-                            <p class="user-name">Krystal Mendez</p>
-                            <p class="user-grade">INSTRUCTOR</p>
-                        </div>
-                    </div>
-                    <div class="icons">
-                        <a href="#" class="icon-link"><img src="bell.png" alt="Notifications" class="icon"></a>
-                        <a href="#" class="icon-link"><img src="settings.png" alt="Settings" class="icon"></a>
+              <h1>ANNOUNCEMENTS</h1>
+              <div class="user-actions">
+                <div class="user-profile">
+                    <img src="{{ asset('images/instructor_user.png') }}?v={{ time() }}" alt="User Profile" class="profile-pic">
+                    <div class="user-info">
+                        <p class="user-name">{{ $instructor->short_name }}</p>
+                        <p class="user-grade">INSTRUCTOR</p>
                     </div>
                 </div>
+                <div class="icons">
+                    <a href="#" class="icon-link"><img src="{{ asset('images/bell.png') }}?v={{ time() }}" alt="Notifications" class="icon"></a>
+                    <a href="#" class="icon-link"><img src="{{ asset('images/settings.png') }}?v={{ time() }}" alt="Settings" class="icon"></a>
+                    <a href="javascript:void(0)" class="icon-link logout-btn" onclick="confirmExit()" title="Logout">
+                        <i class="fas fa-sign-out-alt" style="font-size: 20px; color: #1A2B49;"></i>
+                    </a>
+                </div>
+              </div>
             </div>
-
-            <div class="search-container">
-                <input type="text" placeholder="Search" class="search-bar">
-                <button class="search-button"><i class="fas fa-search"></i></button>
-            </div>
-
-            
-            <h1>Post a New Announcement</h1>
-
-            @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-
-            <div class="announcement-creation">
-                <form method="POST" action="{{ route('instructor.announcement.store') }}" enctype="multipart/form-data">
-                    @csrf
-                    
-                    <div class="controls-container">
-                        <div class="section-dropdown" style="flex: 1;">
-                            <label>Section</label>
-                            <select name="class_name">
-                                <option value="" disabled {{ old('class_name') ? '' : 'selected' }}>Choose Section</option>
-                                @foreach($instructor->instructorClasses as $ic)
-                                    <option value="{{ $ic->class->section->section_name }}"
-                                        {{ old('class_name') == $ic->class->section->section_name ? 'selected' : '' }}>
-                                        {{ $ic->class->name }} — {{ $ic->class->section->section_name }}
-                                    </option>
-                                @endforeach
-                            </select>
-            
-                            @isset($errors)
-                                @error('class_name')
-                                    <div class="text-danger small">{{ $message }}</div>
-                                @enderror
-                            @endisset
-                        </div>
-            
-                        <div style="flex: 1;">
-                            <label>Title</label>
-                            <input type="text" name="title" value="{{ old('title') }}" style="width: 100%; padding: 10px 16px; border: 1px solid #ccc; border-radius: 6px;">
-            
-                            @isset($errors)
-                                @error('title')
-                                    <div class="text-danger small">{{ $message }}</div>
-                                @enderror
-                            @endisset
-                        </div>
+          
+            <!-- Announcements Content -->
+            <div class="content-section">
+                <div class="page-header">
+                    <h2><i class="fas fa-bullhorn"></i> Announcements</h2>
+                    <p>Create and manage announcements for your students</p>
+                </div>
+                
+                <!-- Success/Error Notifications -->
+                @if(session('success'))
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        {{ session('success') }}
                     </div>
-            
-                    <div class="message-box">
-                        <div class="message-header">
-                            <h3>Message</h3>
-                        </div>
-                        <div class="message-content">
-                            <textarea name="message" rows="6">{{ old('message') }}</textarea>
-            
-                            @isset($errors)
-                                @error('message')
-                                    <div class="text-danger small">{{ $message }}</div>
-                                @enderror
-                            @endisset
-                        </div>
-                    </div>
-            
-                    <div class="controls-container">
-                        <div>
-                            <label class="add-file-btn">
-                                📎 Add File
-                                <input type="file" name="file" style="display: none;">
-                            </label>
-            
-                            @isset($errors)
-                                @error('file')
-                                    <div class="text-danger small">{{ $message }}</div>
-                                @enderror
-                            @endisset
-                        </div>
-            
-                        <div>
-                            <button type="submit" class="announce-btn">🚀 Announce</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            
-
-            <hr>
-
-            <h2>All Announcements</h2>
-            <div class="announcements-list">
-            @forelse($announcements as $a)
-                <div class="announcement-card">
-                <h4>{{ $a->title }}</h4>
-                <p><strong>To:</strong> {{ $a->class_name }}</p>
-                <p>{{ $a->message }}</p>
-                @if($a->file_path)
-                    <p><a href="{{ Storage::url($a->file_path) }}" target="_blank">Download Attachment</a></p>
                 @endif
-                <small>
-                    Posted 
-                    {{ optional($a->created_at)->diffForHumans() ?? 'Just now' }}
-                </small>
+
+                @if(session('error'))
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                @if(isset($errors) && $errors->any())
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @elseif(session('errors'))
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            @foreach(session('errors')->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <div class="announcement-form">
+                    <div class="form-header">
+                        <h3><i class="fas fa-plus-circle"></i> Create New Announcement</h3>
+                    </div>
+                    <form action="{{ route('instructor.announcement.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="form-group">
+                            <label for="section-select"><i class="fas fa-layer-group"></i> Select Section:</label>
+                            <select id="section-select" name="section_id" required>
+                                <option value="">Choose a section</option>
+                                @if(isset($sections) && $sections->count() > 0)
+                                    @foreach($sections as $section)
+                                        <option value="{{ $section->id }}" {{ old('section_id') == $section->id ? 'selected' : '' }}>
+                                            {{ $section->section_name }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    <option value="" disabled>No sections available</option>
+                                @endif
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="title"><i class="fas fa-heading"></i> Title:</label>
+                            <input type="text" id="title" name="title" required placeholder="Enter announcement title..." value="{{ old('title') }}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message"><i class="fas fa-comment"></i> Message:</label>
+                            <textarea id="message" name="message" rows="4" required placeholder="Enter your announcement message...">{{ old('message') }}</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="file"><i class="fas fa-paperclip"></i> Attachment (Optional):</label>
+                            <input type="file" id="file" name="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                        </div>
+                        
+                        <button type="submit" class="announce-btn"><i class="fas fa-paper-plane"></i> Send Announcement</button>
+                    </form>
                 </div>
-            @empty
-                <p>No announcements yet.</p>
-            @endforelse
+                
+                <div class="announcements-list">
+                    <div class="list-header">
+                        <h3><i class="fas fa-list"></i> Recent Announcements</h3>
+                    </div>
+                    <div class="announcements-list-content">
+                        @if(isset($announcements) && $announcements->count() > 0)
+                        @foreach($announcements as $a)
+                            <div class="announcement-item">
+                                <div class="announcement-header">
+                                    <div class="announcement-title">
+                                        <h4><i class="fas fa-bullhorn"></i> {{ $a->title ?? 'Untitled Announcement' }}</h4>
+                                        <p class="class-info"><i class="fas fa-chalkboard-teacher"></i> Class: {{ $a->class_name ?? 'Unknown Class' }}</p>
+                                    </div>
+                                    <div class="announcement-date">
+                                        <i class="fas fa-clock"></i>
+                                        <span>{{ $a->created_at ? $a->created_at->format('M d, Y h:i A') : 'N/A' }}</span>
+                                    </div>
+                                </div>
+                                <div class="announcement-content">
+                                    <p>{{ $a->message ?? 'No message' }}</p>
+                                    @if($a->file_exists)
+                                        <div class="attachment">
+                                            <i class="fas fa-paperclip"></i>
+                                            <a href="{{ $a->file_url }}" target="_blank" download="{{ $a->file_name }}">
+                                                <i class="fas fa-download"></i> Download {{ $a->file_name }}
+                                            </a>
+                                        </div>
+                                    @elseif($a->file_path)
+                                        <div class="attachment-missing">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <span>Attachment file missing: {{ $a->file_name }}</span>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="no-announcements">
+                            <i class="fas fa-inbox"></i>
+                            <p>No announcements yet.</p>
+                        </div>
+                        @endif
+                    </div>
+                </div>
             </div>
-
-            
-            
-            <!--<div class="announcement-status">
-                <div class="table-container">
-                    <table class="status-table">
-                        <thead>
-                            <tr>
-                                <th>STUDENT</th>
-                                <th>STATUS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Maria Santos</td>
-                                <td>Viewed</td>
-                            </tr>
-                            <tr>
-                                <td>John Rivera</td>
-                                <td>Not Viewed</td>
-                            </tr>
-                            <tr>
-                                <td>Sofia Garcia</td>
-                                <td>Viewed</td>
-                            </tr>
-                            <tr>
-                                <td>Miguel Cruz</td>
-                                <td>Not Viewed</td>
-                            </tr>
-                            <tr>
-                                <td>Gabriela Ponce</td>
-                                <td>Viewed</td>
-                            </tr>
-                            <tr>
-                                <td>Alex Reyes</td>
-                                <td>Not Viewed</td>
-                            </tr>
-                            <tr>
-                                <td>Isabella Lim</td>
-                                <td>Viewed</td>
-                            </tr>
-                            <tr>
-                                <td>Diego Tan</td>
-                                <td>Not Viewed</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>-->
-
         </div>
     </div>
 
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content">
+            <p>Are you sure you want to log out?</p>
+            <button class="confirm-btn" onclick="logout(event)">Yes, Logout</button>
+            <button class="cancel-btn" onclick="closeModal()">No</button>
+        </div>
+    </div>
+    
+    <!-- Hidden logout form -->
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        @csrf
+    </form>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar) {
+                        sidebar.classList.toggle('active');
+                    }
+                });
+            }
+            
             // Search functionality
-            document.querySelector('.search-button').addEventListener('click', function() {
-                const searchValue = document.querySelector('.search-bar').value;
-                console.log('Searching for:', searchValue);
-                // Implement actual search functionality here
-            });
+            const searchButton = document.querySelector('.search-button');
+            if (searchButton) {
+                searchButton.addEventListener('click', function() {
+                    const searchBar = document.querySelector('.search-bar');
+                    if (searchBar) {
+                        const searchValue = searchBar.value;
+                        console.log('Searching for:', searchValue);
+                        // Implement actual search functionality here
+                    }
+                });
+            }
 
+            // Form validation and submission
+            const announceBtn = document.querySelector('.announce-btn');
+            const form = document.querySelector('form[action*="announcement"]');
             
-            document.querySelector('.announce-btn').addEventListener('click', function() {
-                const messageText = document.querySelector('.message-content textarea').value;
-                const selectedSection = document.querySelector('#section-select').value;
-                
-                if (messageText.trim() === '') {
-                    alert('Please enter a message before announcing.');
-                    return;
-                }
-                
-                if (selectedSection === '' || selectedSection === null) {
-                    alert('Please select a section before announcing.');
-                    return;
-                }
-                
-                
-                document.querySelector('.preview-content p').textContent = messageText;
-                document.querySelector('.preview-recipient').textContent = 'To: ' + 
-                    document.querySelector('#section-select option:checked').text;
-                
-                
-                alert('Announcement sent successfully!');
-                
-                
-                document.querySelector('.message-content textarea').value = '';
-            });
+            if (announceBtn && form) {
+                // Handle form submission
+                form.addEventListener('submit', function(e) {
+                    const messageText = document.querySelector('#message');
+                    const selectedSection = document.querySelector('#section-select');
+                    const titleInput = document.querySelector('#title');
+                    
+                    // Check for validation errors
+                    let hasErrors = false;
+                    
+                    if (titleInput && titleInput.value.trim() === '') {
+                        e.preventDefault();
+                        alert('Please enter a title for the announcement.');
+                        hasErrors = true;
+                    }
+                    
+                    if (messageText && messageText.value.trim() === '') {
+                        e.preventDefault();
+                        alert('Please enter a message before announcing.');
+                        hasErrors = true;
+                    }
+                    
+                    if (selectedSection && (selectedSection.value === '' || selectedSection.value === null)) {
+                        e.preventDefault();
+                        alert('Please select a section before announcing.');
+                        hasErrors = true;
+                    }
+                    
+                    // If all validations pass, show loading state
+                    if (!hasErrors) {
+                        announceBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+                        announceBtn.disabled = true;
+                        
+                        // Re-enable button after 10 seconds in case of error
+                        setTimeout(function() {
+                            announceBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Announcement';
+                            announceBtn.disabled = false;
+                        }, 10000);
+                    }
+                });
+            }
             
-            
-            document.querySelector('.add-file-btn').addEventListener('click', function() {
-                alert('File upload functionality would be implemented here.');
-                
-            });
+            // File upload preview
+            const fileInput = document.querySelector('#file');
+            if (fileInput) {
+                fileInput.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file) {
+                        console.log('File selected:', file.name);
+                        // You can add file preview functionality here
+                    }
+                });
+            }
         });
     </script>
+    
+    <script src="{{ asset('js/logout.js') }}?v={{ time() }}"></script>
 </body>
 </html>

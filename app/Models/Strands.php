@@ -15,5 +15,5 @@ class Strands extends Model
 
     public $incrementing = true;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'no_of_sections'];
 }

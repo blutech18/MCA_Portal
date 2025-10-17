@@ -23,10 +23,16 @@ class EnrollmentConfirmation extends Mailable
 
     public function build()
     {
+        // Generate deterministic 7-digit student number: yy + 5-digit enrollee ID
+        $studentNumber = sprintf('%02d%05d', (int) now()->format('y'), (int) $this->enrollee->id);
+
         return $this
             ->from(config('mail.from.address'), config('mail.from.name'))
             ->subject('Your MCA Montessori Enrollment Confirmation')
             ->view('new_enrollment_confirmation')
-            ->with(['enrollee' => $this->enrollee]);
+            ->with([
+                'enrollee' => $this->enrollee,
+                'studentNumber' => $studentNumber,
+            ]);
     }
 }

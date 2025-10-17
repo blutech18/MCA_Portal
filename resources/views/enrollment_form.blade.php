@@ -3,7 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="{{ asset('css/styles_enrollment_form.css') }}" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ secure_asset('css/styles_enrollment_form.css') }}?v={{ time() }}" />
+    <link rel="stylesheet" href="{{ secure_asset('css/mobile-compatibility.css') }}?v={{ time() }}">
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap" rel="stylesheet">
     <title>Enrollment Form</title>
   </head>
@@ -12,7 +17,7 @@
     <div class="enrollment-form">
       <div class="header">
         <div class="school-logo">
-          <img src="{{ asset('images/logo.png') }}" alt="School Logo">
+          <img src="{{ secure_asset('images/logo.png') }}?v={{ time() }}" alt="School Logo">
         </div>
         <div class="school-name">
           <h2>MCA MONTESSORI SCHOOL</h2>
@@ -228,6 +233,9 @@
       </div>
     </div>
 
+    <!-- Mobile Compatibility Script -->
+    <script src="{{ secure_asset('js/mobile-compatibility.js') }}?v={{ time() }}"></script>
+    
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         const steps = Array.from(document.querySelectorAll('.form-step'));

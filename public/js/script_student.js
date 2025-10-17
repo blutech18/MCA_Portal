@@ -1,3 +1,4 @@
+/* MCA Portal JS - Version: 2025-09-29 22:56:16 - Cache Busted */
 function confirmExit() {
     document.getElementById("confirm-modal").style.display = "flex";
 }

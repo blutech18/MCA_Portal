@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MCA Montessori School Payment</title>
+  <link rel="stylesheet" href="{{ asset('css/mobile-compatibility.css') }}">
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
@@ -119,6 +120,70 @@ legend {
   padding: 0 10px;
 }
 
+/* Payment Method Selection */
+.payment-method-section {
+  background-color: #fff;
+  border: 1px solid #bd8c91;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.payment-method-options {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.payment-option input[type="radio"] {
+  margin: 0;
+  transform: scale(1.2);
+}
+
+.payment-option label {
+  font-weight: 500;
+  color: #5a1a20;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* Cash Payment Styles */
+.cash-payment-info {
+  padding: 20px 0;
+}
+
+.cash-instructions {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f9f1f2;
+  border-radius: 5px;
+  border-left: 4px solid #7a222b;
+}
+
+.cash-instructions p {
+  margin-bottom: 10px;
+  color: #5a1a20;
+  font-weight: 600;
+}
+
+.cash-instructions ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.cash-instructions li {
+  margin-bottom: 8px;
+  color: #5a1a20;
+}
+
 /* Payment Layout */
 .payment-container {
   display: flex;
@@ -207,6 +272,21 @@ legend {
   margin-top: 5px;
   display: none;
   font-weight: 500;
+}
+
+.readonly-field {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.form-text {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.text-muted {
+  color: #6c757d !important;
 }
 
 /* Receipt Upload Styling */
@@ -667,10 +747,24 @@ button[disabled] {
           @csrf
             <h2>STEP 3. PAYMENT</h2>
             
+            <!-- Payment Method Selection -->
+            <div class="payment-method-section">
+                <h3>Select Payment Method</h3>
+                <div class="payment-method-options">
+                    <div class="payment-option">
+                        <input type="radio" id="digitalPayment" name="paymentMethod" value="digital" checked>
+                        <label for="digitalPayment">Digital Payment (GCash, PayMaya, etc.)</label>
+                    </div>
+                    <div class="payment-option">
+                        <input type="radio" id="cashPayment" name="paymentMethod" value="cash">
+                        <label for="cashPayment">Pay in Cash</label>
+                    </div>
+                </div>
+            </div>
             
             <div class="payment-container">
                
-                <div class="payment-section">
+                <div class="payment-section" id="digitalPaymentSection">
                     <h4 style="text-align: center; margin-bottom: 15px;">Scan to Pay Reservation Fee</h4>
                     <div class="qr-container">
                         <img src="{{asset ('images/qr.png')}}" alt="Payment QR Code" class="qr-code">
@@ -682,22 +776,51 @@ button[disabled] {
                         </div>
                         <div>
                             <span class="label">Amount:</span> 
-                            <span>PHP 1,000.00</span>
+                            <span>{{ $currentFee->formatted_amount }}</span>
                         </div>
                     </div>
                 </div>
                 
+                <div class="payment-section" id="cashPaymentSection" style="display: none;">
+                    <h4 style="text-align: center; margin-bottom: 15px;">Cash Payment Information</h4>
+                    <div class="cash-payment-info">
+                        <div class="payment-info">
+                            <div>
+                                <span class="label">Payment Method:</span> 
+                                <span>Cash Payment</span>
+                            </div>
+                            <div>
+                                <span class="label">Amount:</span> 
+                                <span>{{ $currentFee->formatted_amount }}</span>
+                            </div>
+                            <div>
+                                <span class="label">Location:</span> 
+                                <span>MCA Montessori School Office</span>
+                            </div>
+                        </div>
+                        <div class="cash-instructions">
+                            <p><strong>Instructions:</strong></p>
+                            <ul>
+                                <li>Visit the school office during business hours</li>
+                                <li>Bring exact amount: {{ $currentFee->formatted_amount }}</li>
+                                <li>Request for official receipt</li>
+                                <li>Keep the receipt for your records</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
                 
-                <div class="payment-section">
+                <div class="payment-section" id="uploadSection">
                     <h4 style="text-align: center; margin-bottom: 15px;">Upload Payment Receipt</h4>
                     <div class="upload-section">
-                        <div class="form-group">
+                        <div class="form-group" id="fullNameGroup">
                             <label for="fullName">Full Name of Applicant <span class="required-mark"></span></label>
-                            <input type="text" id="fullName" name="fullName" class="form-control" placeholder="Enter full name (Last, First MI)" required>
+                            <input type="text" id="fullName" name="fullName" class="form-control readonly-field" placeholder="Enter full name (Legacy)" value="{{ $enrollee->display_name }}" readonly required>
+                            <small class="form-text text-muted">Name automatically populated from enrollment form</small>
                             <div class="validation-message" id="fullNameValidation">Please enter the applicant's full name</div>
                         </div>
                         
-                        <div class="form-group">
+                        <div class="form-group" id="paymentRefGroup">
                             <label for="paymentRef">Payment Reference Number <span class="required-mark"></span></label>
                             <input type="text" id="paymentRef" name="paymentRef" class="form-control" placeholder="Enter payment reference number" required>
                             <div class="validation-message" id="paymentRefValidation">Please enter the payment reference number</div>
@@ -749,13 +872,164 @@ button[disabled] {
             </div>
             
             <div class="button-group">
-                <button type="button" class="back-button" onclick="window.location.href='upload_document.html'">Back</button>
+                <button type="button" class="back-button" onclick="handleBackButton()">Back</button>
                 <button type="submit" id="nextButton" disabled>Next</button>
             </div>
         </form>
     </div>
 
+    <!-- Mobile Compatibility Script -->
+    <script src="{{ asset('js/mobile-compatibility.js') }}"></script>
+    
     <script>
+        // File caching functions for Step 3
+        function cacheFileData(inputId, file) {
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const fileData = {
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        data: e.target.result,
+                        lastModified: file.lastModified
+                    };
+                    localStorage.setItem(`new_step3_${inputId}`, JSON.stringify(fileData));
+                    console.log(`Cached file data for ${inputId}:`, file.name);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function restoreCachedFiles() {
+            console.log('restoreCachedFiles() disabled by design - no restoration attempted');
+            return 0;
+        }
+
+        function clearCachedFiles() {
+            localStorage.removeItem(`new_step3_receiptUpload`);
+            localStorage.removeItem('new_step3_form_data');
+            localStorage.removeItem('new_step3_payment_method');
+            // Clear ALL local storage
+            localStorage.clear();
+            console.log('Cleared ALL cached data including localStorage');
+        }
+
+        function showFilePreview(inputId, fileData) {
+            const previewContainer = document.getElementById(`${inputId}Preview`);
+            const validationMessage = document.getElementById(`${inputId}Validation`);
+            
+            if (previewContainer && validationMessage) {
+                validationMessage.style.display = 'none';
+                previewContainer.style.display = 'block';
+                previewContainer.innerHTML = '';
+                
+                const fileExtension = fileData.name.split('.').pop().toLowerCase();
+                
+                if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+                    // Create image preview
+                    const img = document.createElement('img');
+                    img.src = fileData.data;
+                    previewContainer.appendChild(img);
+                } else {
+                    // Document preview (PDF or other)
+                    const docPreview = document.createElement('div');
+                    docPreview.className = 'document-preview';
+                    
+                    const docIcon = document.createElement('div');
+                    docIcon.className = 'doc-icon';
+                    docIcon.innerHTML = '📄';
+                    
+                    const docName = document.createElement('div');
+                    docName.className = 'doc-name';
+                    docName.textContent = fileData.name;
+                    
+                    docPreview.appendChild(docIcon);
+                    docPreview.appendChild(docName);
+                    previewContainer.appendChild(docPreview);
+                }
+                
+                // Add remove button
+                const removeBtn = document.createElement('div');
+                removeBtn.className = 'remove-receipt';
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', function() {
+                    const input = document.getElementById(inputId);
+                    input.value = '';
+                    previewContainer.style.display = 'none';
+                    previewContainer.innerHTML = '';
+                    validationMessage.style.display = 'block';
+                    
+                    // Clear cached file data
+                    localStorage.removeItem(`new_step3_${inputId}`);
+                    
+                    checkAllFieldsFilled();
+                });
+                previewContainer.appendChild(removeBtn);
+                
+                console.log(`File preview displayed for ${inputId}: ${fileData.name}`);
+            }
+        }
+
+        // Form data caching functions
+        function cacheFormData() {
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                paymentRef: document.getElementById('paymentRef').value
+            };
+            localStorage.setItem('new_step3_form_data', JSON.stringify(formData));
+            console.log('Cached form data for Step 3:', formData);
+        }
+
+        function restoreCachedFormData() {
+            console.log('restoreCachedFormData() disabled by design - no restoration attempted');
+            return false;
+        }
+
+        function clearCachedData() {
+            clearCachedFiles();
+            localStorage.removeItem('new_step3_form_data');
+            console.log('Cleared all cached data for Step 3');
+        }
+
+        // Global handleBackButton function
+        window.handleBackButton = function() {
+            // Check if there's a previous page in history
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                // Fallback to route navigation
+                window.location.href = '{{ route('enroll.new.step2') }}';
+            }
+        };
+
+        // Global function to check if all required fields are filled
+        function checkAllFieldsFilled() {
+            const digitalPaymentRadio = document.getElementById('digitalPayment');
+            const cashPaymentRadio = document.getElementById('cashPayment');
+            const fullNameInput = document.getElementById('fullName');
+            const paymentRefInput = document.getElementById('paymentRef');
+            const receiptInput = document.getElementById('receiptUpload');
+            const nextButton = document.getElementById('nextButton');
+            
+            const isDigitalPayment = digitalPaymentRadio && digitalPaymentRadio.checked;
+            
+            const nameValid = isDigitalPayment ? 
+                (fullNameInput && fullNameInput.value.trim() !== '') : 
+                true; // Not required for cash payment
+            const refValid = isDigitalPayment ? 
+                (paymentRefInput && paymentRefInput.value.trim() !== '') : 
+                true; // Not required for cash payment
+            const receiptValid = receiptInput && receiptInput.files && receiptInput.files.length > 0;
+
+            const allValid = nameValid && refValid && receiptValid;
+
+            if (nextButton) {
+                nextButton.disabled = !allValid;
+            }
+            return allValid;
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             
             setProgress(3);
@@ -765,6 +1039,59 @@ button[disabled] {
             const paymentRefInput = document.getElementById('paymentRef');
             const receiptInput = document.getElementById('receiptUpload');
             const nextButton = document.getElementById('nextButton');
+            
+            // Payment method selection
+            const digitalPaymentRadio = document.getElementById('digitalPayment');
+            const cashPaymentRadio = document.getElementById('cashPayment');
+            const digitalPaymentSection = document.getElementById('digitalPaymentSection');
+            const cashPaymentSection = document.getElementById('cashPaymentSection');
+            const fullNameGroup = document.getElementById('fullNameGroup');
+            const paymentRefGroup = document.getElementById('paymentRefGroup');
+            
+            function updatePaymentMethodVisibility() {
+                const isDigitalPayment = digitalPaymentRadio.checked;
+                const isCashPayment = cashPaymentRadio.checked;
+                
+                // Show/hide payment sections
+                if (digitalPaymentSection) {
+                    digitalPaymentSection.style.display = isDigitalPayment ? 'block' : 'none';
+                }
+                if (cashPaymentSection) {
+                    cashPaymentSection.style.display = isCashPayment ? 'block' : 'none';
+                }
+                
+                // Show/hide form fields based on payment method
+                if (fullNameGroup) {
+                    fullNameGroup.style.display = isDigitalPayment ? 'block' : 'none';
+                    fullNameInput.required = isDigitalPayment;
+                    // Don't clear the readonly field value
+                    // if (!isDigitalPayment) {
+                    //     fullNameInput.value = '';
+                    // }
+                }
+                
+                if (paymentRefGroup) {
+                    paymentRefGroup.style.display = isDigitalPayment ? 'block' : 'none';
+                    paymentRefInput.required = isDigitalPayment;
+                    if (!isDigitalPayment) {
+                        paymentRefInput.value = '';
+                    }
+                }
+                
+                // Update validation
+                checkAllFieldsFilled();
+            }
+            
+            // Add event listeners for payment method selection
+            if (digitalPaymentRadio) {
+                digitalPaymentRadio.addEventListener('change', updatePaymentMethodVisibility);
+            }
+            if (cashPaymentRadio) {
+                cashPaymentRadio.addEventListener('change', updatePaymentMethodVisibility);
+            }
+            
+            // Initialize payment method visibility
+            updatePaymentMethodVisibility();
             
             
             fullNameInput.addEventListener('input', function() {
@@ -776,6 +1103,8 @@ button[disabled] {
                     validationMessage.style.display = 'none';
                     this.classList.remove('is-invalid');
                 }
+                // Cache form data
+                cacheFormData();
                 checkAllFieldsFilled();
             });
             
@@ -789,6 +1118,8 @@ button[disabled] {
                     validationMessage.style.display = 'none';
                     this.classList.remove('is-invalid');
                 }
+                // Cache form data
+                cacheFormData();
                 checkAllFieldsFilled();
             });
             
@@ -797,6 +1128,11 @@ button[disabled] {
                 const file = e.target.files[0];
                 const previewContainer = document.getElementById('receiptPreview');
                 const validationMessage = document.getElementById('receiptValidation');
+                
+                // Cache the file data
+                if (file) {
+                    cacheFileData('receiptUpload', file);
+                }
                 
                 if (file) {
                     validationMessage.style.display = 'none';
@@ -839,9 +1175,18 @@ button[disabled] {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
+                const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
+                console.log('Attempting form submission:', {
+                  paymentMethod: paymentMethod,
+                  allValid: checkAllFieldsFilled(),
+                  formAction: this.action
+                });
+                
                 if (checkAllFieldsFilled()) {
-                  alert('Payment verification submitted successfully! Proceeding to confirmation page.');
+                  alert(`Payment pending verification for ${paymentMethod} payment. Your application will be processed once payment is confirmed. Proceeding to confirmation page.`);
                   this.submit();   // actually POSTs the form now
+                } else {
+                  alert('Please fill in all required fields before submitting.');
                 }
             });
             
@@ -896,28 +1241,52 @@ button[disabled] {
                     container.style.display = 'none';
                     container.innerHTML = '';
                     document.getElementById('receiptValidation').style.display = 'block';
+                    
+                    // Clear cached file data
+                    localStorage.removeItem(`new_step3_receiptUpload`);
+                    
                     checkAllFieldsFilled();
                 });
                 container.appendChild(removeBtn);
             }
             
-            // Helper function to check if all required fields are filled
-            function checkAllFieldsFilled() {
-                const nameValid = fullNameInput.value.trim() !== '';
-                const refValid = paymentRefInput.value.trim() !== '';
-                                const receiptValid = receiptInput.files.length > 0;
-
-                const allValid = nameValid && refValid && receiptValid;
-
-                nextButton.disabled = !allValid;
-                return allValid;
-            }
+            // Helper function to check if all required fields are filled moved to global scope
 
             // Set progress bar step visually
             function setProgress(step) {
                 const progressBar = document.querySelector('.progress-bar');
                 progressBar.className = `progress-bar step-${step}`;
             }
+            
+            // FORCE CLEAR ALL CACHED DATA ON PAGE LOAD
+            console.log('Force clearing all cached data on page load...');
+            clearCachedFiles();
+            
+            // Optimized restoration system to prevent flickering
+            let restorationInProgress = false;
+            
+            function performRestoration() {
+                console.log('performRestoration() disabled by design - no restoration attempted');
+                // Function disabled to prevent interference with form submission
+                return;
+            }
+            
+            // Disable automatic restoration to prevent interference
+            console.log('Automatic form restoration disabled');
+            
+            // Disable aggressive caching that interferes with form submission
+            console.log('File caching disabled to prevent form submission issues');
+            
+            // DISABLED: Navigation event listeners (cause form submission interference)
+            console.log('Event listener restoration DISABLED by design');
+            
+            // Clear cached data on successful form submission
+            form.addEventListener('submit', function(e) {
+                if (checkAllFieldsFilled()) {
+                    // Clear cache only after successful validation
+                    setTimeout(clearCachedData, 1000);
+                }
+            });
         });
     </script>
 </body>

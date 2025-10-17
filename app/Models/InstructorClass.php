@@ -15,13 +15,19 @@ class InstructorClass extends Model
       'assigned_at',  // or rename this to created_at if you’d rather let timestamps do it
     ];
 
+    public function instructor()
+    {
+        return $this->belongsTo(Instructor::class, 'instructor_id', 'instructor_id');
+    }
+
     public function schedules()
     {
         return $this->hasMany(Schedule::class, 'instructor_class_id', 'id');
     }
+    
     public function class()
-  {
-      // pivot.class_id → classes.id
-      return $this->belongsTo(SchoolClass::class, 'class_id', 'id');
-  }
+    {
+        // pivot.class_id → classes.id
+        return $this->belongsTo(SchoolClass::class, 'class_id', 'id');
+    }
 }

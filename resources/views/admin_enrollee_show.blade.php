@@ -1,4 +1,8 @@
 
+@php
+use Illuminate\Support\Facades\Storage;
+@endphp
+
 @extends('layouts.admin')
 
 @section('title', 'Enrollee Details')
@@ -12,7 +16,7 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div class="space-y-2">
         <h2 class="font-bold">Personal Information</h2>
-        <p><strong>Full Name:</strong> {{ $enrollee->surname }}, {{ $enrollee->given_name }} {{ $enrollee->middle_name }}</p>
+        <p><strong>Full Name:</strong> {{ $enrollee->display_name }}</p>
         <p><strong>LRN:</strong> {{ $enrollee->lrn }}</p>
         <p><strong>Date of Birth:</strong> {{ $enrollee->dob }}</p>
         <p><strong>Gender:</strong> {{ ucfirst($enrollee->gender) }}</p>
@@ -33,7 +37,13 @@
         <p><strong>Strand:</strong> {{ $enrollee->strand ?? '–' }}</p>
         <p><strong>Semester:</strong> {{ $enrollee->semester ?? '–' }}</p>
         <p><strong>Former School:</strong> {{ $enrollee->former_school }}</p>
-        <p><strong>Previous Grade:</strong> {{ $enrollee->previous_grade }}</p>
+        <p><strong>Grade Level:</strong> 
+          @if($enrollee->shs_grade)
+              {{ $enrollee->shs_grade }}
+          @else
+              {{ $enrollee->previous_grade }}
+          @endif
+        </p>
         <p><strong>Last School Year:</strong> {{ $enrollee->last_school_year }}</p>
         <p><strong>School Type:</strong> {{ $enrollee->school_type }}</p>
         <p><strong>School Address:</strong> {{ $enrollee->school_address }}</p>
@@ -59,32 +69,40 @@
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <h3>Report Card</h3>
-                @if($enrollee->report_card_path)
+                @if($enrollee->report_card_path && Storage::disk('public')->exists($enrollee->report_card_path))
                     <a href="{{ Storage::url($enrollee->report_card_path) }}" target="_blank">Download</a>
+                @elseif($enrollee->report_card_path)
+                    <span class="text-red-500 text-sm">File missing</span>
                 @else
                     <span>–</span>
                 @endif
             </div>
             <div>
                 <h3>Good Moral</h3>
-                @if($enrollee->good_moral_path)
+                @if($enrollee->good_moral_path && Storage::disk('public')->exists($enrollee->good_moral_path))
                     <a href="{{ Storage::url($enrollee->good_moral_path) }}" target="_blank">Download</a>
+                @elseif($enrollee->good_moral_path)
+                    <span class="text-red-500 text-sm">File missing</span>
                 @else
                     <span>–</span>
                 @endif
             </div>
             <div>
                 <h3>Birth Certificate</h3>
-                @if($enrollee->birth_certificate_path)
+                @if($enrollee->birth_certificate_path && Storage::disk('public')->exists($enrollee->birth_certificate_path))
                     <a href="{{ Storage::url($enrollee->birth_certificate_path) }}" target="_blank">Download</a>
+                @elseif($enrollee->birth_certificate_path)
+                    <span class="text-red-500 text-sm">File missing</span>
                 @else
                     <span>–</span>
                 @endif
             </div>
             <div>
                 <h3>ID Picture</h3>
-                @if($enrollee->id_picture_path)
+                @if($enrollee->id_picture_path && Storage::disk('public')->exists($enrollee->id_picture_path))
                     <img src="{{ Storage::url($enrollee->id_picture_path) }}" alt="ID Picture" class="w-24 h-24 object-cover">
+                @elseif($enrollee->id_picture_path)
+                    <span class="text-red-500 text-sm">Image missing</span>
                 @else
                     <span>–</span>
                 @endif
@@ -97,8 +115,10 @@
         <p><strong>Applicant Name:</strong> {{ $enrollee->payment_applicant_name ?? '–' }}</p>
         <p><strong>Reference #:</strong> {{ $enrollee->payment_reference ?? '–' }}</p>
         <p><strong>Paid:</strong> {{ $enrollee->paid ? 'Yes' : 'No' }}</p>
-        @if($enrollee->payment_receipt_path)
+        @if($enrollee->payment_receipt_path && Storage::disk('public')->exists($enrollee->payment_receipt_path))
             <a href="{{ Storage::url($enrollee->payment_receipt_path) }}" target="_blank">Download Receipt</a>
+        @elseif($enrollee->payment_receipt_path)
+            <span class="text-red-500 text-sm">Receipt file missing</span>
         @endif
     </div>
 

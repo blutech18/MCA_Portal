@@ -5,14 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login Form MCA</title>
-  <link rel="stylesheet" href="{{ asset('css/styles_login.css') }}">
+  <link rel="stylesheet" href="{{ secure_asset('css/styles_login.css') }}?v={{ time() }}">
 </head>
 <body>
   <div class = "bg-container">
     
     <div class="hero">
       <div class="building">
-        <img src="{{ asset('images/bglogin.jpg') }}" alt="Building" class="building-pic">
+        <img src="{{ secure_asset('images/bglogin.jpg') }}?v={{ time() }}" alt="Building" class="building-pic">
         <div class="hero__panel panel--top">
           <h1>Welcome to MCA Montessori School Portal</h1>
           <p>Access grades, schedules, balances, and student records all in one place.</p>
@@ -43,16 +43,16 @@
       <div class="form-container">
         <form action="{{ url('/login') }}" class="login-form" method="POST">
           @csrf
-          <img src="{{ asset('images/logo.png') }}" alt="Logo" class="logo">
+          <img src="{{ secure_asset('images/logo.png') }}?v={{ time() }}" alt="Logo" class="logo">
           <h1>MCA MONTESORRI SCHOOL</h1>
           <div class="login-title">
           </div>
           <div class="input-box">
-            <!--<img src="{{ asset('images/email.png') }}" alt="email_picture" class="email">-->
+            <!--<img src="{{ secure_asset('images/email.png') }}?v={{ time() }}" alt="email_picture" class="email">-->
             <input type="text" id = "username" name = "username"  placeholder ="Username" required>
           </div>
           <div class="input-box">
-            <!--<img src="{{ asset('images/lock.png') }}" alt="Lock" class="lock">-->
+            <!--<img src="{{ secure_asset('images/lock.png') }}?v={{ time() }}" alt="Lock" class="lock">-->
             <input type="password" id="password" name="password" placeholder="Password" required>
           </div>
   
@@ -77,7 +77,7 @@
     </div>
   </div>
   
-  <script src="{{ asset('js/script.js') }}"></script>
+  <script src="{{ secure_asset('js/script.js') }}?v={{ time() }}"></script>
 
 </body>
 </html>

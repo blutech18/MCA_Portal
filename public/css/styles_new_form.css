@@ -1,3 +1,4 @@
+/* MCA Portal CSS - Version: 2025-01-27 15:30:00 - Cache Busted - Fixed siblings and gender field styling */
    
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
@@ -171,31 +172,111 @@ label {
 input[type="text"],
 input[type="email"],
 input[type="tel"],
-input[type="date"] {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #bd8c91;
-  border-radius: 4px;
-  background-color: #fff;
+input[type="date"],
+input[type="number"],
+select {
+  width: 100% !important;
+  padding: 10px !important;
+  border: 1px solid #bd8c91 !important;
+  border-radius: 4px !important;
+  background-color: #fff !important;
   transition: border-color 0.3s;
   font-size: 16px; /* Better for mobile */
   -webkit-appearance: none; /* Removes default styling on iOS */
+  -moz-appearance: none; /* Removes default styling on Firefox */
   appearance: none;
+  box-sizing: border-box;
+  display: block;
+  margin: 0;
 }
 
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="tel"]:focus,
-input[type="date"]:focus {
-  border-color: #7a222b;
-  outline: none;
-  box-shadow: 0 0 5px rgba(122, 34, 43, 0.3);
+input[type="date"]:focus,
+input[type="number"]:focus,
+select:focus {
+  border-color: #7a222b !important;
+  outline: none !important;
+  box-shadow: 0 0 5px rgba(122, 34, 43, 0.3) !important;
 }
 
 input[type="radio"],
 input[type="checkbox"] {
   margin-right: 5px;
   cursor: pointer;
+}
+
+/* Specific styling for siblings field to ensure it works on all browsers */
+#siblings {
+  width: 100% !important;
+  padding: 10px !important;
+  border: 1px solid #bd8c91 !important;
+  border-radius: 4px !important;
+  background-color: #fff !important;
+  font-size: 16px !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  box-sizing: border-box !important;
+  display: block !important;
+  margin: 0 !important;
+  transition: border-color 0.3s !important;
+}
+
+#siblings:focus {
+  border-color: #7a222b !important;
+  outline: none !important;
+  box-shadow: 0 0 5px rgba(122, 34, 43, 0.3) !important;
+}
+
+/* Specific styling for gender field (select) */
+#gender {
+  width: 100% !important;
+  padding: 10px !important;
+  border: 1px solid #bd8c91 !important;
+  border-radius: 4px !important;
+  background-color: #fff !important;
+  font-size: 16px !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  box-sizing: border-box !important;
+  display: block !important;
+  margin: 0 !important;
+  transition: border-color 0.3s !important;
+  cursor: pointer !important;
+}
+
+#gender:focus {
+  border-color: #7a222b !important;
+  outline: none !important;
+  box-shadow: 0 0 5px rgba(122, 34, 43, 0.3) !important;
+}
+
+/* Additional browser compatibility fixes */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Ensure form field containers don't interfere with styling */
+div:has(#siblings),
+div:has(#gender) {
+  width: 100%;
+  display: block;
+}
+
+/* Fallback for browsers that don't support :has() */
+div > input[type="number"][id="siblings"],
+div > select[id="gender"] {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 /* Required field marker */
@@ -498,8 +579,17 @@ div input[type="radio"][name="semester"] + label {
   input[type="text"],
   input[type="email"],
   input[type="tel"],
-  input[type="date"] {
-    padding: 8px;
+  input[type="date"],
+  input[type="number"],
+  select {
+    padding: 8px !important;
+  }
+  
+  /* Mobile specific styling for siblings and gender fields */
+  #siblings,
+  #gender {
+    padding: 8px !important;
+    font-size: 16px !important; /* Prevents zoom on iOS */
   }
   
   div input[type="checkbox"][id^="term"] + label {
