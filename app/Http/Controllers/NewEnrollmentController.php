@@ -102,7 +102,6 @@ class NewEnrollmentController extends Controller
                 'religion'                => 'required|string|max:255',
                 'nationality'             => 'required|string|max:255',
                 'formerSchool'            => 'required|string|max:255',
-                'previousGrade'           => 'required|string|in:7,8,9,10,11,12',
                 'lastSchoolYear'          => 'required|string|in:2010-2011,2011-2012,2012-2013,2013-2014,2014-2015,2015-2016,2016-2017,2017-2018,2018-2019,2019-2020,2020-2021,2021-2022,2022-2023,2023-2024,2024-2025,2025-2026',
                 'schoolType'              => 'required|string|in:Private,Public,Homeschool',
                 'schoolAddress'           => 'required|string|max:500',
@@ -176,7 +175,6 @@ class NewEnrollmentController extends Controller
                     'religion' => $data['religion'],
                     'nationality' => $data['nationality'],
                     'former_school' => $data['formerSchool'],
-                    'previous_grade' => $data['previousGrade'],
                     'last_school_year' => $data['lastSchoolYear'],
                 ]);
                 
@@ -213,7 +211,6 @@ class NewEnrollmentController extends Controller
                 'religion'               => $data['religion'],
                 'nationality'            => $data['nationality'],
                 'former_school'          => $data['formerSchool'],
-                'previous_grade'         => $data['previousGrade'],
                 'last_school_year'       => $data['lastSchoolYear'],
                 'school_type'            => $data['schoolType'],
                 'school_address'         => $data['schoolAddress'],
@@ -238,10 +235,9 @@ class NewEnrollmentController extends Controller
                 'pob'                    => $data['birthplace'],
                 'mobile'                 => $data['contactNo'],
                 'last_school'            => $data['formerSchool'],
-                'grade_completed'        => $data['previousGrade'],
                 'sy_completed'           => $data['lastSchoolYear'],
                 'form138_path'           => 'pending',
-                'desired_grade'          => is_numeric($data['previousGrade']) ? (int)$data['previousGrade'] + 1 : $data['previousGrade'],
+                'desired_grade'          => isset($data['jhsGrade']) ? (int)$data['jhsGrade'] : (isset($data['shsGrade']) ? (int)$data['shsGrade'] : 7),
             ]);
             
             Log::info('New enrollee created successfully', ['enrollee_id' => $enrollee->id]);

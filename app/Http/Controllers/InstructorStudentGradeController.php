@@ -176,20 +176,37 @@ class InstructorStudentGradeController extends Controller
     {
         try {
             // Enhanced validation with 70-100 range for passing grades
-            $data = $req->validate([
+            // Custom validation to allow partial quarter grades
+            $validationRules = [
                 'grade_id'      => 'nullable|exists:grades,id',
                 'student_id'    => 'required|exists:students,student_id',
                 'class_id'      => 'required|exists:classes,id',
                 'subject_id'    => 'required|exists:subjects,id',
-                'first_quarter' => 'nullable|numeric|min:70|max:100',
-                'second_quarter'=> 'nullable|numeric|min:70|max:100',
-                'third_quarter' => 'nullable|numeric|min:70|max:100',
-                'fourth_quarter'=> 'nullable|numeric|min:70|max:100',
-            ], [
-                '*.min' => 'Grade must be at least 70.',
+                'first_quarter' => 'nullable|numeric|min:0|max:100',
+                'second_quarter'=> 'nullable|numeric|min:0|max:100',
+                'third_quarter' => 'nullable|numeric|min:0|max:100',
+                'fourth_quarter'=> 'nullable|numeric|min:0|max:100',
+            ];
+            
+            $customMessages = [
+                '*.min' => 'Grade cannot be negative.',
                 '*.max' => 'Grade cannot exceed 100.',
                 '*.numeric' => 'Grade must be a valid number.',
-            ]);
+            ];
+            
+            $data = $req->validate($validationRules, $customMessages);
+            
+            // Validate that at least one quarter has a grade
+            $hasAnyGrade = !empty($data['first_quarter']) || !empty($data['second_quarter']) || 
+                          !empty($data['third_quarter']) || !empty($data['fourth_quarter']);
+            
+            if (!$hasAnyGrade) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'At least one quarter grade must be provided.',
+                    'errors' => ['general' => ['At least one quarter grade is required.']]
+                ], 422);
+            }
         
             // Calculate final grade (average of all quarters with grades)
             $quarters = array_filter([

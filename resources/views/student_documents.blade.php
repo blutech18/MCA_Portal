@@ -928,10 +928,62 @@ body {
 
             <section class="page-header">
                 <h2 class="page-title">My Documents</h2>
-                <button class="upload-documents-btn" id="uploadBtn">
-                    <i class="fas fa-upload"></i> Upload Document
-                </button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="upload-documents-btn" id="uploadBtn">
+                        <i class="fas fa-upload"></i> Upload Document
+                    </button>
+                    @if(config('app.debug'))
+                    <button onclick="toggleDebugInfo()" style="padding: 10px 15px; background: #17a2b8; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-bug"></i> Debug Info
+                    </button>
+                    @endif
+                </div>
             </section>
+            
+            @if(config('app.debug'))
+            <div id="debugInfo" style="display: none; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 20px; font-size: 13px;">
+                <h3 style="margin-top: 0; color: #495057;"><i class="fas fa-info-circle"></i> Debug Information</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px;">
+                    <div><strong>Student ID:</strong> {{ $student->student_id ?? 'N/A' }}</div>
+                    <div><strong>User ID:</strong> {{ Auth::id() }}</div>
+                    <div><strong>Application Number:</strong> {{ $student->school_student_id ?? 'N/A' }}</div>
+                    <div><strong>Documents Found:</strong> {{ $documents->count() }}</div>
+                    <div><strong>Student Email:</strong> {{ $student->email ?? 'N/A' }}</div>
+                    <div><strong>LRN:</strong> {{ $student->lrn ?? 'N/A' }}</div>
+                </div>
+                @if($documents->count() > 0)
+                <div style="margin-top: 15px;">
+                    <strong>Document Paths:</strong>
+                    <ul style="margin: 5px 0; padding-left: 20px;">
+                        @foreach($documents as $doc)
+                        <li>
+                            <strong>{{ $doc['name'] }}:</strong> 
+                            <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px;">{{ $doc['path'] ?? 'N/A' }}</code>
+                            <span style="color: {{ $doc['exists'] ? '#28a745' : '#dc3545' }};">
+                                ({{ $doc['exists'] ? 'EXISTS' : 'MISSING' }})
+                            </span>
+                        </li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+                <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 4px;">
+                    <strong>Tip:</strong> If documents are missing, check that:
+                    <ol style="margin: 5px 0; padding-left: 20px;">
+                        <li>Files were uploaded during enrollment</li>
+                        <li>The <code>storage/app/public</code> directory exists</li>
+                        <li>Run <code>php artisan storage:link</code> to create symbolic link</li>
+                        <li>File paths in database match actual file locations</li>
+                    </ol>
+                </div>
+            </div>
+            <script>
+                function toggleDebugInfo() {
+                    const debug = document.getElementById('debugInfo');
+                    debug.style.display = debug.style.display === 'none' ? 'block' : 'none';
+                }
+            </script>
+            @endif
 
             <section class="documents-filters">
                 
@@ -976,13 +1028,16 @@ body {
                         <i class="fas {{ $doc['icon'] }}"></i>
                     </div>
 
-                    <span class="document-status {{ $doc['status'] }}">Verified</span>
+                    <span class="document-status {{ $doc['status'] }}">{{ isset($doc['exists']) && $doc['exists'] ? 'Verified' : 'Missing File' }}</span>
                     <div class="document-info">
                         <h3 class="document-name">{{ $doc['name'] }}</h3>
                         <div class="document-meta">
                         <span><strong>Type:</strong> {{ $doc['type'] }}</span>
                         <span><strong>Uploaded:</strong> {{ $doc['uploaded'] }}</span>
                         <span><strong>Size:</strong> {{ $doc['size'] }}</span>
+                        @if(!isset($doc['exists']) || !$doc['exists'])
+                        <span style="color: #dc3545;"><strong><i class="fas fa-exclamation-triangle"></i> File not found in storage</strong></span>
+                        @endif
                         </div>
                         <div class="document-actions">
                         <button
@@ -1073,23 +1128,41 @@ body {
                   }
 
                   function openDocPreview(url){
+                    console.log('Opening document preview:', url);
                     var overlay = document.getElementById('doc-preview-overlay');
                     var frame   = document.getElementById('doc-preview-frame');
                     var img     = document.getElementById('doc-preview-image');
                     var dbtn    = document.getElementById('doc-download-btn');
                     dbtn.dataset.url = url;
+                    
                     // decide viewer by extension
                     var lower = (url || '').toLowerCase();
                     var isImage = /(\.png|\.jpg|\.jpeg|\.gif|\.webp)(\?|$)/.test(lower);
+                    
                     if (isImage){
                       frame.style.display = 'none';
                       img.style.display = 'block';
                       img.src = url;
+                      
+                      // Handle image load errors
+                      img.onerror = function() {
+                        console.error('Failed to load image:', url);
+                        alert('Unable to load image. The file may be missing or inaccessible. Please try downloading instead.');
+                        closeDocPreview();
+                      };
                     } else {
                       img.style.display = 'none';
                       frame.style.display = 'block';
                       frame.src = url;
+                      
+                      // Handle iframe load errors
+                      frame.onerror = function() {
+                        console.error('Failed to load document:', url);
+                        alert('Unable to preview this document. Please try downloading it instead.');
+                        closeDocPreview();
+                      };
                     }
+                    
                     overlay.style.display = 'flex';
                     document.body.style.overflow = 'hidden';
                     overlay.onclick = function(e){ if(e.target === overlay){ closeDocPreview(); } };

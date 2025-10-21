@@ -20,6 +20,7 @@ class StudentReportCardController extends Controller
             ->first();
 
         if (!$student) {
+            \Log::warning('Student not found for user_id: ' . Auth::id());
             // Return view with empty data instead of redirect to avoid loops
             return view('student_report_card', [
                 'student' => null,
@@ -28,9 +29,30 @@ class StudentReportCardController extends Controller
             ]);
         }
 
+        \Log::info('Fetching grades for student', [
+            'student_id' => $student->student_id,
+            'user_id' => Auth::id(),
+            'student_name' => $student->display_name
+        ]);
+
         $grades = Grade::where('student_id', $student->student_id)
-                    ->with('subjectModel')
+                    ->with(['subjectModel', 'schoolClass'])
+                    ->orderBy('subject_id')
                     ->get();
+
+        \Log::info('Grades fetched', [
+            'count' => $grades->count(),
+            'student_id' => $student->student_id,
+            'grades' => $grades->map(function($g) {
+                return [
+                    'id' => $g->id,
+                    'subject_id' => $g->subject_id,
+                    'subject_name' => $g->subjectModel->name ?? 'N/A',
+                    'first_quarter' => $g->first_quarter,
+                    'final_grade' => $g->final_grade
+                ];
+            })
+        ]);
 
         // ✅ Get core value evaluations for the current student (if table exists)
         if (Schema::hasTable('core_value_evaluations')) {

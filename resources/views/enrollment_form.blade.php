@@ -169,15 +169,6 @@
             <input type="text" id="school_address" name="school_address" required>
           </div>
           <div class="input-field">
-            <label for="grade_completed">Grade Level Completed</label>
-            <select id="grade_completed" name="grade_completed" required>
-              <option value="">-- Select --</option>
-              @for($g=1; $g<=12; $g++)
-                <option value="{{ $g }}">{{ $g }}</option>
-              @endfor
-            </select>
-          </div>
-          <div class="input-field">
             <label for="sy_completed">School Year Completed</label>
             <input type="text" id="sy_completed" name="sy_completed" placeholder="20XX–20XX" required>
           </div>

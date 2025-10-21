@@ -36,8 +36,7 @@ class StudentController extends Controller
             'student_section' => StudentSection::with(['gradeLevel', 'strand'])->get(),
 
             'students'       => Student::with(['studentId','status'])
-                                   ->whereIn('status_id', [$enrolledId, $notEnrolledId])
-                                   ->get(),
+                                   ->get(), // Show all students regardless of status
 
             // only needed on the admin form
             'student_status'  => StudentStatus::all(),
@@ -321,17 +320,40 @@ class StudentController extends Controller
 
     public function getFilteredSections(Request $request)
     {
-        $q = StudentSection::where('grade_level_id', $request->grade_level_id);
+        $gradeLevelId = (int)$request->grade_level_id;
+        
+        Log::info('getFilteredSections called', [
+            'grade_level_id' => $gradeLevelId,
+            'strand_id' => $request->strand_id
+        ]);
+        
+        if (!$gradeLevelId) {
+            return response()->json(['sections' => []]);
+        }
+        
+        $q = StudentSection::where('grade_level_id', $gradeLevelId)
+            ->where('is_active', true); // Only show active sections
 
-        if (in_array((int)$request->grade_level_id, [5, 6], true)) {
-            if (! $request->strand_id) {
+        // For SHS (grades 11-12), require strand selection
+        if (in_array($gradeLevelId, [11, 12], true)) {
+            if (!$request->strand_id) {
+                Log::info('SHS grade selected but no strand provided, returning empty sections');
                 return response()->json(['sections' => []]);
             }
             $q->where('strand_id', $request->strand_id);
+            Log::info('SHS sections filtered by strand', ['strand_id' => $request->strand_id]);
         }
+        
+        $sections = $q->orderBy('section_priority')
+            ->get(['id','section_name']);
+        
+        Log::info('Sections retrieved', [
+            'count' => $sections->count(),
+            'sections' => $sections->toArray()
+        ]);
 
         return response()->json([
-        'sections' => $q->get(['id','section_name'])
+            'sections' => $sections
         ]);
     }
 

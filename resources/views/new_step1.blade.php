@@ -472,19 +472,6 @@
       <span>**Required</span>
     </div>
     
-    <div>
-      <label for="previousGrade">Previous School Year Grade:</label>
-      <select id="previousGrade" name="previousGrade" required style="border: 2px solid #7a222b; padding: 8px; font-size: 16px;">
-        <option value="">-- Select Grade Level --</option>
-        <option value="7">Grade 7</option>
-        <option value="8">Grade 8</option>
-        <option value="9">Grade 9</option>
-        <option value="10">Grade 10</option>
-        <option value="11">Grade 11</option>
-        <option value="12">Grade 12</option>
-      </select>
-      <span style="color: #9a3a44; font-weight: bold;">**Required - Select your previous grade level</span>
-    </div>
     
     <div>
       <label for="lastSchoolYear">School Year Last Attended:</label>
@@ -749,29 +736,6 @@
             return /@gmail\.com$/i.test(email.trim());
         }
         
-        function validatePreviousGrade(value) {
-            if (!value || value.trim() === '') {
-                return false; // Empty value is invalid (required field)
-            }
-            
-            // Check if the selected grade is appropriate based on JHS/SHS selection
-            const jhsCheckbox = document.getElementById('jhs');
-            const shsCheckbox = document.getElementById('shs');
-            const isJhs = jhsCheckbox && jhsCheckbox.checked;
-            const isShs = shsCheckbox && shsCheckbox.checked;
-            
-            if (isJhs) {
-                // For JHS, only allow grades 7-10
-                return ['7', '8', '9', '10'].includes(value);
-            } else if (isShs) {
-                // For SHS, only allow grades 11-12
-                return ['11', '12'].includes(value);
-            } else {
-                // If neither is selected, allow all grades
-                return ['7', '8', '9', '10', '11', '12'].includes(value);
-            }
-        }
-        
         function validateLastSchoolYear(value) {
             if (!value || value.trim() === '') {
                 return false; // Empty value is invalid (required field)
@@ -816,7 +780,7 @@
             const requiredFields = [
             'surname', 'givenName', 'lrn', 'contactNo', 'email',
             'address', 'dob', 'birthplace', 'gender', 
-                'religion', 'nationality', 'formerSchool', 'previousGrade', 
+                'religion', 'nationality', 'formerSchool',
                 'lastSchoolYear', 'schoolAddress', 'reasonTransfer',
             'fatherName', 'fatherOccupation',
             'motherName', 'motherOccupation',
@@ -894,13 +858,6 @@
             if (!/^\d{12}$/.test(lrn)) {
                 allValid = false;
                 debugInfo.push('Invalid LRN');
-            }
-            
-            // Validate previous grade
-            const previousGrade = document.getElementById('previousGrade').value;
-            if (!validatePreviousGrade(previousGrade)) {
-                allValid = false;
-                debugInfo.push('Invalid previous grade');
             }
             
             // Validate last school year
@@ -1166,68 +1123,6 @@
                 const jhsGradeInputs = document.querySelectorAll('input[name="jhsGrade"]');
                 jhsGradeInputs.forEach(inp => { inp.required = !!isJhs; });
                 
-                // Update Previous School Year Grade options based on selection
-                updatePreviousGradeOptions(isJhs, isShs);
-            }
-            
-            function updatePreviousGradeOptions(isJhs, isShs) {
-                const previousGradeSelect = document.getElementById('previousGrade');
-                if (!previousGradeSelect) {
-                    return;
-                }
-                
-                // Store the current selected value
-                const currentValue = previousGradeSelect.value;
-                
-                // Clear existing options except the first one
-                previousGradeSelect.innerHTML = '<option value="">-- Select Grade Level --</option>';
-                
-                let availableGrades = [];
-                
-                if (isJhs) {
-                    // Show only JHS grades (7-10)
-                    availableGrades = [
-                        { value: '7', text: 'Grade 7' },
-                        { value: '8', text: 'Grade 8' },
-                        { value: '9', text: 'Grade 9' },
-                        { value: '10', text: 'Grade 10' }
-                    ];
-                } else if (isShs) {
-                    // Show only SHS grades (11-12)
-                    availableGrades = [
-                        { value: '11', text: 'Grade 11' },
-                        { value: '12', text: 'Grade 12' }
-                    ];
-                } else {
-                    // Show all grades if neither is selected
-                    availableGrades = [
-                        { value: '7', text: 'Grade 7' },
-                        { value: '8', text: 'Grade 8' },
-                        { value: '9', text: 'Grade 9' },
-                        { value: '10', text: 'Grade 10' },
-                        { value: '11', text: 'Grade 11' },
-                        { value: '12', text: 'Grade 12' }
-                    ];
-                }
-                
-                // Add the available grade options
-                availableGrades.forEach(grade => {
-                    const option = document.createElement('option');
-                    option.value = grade.value;
-                    option.textContent = grade.text;
-                    previousGradeSelect.appendChild(option);
-                });
-                
-                // Restore the selected value if it's still valid for the current selection
-                if (currentValue && availableGrades.some(grade => grade.value === currentValue)) {
-                    previousGradeSelect.value = currentValue;
-                } else {
-                    // Only clear if the current value is not valid for the new selection
-                    previousGradeSelect.value = '';
-                }
-                
-                // Trigger validation update
-                updateSubmitButton();
             }
             if (shsCheckbox) {
                 shsCheckbox.addEventListener('change', updateShsVisibility);
@@ -1532,21 +1427,6 @@
             emailInput.addEventListener('input', updateEmailValidation);
             emailInput.addEventListener('focus', updateEmailValidation);
 
-            // Previous grade validation (dropdown)
-            const previousGradeSelect = document.getElementById('previousGrade');
-            previousGradeSelect.addEventListener('change', function() {
-                console.log('Previous Grade changed to:', this.value);
-                if (this.value) {
-                    this.style.borderColor = '#28a745'; // Green border when selected
-                    console.log('✅ Previous Grade selected:', this.value);
-                } else {
-                    this.style.borderColor = '#dc3545'; // Red border when empty
-                    console.log('❌ Previous Grade is empty');
-                }
-                // For dropdown, validation is handled by the form validation
-                updateSubmitButton();
-            });
-            
             // Last school year validation (dropdown)
             const lastSchoolYearSelect = document.getElementById('lastSchoolYear');
             lastSchoolYearSelect.addEventListener('change', function() {
@@ -1814,19 +1694,6 @@
                         console.log(`${key}: ${value}`);
                     }
                     console.log('=== END FORM DATA ===');
-                    
-                    // Specifically check previousGrade
-                    const previousGradeValue = document.getElementById('previousGrade').value;
-                    console.log(`Previous Grade Value: "${previousGradeValue}"`);
-                    console.log(`Previous Grade Type: ${typeof previousGradeValue}`);
-                    console.log(`Previous Grade Length: ${previousGradeValue.length}`);
-                    
-                    // Check if previousGrade is empty and prevent submission
-                    if (!previousGradeValue || previousGradeValue.trim() === '') {
-                        console.log('❌ PREVIOUS GRADE IS EMPTY - PREVENTING SUBMISSION');
-                        alert('Please select a Previous School Year Grade before proceeding.');
-                        return false;
-                    }
                     
                     // Set session marker to indicate enrollment is in progress
                     sessionStorage.setItem('enrollment_in_progress', 'true');

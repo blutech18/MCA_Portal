@@ -50,14 +50,35 @@ class StudentDocumentController extends Controller
         $newEnrollee = null;
         if (!empty($applicationNumber)) {
             $newEnrollee = NewStudentEnrollee::where('application_number', $applicationNumber)->first();
+            Log::info('Searching by application_number', [
+                'application_number' => $applicationNumber,
+                'found' => $newEnrollee ? 'yes' : 'no'
+            ]);
         }
+        
+        // Try by LRN if available
+        if (!$newEnrollee && $student?->lrn) {
+            $newEnrollee = NewStudentEnrollee::where('lrn', $student->lrn)
+                ->orderBy('updated_at', 'desc')
+                ->first();
+            Log::info('Searching by LRN', [
+                'lrn' => $student->lrn,
+                'found' => $newEnrollee ? 'yes' : 'no'
+            ]);
+        }
+        
         // Fallbacks if not found: try by student email OR auth user email
         if (!$newEnrollee && ($student?->email || $authUser?->email)) {
             $emailToUse = $student?->email ?: $authUser?->email;
             $newEnrollee = NewStudentEnrollee::where('email', $emailToUse)
                 ->orderBy('updated_at', 'desc')
                 ->first();
+            Log::info('Searching by email', [
+                'email' => $emailToUse,
+                'found' => $newEnrollee ? 'yes' : 'no'
+            ]);
         }
+        
         // Fallback by name (student name or auth user name split) + optional DOB
         if (!$newEnrollee) {
             $surname = $student?->last_name;
@@ -76,11 +97,26 @@ class StudentDocumentController extends Controller
                     $q->whereDate('dob', $dob);
                 }
                 $newEnrollee = $q->first();
+                Log::info('Searching by name', [
+                    'surname' => $surname,
+                    'given_name' => $given,
+                    'found' => $newEnrollee ? 'yes' : 'no'
+                ]);
             }
         }
         
         // If not found, try old student enrollees
-        $oldEnrollee = OldStudentEnrollee::where('application_number', $applicationNumber)->first();
+        $oldEnrollee = null;
+        if (!empty($applicationNumber)) {
+            $oldEnrollee = OldStudentEnrollee::where('application_number', $applicationNumber)->first();
+        }
+        
+        // Try by LRN for old enrollees too
+        if (!$oldEnrollee && $student?->lrn) {
+            $oldEnrollee = OldStudentEnrollee::where('lrn', $student->lrn)
+                ->orderBy('updated_at', 'desc')
+                ->first();
+        }
         
         Log::info('Student Documents - Enrollee Records', [
             'new_enrollee_found' => $newEnrollee ? 'yes' : 'no',
@@ -104,14 +140,23 @@ class StudentDocumentController extends Controller
             foreach ($mapping as $field => $meta) {
                 if ($path = $newEnrollee->$field) {
                     try {
-                        $exists   = Storage::disk('public')->exists($path);
+                        // Clean the path - remove any leading slashes or 'storage/' prefix
+                        $cleanPath = ltrim($path, '/');
+                        $cleanPath = preg_replace('/^storage\//', '', $cleanPath);
+                        
+                        $exists   = Storage::disk('public')->exists($cleanPath);
                         $uploaded = optional($newEnrollee->updated_at)->format('F d, Y') ?: '';
                         $sizeMb   = '—';
+                        
                         if ($exists) {
-                            $sizeBytes = Storage::disk('public')->size($path);
+                            $sizeBytes = Storage::disk('public')->size($cleanPath);
                             $sizeMb    = number_format($sizeBytes / 1024 / 1024, 2) . ' MB';
                         }
 
+                        // Generate proper URL using asset() for better compatibility
+                        // Ensure the path starts with the correct storage directory
+                        $docUrl = asset('storage/' . $cleanPath);
+                        
                         $documents->push([
                             'icon'     => $this->getFileIcon($path),
                             'status'   => 'status-verified',
@@ -120,9 +165,17 @@ class StudentDocumentController extends Controller
                             'category' => $meta['category'],
                             'uploaded' => $uploaded,
                             'size'     => $sizeMb,
-                            'url'      => $exists ? Storage::url($path) : asset('storage/' . ltrim($path, '/')),
+                            'url'      => $docUrl,
                             'exists'   => $exists,
-                            'path'     => $path,
+                            'path'     => $cleanPath,
+                        ]);
+                        
+                        Log::info("Document processed", [
+                            'field' => $field,
+                            'original_path' => $path,
+                            'clean_path' => $cleanPath,
+                            'exists' => $exists,
+                            'url' => $docUrl
                         ]);
                     } catch (\Exception $e) {
                         Log::warning("Failed to process document: {$field}", [
@@ -144,24 +197,42 @@ class StudentDocumentController extends Controller
             foreach ($oldMapping as $field => $meta) {
                 if ($path = $oldEnrollee->$field) {
                     try {
-                        if (Storage::disk('public')->exists($path)) {
-                            $uploadedAt = $oldEnrollee->updated_at->format('F d, Y');
-                            $sizeBytes  = Storage::disk('public')->size($path);
-                            $sizeMb     = number_format($sizeBytes / 1024 / 1024, 2) . ' MB';
+                        // Clean the path - remove any leading slashes or 'storage/' prefix
+                        $cleanPath = ltrim($path, '/');
+                        $cleanPath = preg_replace('/^storage\//', '', $cleanPath);
+                        
+                        $exists = Storage::disk('public')->exists($cleanPath);
+                        $uploaded = optional($oldEnrollee->updated_at)->format('F d, Y') ?: '';
+                        $sizeMb = '—';
+                        
+                        if ($exists) {
+                            $sizeBytes = Storage::disk('public')->size($cleanPath);
+                            $sizeMb = number_format($sizeBytes / 1024 / 1024, 2) . ' MB';
+                        }
+                        
+                        // Generate proper URL using asset() for better compatibility
+                        $docUrl = asset('storage/' . $cleanPath);
 
                         $documents->push([
-                                'icon'     => $this->getFileIcon($path),
-                                'status'   => 'status-verified',
-                                'name'     => $meta['name'],
-                                'type'     => $meta['type'],
-                                'category' => $meta['category'],
-                                'uploaded' => $uploadedAt,
-                                'size'     => $sizeMb,
-                            'url'      => Storage::url($path),
-                            'exists'   => true,
-                                'path'     => $path,
-                            ]);
-                        }
+                            'icon'     => $this->getFileIcon($path),
+                            'status'   => 'status-verified',
+                            'name'     => $meta['name'],
+                            'type'     => $meta['type'],
+                            'category' => $meta['category'],
+                            'uploaded' => $uploaded,
+                            'size'     => $sizeMb,
+                            'url'      => $docUrl,
+                            'exists'   => $exists,
+                            'path'     => $cleanPath,
+                        ]);
+                        
+                        Log::info("Old enrollee document processed", [
+                            'field' => $field,
+                            'original_path' => $path,
+                            'clean_path' => $cleanPath,
+                            'exists' => $exists,
+                            'url' => $docUrl
+                        ]);
                     } catch (\Exception $e) {
                         Log::warning("Failed to process old student document: {$field}", [
                             'path' => $path,

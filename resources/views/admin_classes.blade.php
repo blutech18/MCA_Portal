@@ -468,7 +468,7 @@
               @foreach($student_section as $section)
                 <div
                   class="strand-box"
-                  data-grade="{{ $section->gradeLevel && $section->gradeLevel->name ? $section->gradeLevel->name : 'Unknown' }}"  {{-- THIS must be "7", "8", ... --}}
+                  data-grade="{{ $section->gradeLevel && $section->gradeLevel->name ? $section->gradeLevel->name : 'Unknown' }}"
                 >
                   @if(is_null($section->strand_id))
                     <h2>{{ $section->gradeLevel && $section->gradeLevel->name ? $section->gradeLevel->name : 'Unknown Grade' }}</h2>
@@ -901,11 +901,11 @@
                                 </div>
 
                                 <div class="form-group">
-                                  <label for="section" class="required">Section</label>
-                                  <select id="section" name="section_id" disabled required>
-                                    <option value="">-- Select Section --</option>
+                                  <label for="section">Section (Optional)</label>
+                                  <select id="section" name="section_id" disabled>
+                                    <option value="">-- Auto-assign (Recommended) --</option>
                                   </select>
-                                  <small class="form-help">Select grade level first to load available sections</small>
+                                  <small class="form-help">Leave blank for auto-assignment, or select grade level first to choose a specific section</small>
                                 </div>
 
                                 <div class="form-group">
@@ -1337,26 +1337,104 @@
         const gradeRadios = document.querySelectorAll('input[name="grade_level_id"]');
         const studentStrandSelect = document.getElementById('strand');
         const studentStrandGroup = document.querySelector('#strand-group');
+        const sectionSelect = document.getElementById('section');
+        
+        // Function to load sections based on grade level and strand
+        function loadSections(gradeLevelId, strandId = null) {
+          if (!gradeLevelId || !sectionSelect) {
+            return;
+          }
+          
+          console.log('Loading sections for grade:', gradeLevelId, 'strand:', strandId);
+          
+          // Build URL with query parameters
+          let url = '{{ route("api.sections") }}';
+          url += '?grade_level_id=' + gradeLevelId;
+          if (strandId) {
+            url += '&strand_id=' + strandId;
+          }
+          
+          // Fetch sections from API
+          fetch(url)
+            .then(response => response.json())
+            .then(data => {
+              console.log('Sections loaded:', data);
+              
+              // Clear existing options and add auto-assign option
+              sectionSelect.innerHTML = '<option value="">-- Auto-assign (Recommended) --</option>';
+              
+              // Add sections to dropdown
+              if (data.sections && data.sections.length > 0) {
+                data.sections.forEach(section => {
+                  const option = document.createElement('option');
+                  option.value = section.id;
+                  option.textContent = section.section_name;
+                  sectionSelect.appendChild(option);
+                });
+                
+                // Enable the section dropdown
+                sectionSelect.disabled = false;
+                console.log('Section dropdown enabled with', data.sections.length, 'sections');
+              } else {
+                // No sections available - still allow auto-assign
+                sectionSelect.disabled = false;
+                console.log('No sections available for this grade/strand, but auto-assign is still available');
+              }
+            })
+            .catch(error => {
+              console.error('Error loading sections:', error);
+              sectionSelect.innerHTML = '<option value="">Error loading sections</option>';
+              sectionSelect.disabled = true;
+            });
+        }
         
         if (gradeRadios && studentStrandSelect && studentStrandGroup) {
           gradeRadios.forEach(radio => {
             radio.addEventListener('change', function() {
               const gradeName = this.getAttribute('data-grade');
               const gradeNum = parseInt(gradeName);
+              const gradeLevelId = this.value;
+              
+              console.log('Grade level changed to:', gradeNum, 'ID:', gradeLevelId);
               
               // Enable strand for grades 11-12 (SHS)
               if (gradeNum >= 11 && gradeNum <= 12) {
                 studentStrandSelect.disabled = false;
                 studentStrandGroup.classList.add('show-required');
-                // Don't set HTML required attribute - handle validation in JavaScript
+                // Don't load sections yet - wait for strand selection
+                sectionSelect.innerHTML = '<option value="">-- Auto-assign (Recommended) --</option><option value="" disabled>Select strand to view sections</option>';
+                sectionSelect.disabled = false; // Enable but show message
               } else {
                 studentStrandSelect.disabled = true;
                 studentStrandSelect.value = '';
                 studentStrandGroup.classList.remove('show-required');
                 studentStrandSelect.classList.remove('error');
+                
+                // For JHS (grades 7-10), load sections immediately
+                loadSections(gradeLevelId, null);
               }
             });
           });
+          
+          // Handle strand changes for SHS students
+          if (studentStrandSelect) {
+            studentStrandSelect.addEventListener('change', function() {
+              const selectedGradeRadio = document.querySelector('input[name="grade_level_id"]:checked');
+              if (selectedGradeRadio) {
+                const gradeLevelId = selectedGradeRadio.value;
+                const strandId = this.value;
+                
+                if (strandId) {
+                  console.log('Strand changed to:', strandId, 'for grade:', gradeLevelId);
+                  loadSections(gradeLevelId, strandId);
+                } else {
+                  // No strand selected, but still allow auto-assign
+                  sectionSelect.innerHTML = '<option value="">-- Auto-assign (Recommended) --</option><option value="" disabled>Select strand to view sections</option>';
+                  sectionSelect.disabled = false;
+                }
+              }
+            });
+          }
         }
         
         // Add form validation for section creation
@@ -1456,7 +1534,14 @@
             const gradeLevelId = selectedGradeRadio ? parseInt(selectedGradeRadio.value) : null;
             const strandId = document.getElementById('strand').value;
             
-            // Check if strand is required but not selected
+            // Check if grade level is selected
+            if (!gradeLevelId) {
+              e.preventDefault();
+              alert('Please select a grade level.');
+              return false;
+            }
+            
+            // Check if strand is required but not selected (only for SHS)
             if (gradeLevelId >= 11 && gradeLevelId <= 12 && (!strandId || strandId === '')) {
               e.preventDefault();
               studentStrandSelect.classList.add('error');
@@ -1467,12 +1552,7 @@
               studentStrandSelect.classList.remove('error');
             }
             
-            // Check if grade level is selected
-            if (!gradeLevelId) {
-              e.preventDefault();
-              alert('Please select a grade level.');
-              return false;
-            }
+            // Section is optional - no validation needed
           });
         }
 

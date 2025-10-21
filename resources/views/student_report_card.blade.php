@@ -1107,13 +1107,13 @@ body {
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($grades as $grade)
+                    @forelse($grades as $grade)
                     @php
                         $g1 = $grade->first_quarter;
                         $g2 = $grade->second_quarter;
                         $g3 = $grade->third_quarter;
                         $g4 = $grade->fourth_quarter;
-                        $gf = number_format($grade->final_grade, 1);
+                        $gf = $grade->final_grade ? number_format($grade->final_grade, 1) : 'N/A';
                     @endphp
                     <tr>
                         <td class="subject-name">{{ $grade->subjectModel->name ?? 'Unknown Subject' }}</td>
@@ -1134,7 +1134,15 @@ body {
                         {{ $gf }}
                         </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: #666;">
+                            <i class="fas fa-info-circle" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
+                            <strong style="font-size: 16px; display: block; margin-bottom: 10px;">No Grades Available Yet</strong>
+                            <p style="font-size: 14px; margin: 0;">Your instructors haven't posted any grades yet. Please check back later or click the "Refresh Grades" button above.</p>
+                        </td>
+                    </tr>
+                    @endforelse
                 </tbody>
                 </table>
 
@@ -1299,14 +1307,81 @@ document.querySelectorAll('.term-option').forEach(option => {
 
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('API Response:', data);
+                    
                     if (data.success && data.grades) {
+                        const hasGrades = data.grades.length > 0;
                         updateGradesTable(data.grades);
                         console.log('Grades updated successfully at:', data.timestamp);
+                        
+                        // Show notification only on manual refresh (not on auto-refresh)
+                        if (window.manualRefresh) {
+                            showNotification(hasGrades ? 
+                                `Successfully refreshed! Found ${data.grades.length} subject(s).` : 
+                                'No grades available yet. Your instructors haven\'t posted any grades.', 
+                                hasGrades ? 'success' : 'info'
+                            );
+                            window.manualRefresh = false;
+                        }
+                    } else {
+                        console.warn('No grades data in response');
+                        if (window.manualRefresh) {
+                            showNotification('Unable to fetch grades. Please try again.', 'error');
+                            window.manualRefresh = false;
+                        }
+                    }
+                } else {
+                    console.error('Response not OK:', response.status);
+                    if (window.manualRefresh) {
+                        showNotification('Failed to refresh grades. Please try again.', 'error');
+                        window.manualRefresh = false;
                     }
                 }
             } catch (error) {
                 console.error('Error fetching grades:', error);
+                if (window.manualRefresh) {
+                    showNotification('Network error. Please check your connection.', 'error');
+                    window.manualRefresh = false;
+                }
             }
+        }
+        
+        // Show notification function
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = 'grade-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#28a745' : type === 'info' ? '#17a2b8' : '#dc3545'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                z-index: 9999;
+                animation: slideIn 0.3s ease;
+                max-width: 350px;
+            `;
+            notification.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'info' ? 'info-circle' : 'exclamation-circle'}"></i> ${message}`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+        
+        // Add manual refresh flag
+        window.manualRefresh = false;
+        
+        // Update the refresh button to set the flag
+        const refreshBtn = document.querySelector('[onclick="fetchLatestGrades()"]');
+        if (refreshBtn) {
+            refreshBtn.onclick = function() {
+                window.manualRefresh = true;
+                fetchLatestGrades();
+            };
         }
 
         // Function to update the grades table with new data
@@ -1440,6 +1515,17 @@ document.querySelectorAll('.term-option').forEach(option => {
                 to {
                     transform: translateX(0);
                     opacity: 1;
+                }
+            }
+            
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(400px);
+                    opacity: 0;
                 }
             }
         `;

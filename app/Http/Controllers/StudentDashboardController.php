@@ -42,7 +42,8 @@ class StudentDashboardController extends Controller
         }
                         
         $grades = Grade::where('student_id', $student->student_id)
-                    ->with('subjectModel')
+                    ->with(['subjectModel', 'schoolClass'])
+                    ->orderBy('subject_id')
                     ->get();
 
         $announcements = collect();

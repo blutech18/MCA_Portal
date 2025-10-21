@@ -68,6 +68,9 @@
                 <div class="page-header">
                     <h2><i class="fas fa-edit"></i> Grade Input</h2>
                     <p>Input and manage student grades for your classes</p>
+                    <p style="color: #28a745; font-size: 14px; margin-top: 8px;">
+                        <i class="fas fa-info-circle"></i> <strong>Tip:</strong> You can save grades for individual quarters. All quarter fields are optional - enter only the grades you have available.
+                    </p>
                 </div>
                 
                 <div style="margin-bottom: 20px;">
@@ -89,11 +92,11 @@
                         <thead>
                             <tr>
                                 <th>Student Name</th>
-                                <th>1st Quarter</th>
-                                <th>2nd Quarter</th>
-                                <th>3rd Quarter</th>
-                                <th>4th Quarter</th>
-                                <th>Final Grade</th>
+                                <th>1st Quarter <span style="font-weight: normal; font-size: 11px; color: #6c757d;">(Optional)</span></th>
+                                <th>2nd Quarter <span style="font-weight: normal; font-size: 11px; color: #6c757d;">(Optional)</span></th>
+                                <th>3rd Quarter <span style="font-weight: normal; font-size: 11px; color: #6c757d;">(Optional)</span></th>
+                                <th>4th Quarter <span style="font-weight: normal; font-size: 11px; color: #6c757d;">(Optional)</span></th>
+                                <th>Final Grade <span style="font-weight: normal; font-size: 11px; color: #6c757d;">(Average)</span></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -121,44 +124,48 @@
                                            class="grade-input" 
                                            name="grades[{{ $loop->index }}][first_quarter]" 
                                            value="{{ $grade->first_quarter ?? '' }}"
-                                           min="70" 
+                                           min="0" 
                                            max="100" 
                                            step="0.01"
+                                           placeholder="Optional"
                                            data-quarter="1st">
-                                    <div class="validation-error">Grade must be 70-100</div>
+                                    <div class="validation-error">Grade must be 0-100</div>
                                 </td>
                                 <td>
                                     <input type="number" 
                                            class="grade-input" 
                                            name="grades[{{ $loop->index }}][second_quarter]" 
                                            value="{{ $grade->second_quarter ?? '' }}"
-                                           min="70" 
+                                           min="0" 
                                            max="100" 
                                            step="0.01"
+                                           placeholder="Optional"
                                            data-quarter="2nd">
-                                    <div class="validation-error">Grade must be 70-100</div>
+                                    <div class="validation-error">Grade must be 0-100</div>
                                 </td>
                                 <td>
                                     <input type="number" 
                                            class="grade-input" 
                                            name="grades[{{ $loop->index }}][third_quarter]" 
                                            value="{{ $grade->third_quarter ?? '' }}"
-                                           min="70" 
+                                           min="0" 
                                            max="100" 
                                            step="0.01"
+                                           placeholder="Optional"
                                            data-quarter="3rd">
-                                    <div class="validation-error">Grade must be 70-100</div>
+                                    <div class="validation-error">Grade must be 0-100</div>
                                 </td>
                                 <td>
                                     <input type="number" 
                                            class="grade-input" 
                                            name="grades[{{ $loop->index }}][fourth_quarter]" 
                                            value="{{ $grade->fourth_quarter ?? '' }}"
-                                           min="70" 
+                                           min="0" 
                                            max="100" 
                                            step="0.01"
+                                           placeholder="Optional"
                                            data-quarter="4th">
-                                    <div class="validation-error">Grade must be 70-100</div>
+                                    <div class="validation-error">Grade must be 0-100</div>
                                 </td>
                                 <td class="final-grade">
                                     <span class="calculated-final">{{ $grade->final_grade ? number_format($grade->final_grade, 2) : 'N/A' }}</span>
@@ -255,13 +262,15 @@
             const value = parseFloat(input.value);
             const errorDiv = input.nextElementSibling;
             
+            // Allow empty values (optional fields)
             if (input.value === '') {
                 input.classList.remove('invalid');
                 errorDiv.style.display = 'none';
                 return true;
             }
             
-            if (isNaN(value) || value < 70 || value > 100) {
+            // Validate range 0-100
+            if (isNaN(value) || value < 0 || value > 100) {
                 input.classList.add('invalid');
                 errorDiv.style.display = 'block';
                 return false;
