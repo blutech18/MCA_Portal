@@ -56,6 +56,28 @@ class StudentDocumentController extends Controller
             ]);
         }
         
+        // Also try by student_number if different from application_number
+        if (!$newEnrollee && $studentNumber && $studentNumber !== $applicationNumber) {
+            $newEnrollee = NewStudentEnrollee::where('application_number', $studentNumber)->first();
+            Log::info('Searching by student_number', [
+                'student_number' => $studentNumber,
+                'found' => $newEnrollee ? 'yes' : 'no'
+            ]);
+        }
+        
+        // CRITICAL FIX: Try to find enrollee by matching the generated student number pattern
+        // New enrollees get student numbers in format: yy + 5-digit enrollee ID (e.g., 2500123)
+        if (!$newEnrollee && $applicationNumber && strlen($applicationNumber) === 7 && is_numeric($applicationNumber)) {
+            // Extract the enrollee ID from the student number (last 5 digits)
+            $enrolleeId = (int) substr($applicationNumber, 2);
+            $newEnrollee = NewStudentEnrollee::find($enrolleeId);
+            Log::info('Searching by extracted enrollee ID from student number', [
+                'student_number' => $applicationNumber,
+                'extracted_enrollee_id' => $enrolleeId,
+                'found' => $newEnrollee ? 'yes' : 'no'
+            ]);
+        }
+        
         // Try by LRN if available
         if (!$newEnrollee && $student?->lrn) {
             $newEnrollee = NewStudentEnrollee::where('lrn', $student->lrn)
@@ -92,6 +114,7 @@ class StudentDocumentController extends Controller
             if ($surname && $given) {
                 $q = NewStudentEnrollee::where('surname', $surname)
                     ->where('given_name', $given)
+                    ->where('status', 'accepted') // Only get accepted enrollees
                     ->orderBy('updated_at', 'desc');
                 if ($dob) {
                     $q->whereDate('dob', $dob);
@@ -103,6 +126,19 @@ class StudentDocumentController extends Controller
                     'found' => $newEnrollee ? 'yes' : 'no'
                 ]);
             }
+        }
+        
+        // Last resort: Try to find ANY accepted enrollee with matching email
+        if (!$newEnrollee && $student?->email) {
+            $newEnrollee = NewStudentEnrollee::where('email', $student->email)
+                ->where('status', 'accepted')
+                ->whereNotNull('form138_path') // Has at least one document
+                ->orderBy('updated_at', 'desc')
+                ->first();
+            Log::info('Last resort search by email with documents', [
+                'email' => $student->email,
+                'found' => $newEnrollee ? 'yes' : 'no'
+            ]);
         }
         
         // If not found, try old student enrollees

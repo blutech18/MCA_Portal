@@ -235,6 +235,7 @@ class NewEnrollmentController extends Controller
                 'pob'                    => $data['birthplace'],
                 'mobile'                 => $data['contactNo'],
                 'last_school'            => $data['formerSchool'],
+                'grade_completed'        => isset($data['jhsGrade']) ? ((int)$data['jhsGrade'] - 1) : (isset($data['shsGrade']) ? ((int)$data['shsGrade'] - 1) : 6),
                 'sy_completed'           => $data['lastSchoolYear'],
                 'form138_path'           => 'pending',
                 'desired_grade'          => isset($data['jhsGrade']) ? (int)$data['jhsGrade'] : (isset($data['shsGrade']) ? (int)$data['shsGrade'] : 7),

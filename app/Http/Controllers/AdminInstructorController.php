@@ -443,7 +443,7 @@ public function update(Request $request, $id)
             'room' => 'required|string',
         ]);
         
-        Schedule::create([
+        $schedule = Schedule::create([
             'instructor_class_id' => $validated['instructor_class_id'], 
             'day_of_week' => $validated['day_of_week'],
             'start_time' => $validated['start_time'],
@@ -451,6 +451,14 @@ public function update(Request $request, $id)
             'room' => $validated['room'],
         ]);
         
+        // Return JSON for AJAX requests
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Schedule added successfully.',
+                'schedule' => $schedule
+            ]);
+        }
     
         return back()->with('success', 'Schedule added.');
     }
@@ -483,6 +491,49 @@ public function update(Request $request, $id)
         ], 200);
     }
 
+    /**
+     * Get instructor schedules with classes for AJAX updates
+     */
+    public function getInstructorSchedules($instructorId)
+    {
+        $instructor = Instructor::with([
+            'instructorClasses.class.gradeLevel',
+            'instructorClasses.class.strand',
+            'instructorClasses.class.section',
+            'instructorClasses.class.subject',
+            'instructorClasses.schedules'
+        ])->findOrFail($instructorId);
+
+        // Format the data similar to how it's done in the index method
+        $instructorClasses = $instructor->instructorClasses->map(function ($pivot) {
+            return [
+                'pivot_id' => $pivot->id,
+                'class_id' => $pivot->class_id,
+                'class' => [
+                    'id' => $pivot->class->id,
+                    'name' => $pivot->class->name,
+                    'code' => $pivot->class->code,
+                    'section_name' => $pivot->class->section->section_name ?? 'N/A',
+                    'grade_level' => $pivot->class->gradeLevel->name ?? 'Unknown',
+                    'strand' => $pivot->class->strand->name ?? null,
+                ],
+                'schedules' => $pivot->schedules->map(function ($sched) {
+                    return [
+                        'schedule_id' => $sched->schedule_id,
+                        'day_of_week' => $sched->day_of_week,
+                        'start_time' => $sched->start_time,
+                        'end_time' => $sched->end_time,
+                        'room' => $sched->room,
+                    ];
+                })->toArray()
+            ];
+        })->toArray();
+
+        return response()->json([
+            'success' => true,
+            'instructorClasses' => $instructorClasses
+        ]);
+    }
 
     public function assignClasses(Request $request)
     {

@@ -208,6 +208,7 @@ Route::prefix('admin')
     Route::get('instructors/search', [AdminInstructorController::class, 'search']);
 
     Route::post('instructors/schedules', [AdminInstructorController::class, 'storeSchedule'])->name('instructors.schedule.store');
+    Route::get('instructors/{instructor}/schedules', [AdminInstructorController::class, 'getInstructorSchedules'])->name('instructors.schedules.get');
     Route::post('instructors/schedules/{schedule}/update', [AdminInstructorController::class, 'updateSchedule']);
     Route::delete('instructors/schedules/{schedule}', [AdminInstructorController::class, 'deleteSchedule'])
      ->name('instructors.schedule.delete');

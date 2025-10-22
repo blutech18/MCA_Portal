@@ -117,6 +117,21 @@ class StudentController extends Controller
                 ]);
 
                 if ($studentCount < 25) {
+                    // Ensure classes exist for this section before assigning student
+                    $existingClasses = \App\Models\SchoolClass::where('section_id', $section->id)
+                        ->where('grade_level_id', $gradeLevelId)
+                        ->count();
+
+                    if ($existingClasses === 0) {
+                        Log::info('No classes found for section; auto-creating default classes', [
+                            'section_id' => $section->id,
+                            'section_name' => $section->section_name,
+                            'grade_level_id' => $gradeLevelId,
+                            'strand_id' => $strandId,
+                        ]);
+                        $this->createDefaultClassesForSection($section, $gradeLevelId, $strandId);
+                    }
+                    
                     Log::info('Student assigned to section', [
                         'section_id' => $section->id,
                         'section_name' => $section->section_name,
@@ -425,14 +440,32 @@ class StudentController extends Controller
 
         // 2) Ensure or generate the official school-ID record
         if ($isManualAddition && empty($validated['student_school_id'])) {
-            // Generate a unique school student ID in the format MCA-YYYY-XXXX
-            $year = date('Y');
+            // Generate a unique school student ID in the format 250000X (sequential numeric)
+            // Find the highest existing numeric ID starting with 2500
+            $lastNumericId = StudentId::where('student_number', 'LIKE', '2500%')
+                ->where('student_number', 'REGEXP', '^[0-9]+$')  // Only numeric IDs
+                ->orderBy('student_number', 'desc')
+                ->value('student_number');
+            
+            if ($lastNumericId) {
+                $nextNumber = (int)$lastNumericId + 1;
+            } else {
+                $nextNumber = 2500001; // Start from 2500001 if no existing IDs
+            }
+            
+            // Ensure uniqueness (safety check)
             do {
-                $token = strtoupper(Str::random(4));
-                $generatedId = "MCA-{$year}-{$token}";
-            } while (StudentId::where('student_number', $generatedId)->exists() || Student::where('school_student_id', $generatedId)->exists());
+                $generatedId = (string)$nextNumber;
+                $nextNumber++;
+            } while (StudentId::where('student_number', $generatedId)->exists() || 
+                     Student::where('school_student_id', $generatedId)->exists());
 
             $validated['student_school_id'] = $generatedId;
+            
+            Log::info('Generated numeric student ID for manual addition', [
+                'student_id' => $generatedId,
+                'student_name' => $validated['fname'] . ' ' . $validated['lname']
+            ]);
         }
 
         // Prevent duplicate school-ID assignment (safety net)

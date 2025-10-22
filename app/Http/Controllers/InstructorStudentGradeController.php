@@ -197,8 +197,11 @@ class InstructorStudentGradeController extends Controller
             $data = $req->validate($validationRules, $customMessages);
             
             // Validate that at least one quarter has a grade
-            $hasAnyGrade = !empty($data['first_quarter']) || !empty($data['second_quarter']) || 
-                          !empty($data['third_quarter']) || !empty($data['fourth_quarter']);
+            // Check if any quarter has a non-null, non-empty value
+            $hasAnyGrade = (isset($data['first_quarter']) && $data['first_quarter'] !== '' && $data['first_quarter'] !== null) ||
+                          (isset($data['second_quarter']) && $data['second_quarter'] !== '' && $data['second_quarter'] !== null) ||
+                          (isset($data['third_quarter']) && $data['third_quarter'] !== '' && $data['third_quarter'] !== null) ||
+                          (isset($data['fourth_quarter']) && $data['fourth_quarter'] !== '' && $data['fourth_quarter'] !== null);
             
             if (!$hasAnyGrade) {
                 return response()->json([
@@ -221,22 +224,40 @@ class InstructorStudentGradeController extends Controller
             $subject = \App\Models\Subject::find($data['subject_id']);
             $subjectName = $subject ? $subject->name : 'N/A';
         
-            $grade = Grade::updateOrCreate(
-                [
-                    'student_id' => $data['student_id'],
-                    'class_id'   => $data['class_id'],
-                    'subject_id' => $data['subject_id']
-                ],
-                [
-                    'subject'        => $subjectName, // Legacy column
-                    'first_quarter'  => $data['first_quarter'] ?? null,
-                    'second_quarter' => $data['second_quarter'] ?? null,
-                    'third_quarter'  => $data['third_quarter'] ?? null,
-                    'fourth_quarter' => $data['fourth_quarter'] ?? null,
-                    'final_grade'    => $finalGrade,
-                    'updated_at'     => now(), // Explicit timestamp for real-time sync
-                ]
-            );
+            // Find or create the grade record
+            $grade = Grade::firstOrNew([
+                'student_id' => $data['student_id'],
+                'class_id'   => $data['class_id'],
+                'subject_id' => $data['subject_id']
+            ]);
+            
+            // Update only the quarters that have values (preserve existing grades for empty quarters)
+            $grade->subject = $subjectName; // Legacy column
+            
+            if (isset($data['first_quarter']) && $data['first_quarter'] !== '' && $data['first_quarter'] !== null) {
+                $grade->first_quarter = $data['first_quarter'];
+            }
+            if (isset($data['second_quarter']) && $data['second_quarter'] !== '' && $data['second_quarter'] !== null) {
+                $grade->second_quarter = $data['second_quarter'];
+            }
+            if (isset($data['third_quarter']) && $data['third_quarter'] !== '' && $data['third_quarter'] !== null) {
+                $grade->third_quarter = $data['third_quarter'];
+            }
+            if (isset($data['fourth_quarter']) && $data['fourth_quarter'] !== '' && $data['fourth_quarter'] !== null) {
+                $grade->fourth_quarter = $data['fourth_quarter'];
+            }
+            
+            // Recalculate final grade based on all available quarters
+            $allQuarters = array_filter([
+                $grade->first_quarter,
+                $grade->second_quarter,
+                $grade->third_quarter,
+                $grade->fourth_quarter
+            ], function($val) { return $val !== null && $val !== ''; });
+            
+            $grade->final_grade = count($allQuarters) > 0 ? array_sum($allQuarters) / count($allQuarters) : null;
+            $grade->updated_at = now(); // Explicit timestamp for real-time sync
+            $grade->save();
             
             \Log::info('Grade saved successfully', [
                 'student_id' => $data['student_id'],

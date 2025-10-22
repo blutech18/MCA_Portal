@@ -36,13 +36,23 @@
           <ul class="subject-list">
             @foreach ($subjects as $subject)
               <li>
-                @if($subject->is_default)
-                  <span style="color: #7a222b; font-weight: bold;">⭐ {{ $subject->name }}</span>
-                  <small style="color: #666;">(Core Subject)</small>
-                @else
-                  {{ $subject->name }}
-                @endif
-                ({{ $subject->code }})
+                <div class="subject-info">
+                  <div class="subject-name">
+                    @if($subject->is_default)
+                      <span style="color: #7a222b; font-weight: bold;">⭐ {{ $subject->name }}</span>
+                    @else
+                      <span>{{ $subject->name }}</span>
+                    @endif
+                  </div>
+                  <div class="subject-meta">
+                    <span class="subject-code">{{ $subject->code }}</span>
+                    @if($subject->is_default)
+                      <span class="subject-badge core-badge">Core Subject</span>
+                    @else
+                      <span class="subject-badge custom-badge">Custom</span>
+                    @endif
+                  </div>
+                </div>
                 <button class="btn delete-btn" onclick="showDeleteConfirmation('{{ $subject->id }}', '{{ $subject->name }}')">Delete</button>
               </li>
             @endforeach

@@ -583,20 +583,9 @@ const scheduleSelect  = document.getElementById('schedule-instructor-class-id');
 const instructorName  = document.getElementById('schedule-instructor-name');
 const existingUL      = document.querySelector('#existing-schedules-list ul');
 
-  // wire up the buttons
-  scheduleBtns.forEach(btn => btn.addEventListener('click', handleSchedulesClick));
-  cancelSchedule.addEventListener('click', ()=> {
-    resetScheduleForm();
-    scheduleOverlay.classList.remove('show');
-  });
-  scheduleOverlay.addEventListener('click', e => {
-    if (e.target === scheduleOverlay) {
-      resetScheduleForm();
-      scheduleOverlay.classList.remove('show');
-    }
-  });
-
-  function handleSchedulesClick() {
+  // Define handleSchedulesClick BEFORE using it in event listeners
+  // Make handleSchedulesClick globally accessible
+  window.handleSchedulesClick = function handleSchedulesClick() {
     if (!selectedInstructorRow) return alert('Please click an instructor row first.');
   
     // pull the JSON payload off the <tr>
@@ -666,8 +655,129 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
     // 5) show modal
     scheduleOverlay.classList.add('show');
   }
+
+  // Wire up the buttons AFTER function is defined
+  scheduleBtns.forEach(btn => btn.addEventListener('click', handleSchedulesClick));
+  cancelSchedule.addEventListener('click', ()=> {
+    resetScheduleForm();
+    scheduleOverlay.classList.remove('show');
+  });
+  scheduleOverlay.addEventListener('click', e => {
+    if (e.target === scheduleOverlay) {
+      resetScheduleForm();
+      scheduleOverlay.classList.remove('show');
+    }
+  });
   
   const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+  // Handle schedule form submission via AJAX
+  const scheduleForm = document.getElementById('schedule-form');
+  if (scheduleForm) {
+    scheduleForm.addEventListener('submit', function(e) {
+      e.preventDefault(); // Prevent default form submission
+      
+      const formData = new FormData(scheduleForm);
+      const submitBtn = scheduleForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      
+      // Show loading state
+      submitBtn.textContent = 'Saving...';
+      submitBtn.disabled = true;
+      
+      fetch(scheduleForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-TOKEN': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json'
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(err => { throw err; });
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Show success message
+        showNotification('Schedule added successfully!', 'success');
+        
+        // Reset only the form inputs (not the class dropdown)
+        const daySelect = scheduleForm.querySelector('[name="day_of_week"]');
+        const startTime = scheduleForm.querySelector('[name="start_time"]');
+        const endTime = scheduleForm.querySelector('[name="end_time"]');
+        const room = scheduleForm.querySelector('[name="room"]');
+        
+        if (daySelect) daySelect.value = '';
+        if (startTime) startTime.value = '';
+        if (endTime) endTime.value = '';
+        if (room) room.value = '';
+        
+        // Refresh the schedules list for the current class
+        const selectedPivotId = document.getElementById('schedule-instructor-class-id').value;
+        if (selectedPivotId && selectedInstructorRow) {
+          // Reload instructor data to get updated schedules
+          reloadInstructorSchedules(selectedPivotId);
+        }
+        
+        // Re-enable submit button
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      })
+      .catch(error => {
+        console.error('Error adding schedule:', error);
+        let errorMessage = 'Failed to add schedule. Please try again.';
+        
+        if (error.errors) {
+          // Laravel validation errors
+          const errors = Object.values(error.errors).flat();
+          errorMessage = errors.join(' ');
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        showNotification(errorMessage, 'error');
+        
+        // Re-enable submit button
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      });
+    });
+  }
+  
+  // Function to reload instructor schedules after adding a new one
+  function reloadInstructorSchedules(pivotId) {
+    if (!selectedInstructorRow) return;
+    
+    const instructorId = selectedInstructorRow.dataset.instructorId;
+    
+    // Fetch updated instructor data
+    fetch(`/admin/instructors/${instructorId}/schedules`, {
+      headers: {
+        'X-CSRF-TOKEN': csrfToken,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Update the instructor row's dataset with new schedule data
+      if (data.instructorClasses) {
+        selectedInstructorRow.dataset.instructorClasses = JSON.stringify(data.instructorClasses);
+        
+        // Re-render the schedules for the currently selected class
+        const payload = JSON.parse(selectedInstructorRow.dataset.instructorClasses || '[]');
+        renderSchedulesForPivot(pivotId, payload);
+      }
+    })
+    .catch(error => {
+      console.error('Error reloading schedules:', error);
+      // Fallback: just show a message that they should refresh
+      showNotification('Schedule added! Please refresh the page to see all updates.', 'info');
+    });
+  }
 
   function resetScheduleForm() {
     // Reset form inputs
@@ -930,9 +1040,12 @@ function triggerAssignModal() {
 }
 
 function triggerScheduleModal() {
-  const scheduleOverlay = document.getElementById('schedules-overlay');
-  if (scheduleOverlay) {
-    handleSchedulesClick();
+  // Check if handleSchedulesClick is available
+  if (typeof window.handleSchedulesClick === 'function') {
+    window.handleSchedulesClick();
+  } else {
+    console.error('handleSchedulesClick function is not defined');
+    alert('Unable to open schedule modal. Please refresh the page and try again.');
   }
 }
 

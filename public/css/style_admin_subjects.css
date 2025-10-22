@@ -161,12 +161,14 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
   font-weight: bold;
   font-size: 18px;
   background: #2c3e50;
   color: white;
-  padding: 10px;
+  padding: 10px 15px;
   border-radius: 5px;
+  flex-wrap: wrap;
 }
 
 .profile-header select {
@@ -184,19 +186,87 @@ body {
 .subject-list li {
   background: #ecf0f1;
   margin: 10px 0;
-  padding: 10px;
+  padding: 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.subject-list li:hover {
+  background: #d5dbdb;
+  transform: translateX(5px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.subject-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.subject-name {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.subject-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.subject-code {
+  display: inline-block;
+  background: #34495e;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.subject-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.core-badge {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #81c784;
+}
+
+.custom-badge {
+  background: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffb74d;
 }
 
 /* Buttons */
 .btn {
-  padding: 5px 10px;
+  padding: 8px 16px;
   border: none;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .add-subject {
@@ -204,14 +274,35 @@ body {
   color: white;
 }
 
+.add-subject:hover {
+  background: #229954;
+}
+
+.reset-default-btn {
+  background: #28a745;
+  color: white;
+}
+
+.reset-default-btn:hover {
+  background: #218838;
+}
+
 .edit-btn {
   background: #f39c12;
   color: white;
 }
 
+.edit-btn:hover {
+  background: #e67e22;
+}
+
 .delete-btn {
   background: #e74c3c;
   color: white;
+}
+
+.delete-btn:hover {
+  background: #c0392b;
 }
 
 /* Overlay (Background Blur) */

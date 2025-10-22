@@ -16,14 +16,19 @@ class StrandSeederUpdated extends Seeder
             ['id' => 1, 'name' => 'STEM', 'no_of_sections' => 6],
             ['id' => 2, 'name' => 'ABM', 'no_of_sections' => 6],
             ['id' => 3, 'name' => 'HUMSS', 'no_of_sections' => 6],
-            ['id' => 4, 'name' => 'TVL', 'no_of_sections' => 6],
+            ['id' => 4, 'name' => 'GAS', 'no_of_sections' => 6],
+            ['id' => 5, 'name' => 'TVL-ICT', 'no_of_sections' => 6],
+            ['id' => 6, 'name' => 'TVL-HE', 'no_of_sections' => 6],
         ];
 
         foreach ($strands as $strand) {
-            DB::table('strands')->insert(array_merge($strand, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+            DB::table('strands')->updateOrInsert(
+                ['id' => $strand['id']], // Match condition
+                array_merge($strand, [
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])
+            );
         }
 
         echo "Strands seeded successfully!\n";

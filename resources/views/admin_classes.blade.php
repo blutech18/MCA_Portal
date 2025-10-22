@@ -415,6 +415,89 @@
               </div>
           @endif
 
+          <!-- Student Credentials Modal -->
+          @if(request()->has('new_username') && request()->has('new_password'))
+          <div id="credentials-modal" class="overlay" style="display: flex;">
+              <div class="add-student-modal" style="max-width: 600px;">
+                  <div class="modal-header">
+                      <div class="header-content">
+                          <div class="icon">
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                  <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                  <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                              </svg>
+                          </div>
+                          <div class="header-text">
+                              <h2>🎉 Student Account Created Successfully!</h2>
+                              <p>Save these credentials - they won't be shown again</p>
+                          </div>
+                      </div>
+                      <button type="button" class="close-btn" onclick="closeCredentialsModal()">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                      </button>
+                  </div>
+                  <div class="modal-body" style="padding: 30px;">
+                      <div style="background: #f8f9fa; border-left: 4px solid #28a745; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                          <h3 style="margin-top: 0; color: #28a745;">
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+                                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                              </svg>
+                              Login Credentials
+                          </h3>
+                          <div style="background: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                              <div style="margin-bottom: 15px;">
+                                  <label style="display: block; font-weight: 600; color: #495057; margin-bottom: 5px;">Username:</label>
+                                  <div style="display: flex; align-items: center; gap: 10px;">
+                                      <code id="username-display" style="flex: 1; background: #e9ecef; padding: 10px; border-radius: 4px; font-size: 16px; font-weight: bold; color: #212529;">{{ request('new_username') }}</code>
+                                      <button onclick="copyToClipboard('username-display')" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;">
+                                          📋 Copy
+                                      </button>
+                                  </div>
+                              </div>
+                              <div>
+                                  <label style="display: block; font-weight: 600; color: #495057; margin-bottom: 5px;">Password:</label>
+                                  <div style="display: flex; align-items: center; gap: 10px;">
+                                      <code id="password-display" style="flex: 1; background: #e9ecef; padding: 10px; border-radius: 4px; font-size: 16px; font-weight: bold; color: #212529;">{{ request('new_password') }}</code>
+                                      <button onclick="copyToClipboard('password-display')" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;">
+                                          📋 Copy
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                      
+                      <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 8px;">
+                          <h4 style="margin-top: 0; color: #856404;">
+                              ⚠️ Important Instructions
+                          </h4>
+                          <ul style="margin: 10px 0; padding-left: 20px; color: #856404;">
+                              <li><strong>Save these credentials immediately</strong> - they will not be displayed again</li>
+                              <li>Distribute these credentials <strong>physically</strong> to the student</li>
+                              <li>Advise the student to <strong>change their password</strong> after first login</li>
+                              <li>Username format: <code>lastname.IDnumber</code></li>
+                              <li>Password format: <code>lastnamebirthyear</code></li>
+                          </ul>
+                      </div>
+                  </div>
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" onclick="printCredentials()">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+                              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                              <rect x="6" y="14" width="12" height="8"></rect>
+                          </svg>
+                          Print Credentials
+                      </button>
+                      <button type="button" class="btn btn-secondary" onclick="closeCredentialsModal()">I've Saved the Credentials</button>
+                  </div>
+              </div>
+          </div>
+          @endif
+
     <!-- Page Header -->
     <div class="page-header">
     </div>
@@ -878,9 +961,9 @@
                                         <span class="grade-label">
                                           <span class="grade-number">{{ $g->name }}</span>
                                           <span class="grade-type">
-                                            @if($g->name <= 10)
+                                            @if($g->name >= 7 && $g->name <= 10)
                                               Junior High
-                                            @else
+                                            @elseif($g->name >= 11 && $g->name <= 12)
                                               Senior High
                                             @endif
                                           </span>
@@ -890,22 +973,23 @@
                                   </div>
                                 </div>
 
-                                <div class="form-group" id="strand-group">
-                                  <label for="strand">Strand (Senior High Only)</label>
-                                  <select id="strand" name="strand_id" disabled>
+                                <div class="form-group" id="strand-group" style="display: none;">
+                                  <label for="strand">Strand (Senior High Only) <span style="color: #dc3545;">*</span></label>
+                                  <select id="strand" name="strand_id">
                                     <option value="">-- Select Strand --</option>
                                     @foreach($allStrands as $s)
                                       <option value="{{ $s->id }}" {{ old('strand_id') == $s->id ? 'selected' : '' }}>{{ $s->name }}</option>
                                     @endforeach
                                   </select>
+                                  <small class="form-help">Required for Senior High School (Grade 11-12)</small>
                                 </div>
 
                                 <div class="form-group">
                                   <label for="section">Section (Optional)</label>
-                                  <select id="section" name="section_id" disabled>
+                                  <select id="section" name="section_id">
                                     <option value="">-- Auto-assign (Recommended) --</option>
                                   </select>
-                                  <small class="form-help">Leave blank for auto-assignment, or select grade level first to choose a specific section</small>
+                                  <small class="form-help">Leave blank for auto-assignment. System will create section if needed.</small>
                                 </div>
 
                                 <div class="form-group">
@@ -929,13 +1013,14 @@
                                   >
                                 </div>
 
-                                <div class="form-group" id="semester-group">
+                                <div class="form-group" id="semester-group" style="display: none;">
                                   <label for="semester">Semester (Senior High Only)</label>
-                                  <select id="semester" name="semester" disabled>
+                                  <select id="semester" name="semester">
                                     <option value="">-- Select Semester --</option>
                                     <option value="1st" {{ old('semester') == '1st' ? 'selected' : '' }}>1st Semester</option>
                                     <option value="2nd" {{ old('semester') == '2nd' ? 'selected' : '' }}>2nd Semester</option>
                                   </select>
+                                  <small class="form-help">Optional for Senior High School</small>
                                 </div>
                               </div>
                             </div>
@@ -1139,6 +1224,73 @@
               }, 300);
           }
       }
+
+      // Credentials Modal Functions
+      function closeCredentialsModal() {
+          const modal = document.getElementById('credentials-modal');
+          if (modal) {
+              modal.style.display = 'none';
+              // Remove query parameters from URL
+              const url = new URL(window.location);
+              url.searchParams.delete('new_username');
+              url.searchParams.delete('new_password');
+              window.history.replaceState({}, document.title, url.pathname);
+          }
+      }
+
+      function copyToClipboard(elementId) {
+          const element = document.getElementById(elementId);
+          if (element) {
+              const text = element.textContent;
+              navigator.clipboard.writeText(text).then(() => {
+                  // Show temporary success message
+                  const button = event.target.closest('button');
+                  const originalText = button.innerHTML;
+                  button.innerHTML = '✓ Copied!';
+                  button.style.background = '#28a745';
+                  setTimeout(() => {
+                      button.innerHTML = originalText;
+                      button.style.background = '#007bff';
+                  }, 2000);
+              }).catch(err => {
+                  alert('Failed to copy: ' + err);
+              });
+          }
+      }
+
+      function printCredentials() {
+          const username = document.getElementById('username-display').textContent;
+          const password = document.getElementById('password-display').textContent;
+          
+          const printWindow = window.open('', '', 'height=600,width=800');
+          printWindow.document.write('<html><head><title>Student Login Credentials</title>');
+          printWindow.document.write('<style>');
+          printWindow.document.write('body { font-family: Arial, sans-serif; padding: 40px; }');
+          printWindow.document.write('h1 { color: #7a222b; border-bottom: 3px solid #7a222b; padding-bottom: 10px; }');
+          printWindow.document.write('.credential-box { background: #f8f9fa; border: 2px solid #dee2e6; padding: 20px; margin: 20px 0; border-radius: 8px; }');
+          printWindow.document.write('.credential-label { font-weight: bold; color: #495057; margin-bottom: 5px; }');
+          printWindow.document.write('.credential-value { font-size: 18px; font-family: monospace; background: white; padding: 10px; border-radius: 4px; margin-bottom: 15px; }');
+          printWindow.document.write('.warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-top: 20px; }');
+          printWindow.document.write('</style>');
+          printWindow.document.write('</head><body>');
+          printWindow.document.write('<h1>MCA Montessori School - Student Login Credentials</h1>');
+          printWindow.document.write('<div class="credential-box">');
+          printWindow.document.write('<div class="credential-label">Username:</div>');
+          printWindow.document.write('<div class="credential-value">' + username + '</div>');
+          printWindow.document.write('<div class="credential-label">Password:</div>');
+          printWindow.document.write('<div class="credential-value">' + password + '</div>');
+          printWindow.document.write('</div>');
+          printWindow.document.write('<div class="warning">');
+          printWindow.document.write('<strong>⚠️ Important:</strong><br>');
+          printWindow.document.write('• Keep these credentials secure<br>');
+          printWindow.document.write('• Change password after first login<br>');
+          printWindow.document.write('• Do not share with unauthorized persons');
+          printWindow.document.write('</div>');
+          printWindow.document.write('<p style="margin-top: 30px; color: #666; font-size: 12px;">Generated on: ' + new Date().toLocaleString() + '</p>');
+          printWindow.document.write('</body></html>');
+          printWindow.document.close();
+          printWindow.print();
+      }
     </script>
 
     <!-- Essential functionality for Add Student and Add Section buttons -->
@@ -1337,6 +1489,7 @@
         const gradeRadios = document.querySelectorAll('input[name="grade_level_id"]');
         const studentStrandSelect = document.getElementById('strand');
         const studentStrandGroup = document.querySelector('#strand-group');
+        const semesterGroup = document.querySelector('#semester-group');
         const sectionSelect = document.getElementById('section');
         
         // Function to load sections based on grade level and strand
@@ -1372,19 +1525,16 @@
                   sectionSelect.appendChild(option);
                 });
                 
-                // Enable the section dropdown
-                sectionSelect.disabled = false;
-                console.log('Section dropdown enabled with', data.sections.length, 'sections');
+                console.log('Sections loaded:', data.sections.length, 'section(s) available');
               } else {
-                // No sections available - still allow auto-assign
-                sectionSelect.disabled = false;
-                console.log('No sections available for this grade/strand, but auto-assign is still available');
+                // No sections available - auto-assign will create one
+                console.log('No sections available for this grade/strand, auto-assign will create new section');
               }
             })
             .catch(error => {
               console.error('Error loading sections:', error);
-              sectionSelect.innerHTML = '<option value="">Error loading sections</option>';
-              sectionSelect.disabled = true;
+              sectionSelect.innerHTML = '<option value="">-- Auto-assign (Recommended) --</option>';
+              console.log('Error loading sections, but auto-assign is still available');
             });
         }
         
@@ -1392,26 +1542,43 @@
           gradeRadios.forEach(radio => {
             radio.addEventListener('change', function() {
               const gradeName = this.getAttribute('data-grade');
-              const gradeNum = parseInt(gradeName);
+              // Extract numeric part from "Grade 11" or "11"
+              const gradeNum = parseInt(gradeName.replace(/\D/g, ''));
               const gradeLevelId = this.value;
               
-              console.log('Grade level changed to:', gradeNum, 'ID:', gradeLevelId);
+              console.log('Grade level changed to:', gradeName, '→ Numeric:', gradeNum, 'ID:', gradeLevelId);
               
-              // Enable strand for grades 11-12 (SHS)
+              // Show strand field for grades 11-12 (SHS), hide for grades 7-10 (JHS)
               if (gradeNum >= 11 && gradeNum <= 12) {
-                studentStrandSelect.disabled = false;
-                studentStrandGroup.classList.add('show-required');
-                // Don't load sections yet - wait for strand selection
-                sectionSelect.innerHTML = '<option value="">-- Auto-assign (Recommended) --</option><option value="" disabled>Select strand to view sections</option>';
-                sectionSelect.disabled = false; // Enable but show message
-              } else {
-                studentStrandSelect.disabled = true;
-                studentStrandSelect.value = '';
-                studentStrandGroup.classList.remove('show-required');
+                // Show strand and semester fields for Senior High
+                studentStrandGroup.style.display = 'block';
+                studentStrandSelect.required = true;
                 studentStrandSelect.classList.remove('error');
+                
+                if (semesterGroup) {
+                  semesterGroup.style.display = 'block';
+                }
+                
+                // Don't load sections yet - wait for strand selection
+                sectionSelect.innerHTML = '<option value="">-- Auto-assign (Recommended) --</option>';
+                // Section dropdown is always enabled for auto-assignment
+                
+                console.log('Senior High selected - strand and semester fields shown');
+              } else {
+                // Hide strand and semester fields for Junior High
+                studentStrandGroup.style.display = 'none';
+                studentStrandSelect.required = false;
+                studentStrandSelect.value = '';
+                studentStrandSelect.classList.remove('error');
+                
+                if (semesterGroup) {
+                  semesterGroup.style.display = 'none';
+                }
                 
                 // For JHS (grades 7-10), load sections immediately
                 loadSections(gradeLevelId, null);
+                
+                console.log('Junior High selected - strand and semester fields hidden, loading sections');
               }
             });
           });
@@ -1566,7 +1733,10 @@
             strandBoxes.forEach(box => {
               const boxGrade = box.getAttribute('data-grade');
               
-              if (selectedGrade === '' || selectedGrade === boxGrade) {
+              // Extract numeric grade from "Grade X" format (e.g., "Grade 7" -> "7")
+              const boxGradeNumber = boxGrade ? boxGrade.replace(/\D/g, '') : '';
+              
+              if (selectedGrade === '' || selectedGrade === boxGradeNumber) {
                 // Show the box if no filter is selected or if it matches the selected grade
                 box.style.display = 'block';
               } else {
