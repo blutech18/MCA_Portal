@@ -80,6 +80,17 @@ class InstructorStudentController extends Controller
 
         $students = $query->get();
 
+        // Apply class/subject filter after getting students (since it's a relationship filter)
+        if ($request->has('class') && $request->class != '') {
+            $classId = $request->class;
+            $students = $students->filter(function($student) use ($instructor, $classId) {
+                return $instructor->instructorClasses
+                    ->where('class_id', $classId)
+                    ->where('class.section_id', $student->section_id)
+                    ->count() > 0;
+            });
+        }
+
         // Get subjects taught to each student
         $studentsWithSubjects = $students->map(function($student) use ($instructor) {
             $subjects = $instructor->instructorClasses
@@ -93,16 +104,58 @@ class InstructorStudentController extends Controller
             return $student;
         });
 
+        // Apply sorting
+        $sortBy = $request->get('sort', 'name_asc');
+        switch ($sortBy) {
+            case 'name_desc':
+                $studentsWithSubjects = $studentsWithSubjects->sortByDesc(function($student) {
+                    return $student->first_name . ' ' . $student->last_name;
+                });
+                break;
+            case 'id_asc':
+                $studentsWithSubjects = $studentsWithSubjects->sortBy('school_student_id');
+                break;
+            case 'id_desc':
+                $studentsWithSubjects = $studentsWithSubjects->sortByDesc('school_student_id');
+                break;
+            case 'grade_asc':
+                $studentsWithSubjects = $studentsWithSubjects->sortBy('grade_level_id');
+                break;
+            case 'grade_desc':
+                $studentsWithSubjects = $studentsWithSubjects->sortByDesc('grade_level_id');
+                break;
+            case 'name_asc':
+            default:
+                $studentsWithSubjects = $studentsWithSubjects->sortBy(function($student) {
+                    return $student->first_name . ' ' . $student->last_name;
+                });
+                break;
+        }
+
+        // Reset collection keys after sorting
+        $studentsWithSubjects = $studentsWithSubjects->values();
+
         // Get filter options
         $sections = StudentSection::whereIn('id', $sectionIds)->get();
         $gradeLevels = $students->pluck('gradeLevel')->filter()->unique('grade_level_id')->values();
+        
+        // Get all classes taught by the instructor for the class filter
+        $classes = $instructor->instructorClasses->map(function($instructorClass) {
+            return [
+                'id' => $instructorClass->class_id,
+                'name' => $instructorClass->class->subject->name ?? 'Unknown Subject',
+                'section' => $instructorClass->class->section->section_name ?? 'Unknown Section',
+                'grade' => $instructorClass->class->gradeLevel->name ?? 'Unknown Grade'
+            ];
+        })->unique('id')->values();
 
         return view('instructor_students_all', [
             'students' => $studentsWithSubjects,
             'instructor' => $instructor,
             'sections' => $sections,
             'gradeLevels' => $gradeLevels,
-            'filters' => $request->only(['section', 'grade_level', 'search']),
+            'classes' => $classes,
+            'filters' => $request->only(['section', 'grade_level', 'search', 'class', 'sort']),
             'viewType' => 'all'
         ]);
     }

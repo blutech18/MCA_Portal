@@ -125,8 +125,22 @@
                 </div>
                 <!-- Additional Action Buttons -->
                 <div class="profile-extra-actions">
-                  <button onclick="triggerScheduleModal()" class="btn schedule-btn">Work / Schedules</button>
-                  <button class="btn classes-btn">Classes</button>
+                  <button onclick="triggerScheduleModal()" class="btn schedule-btn" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(122,34,43,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(122,34,43,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(122,34,43,0.2)'">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    Work / Schedules
+                  </button>
+                  <button class="btn classes-btn" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(122,34,43,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(122,34,43,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(122,34,43,0.2)'">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    </svg>
+                    Classes
+                  </button>
                 </div>
               </div>
             </div>
@@ -307,74 +321,191 @@
         </div>
        
         <!-- Schedule Modal -->
-        <div id="schedules-overlay" class="overlay">
-          <div class="schedule-form">
-            <h3>Assign Work Schedules</h3>
-
-            <div class="instructor-info">
-              <strong>Instructor:</strong> <span id="schedule-instructor-name">N/A</span>
+        <div id="schedules-overlay" class="overlay" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
+          <div style="max-width: 900px; max-height: 90vh; overflow-y: auto; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); background: white; transform: scale(0.9); transition: transform 0.3s ease, opacity 0.3s ease;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 24px; border-radius: 12px 12px 0 0; position: relative; margin: 0;">
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; backdrop-filter: blur(10px);">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </div>
+                <div style="flex: 1;">
+                  <h3 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: white;">Assign Work Schedules</h3>
+                  <p style="margin: 4px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400;">Manage class schedules and room assignments for this instructor</p>
+                </div>
+              </div>
+              <button type="button" class="close-btn" onclick="closeScheduleModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
             </div>
 
-            <!-- List of existing schedules -->
-            <div id="existing-schedules-list" class="assigned-classes">
-              <strong>Current Schedules:</strong>
-              <ul id="schedule-items">
-                <!-- Populated by JavaScript -->
-              </ul>
+            <div style="padding: 24px;">
+              <!-- Instructor Info Card -->
+              <div style="background: transparent; border-radius: 10px; padding: 20px; margin-bottom: 24px; border-left: 4px solid #7a222b; border: 1px solid #e9ecef;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <strong style="color: #495057; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Instructor</strong>
+                </div>
+                <span id="schedule-instructor-name" style="color: #7a222b; font-weight: 700; font-size: 20px; display: block;">N/A</span>
+              </div>
+
+              <!-- Current Schedules Card -->
+              <div style="background: transparent; border: 1px solid #dee2e6; border-radius: 10px; padding: 20px; margin-bottom: 24px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #e9ecef;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <div style="flex: 1;">
+                    <strong style="color: #212529; font-size: 16px;">Current Schedules</strong>
+                    <p style="margin: 2px 0 0 0; font-size: 12px; color: #6c757d;">Multiple schedules per day are supported for different time slots</p>
+                  </div>
+                </div>
+                <div id="existing-schedules-list">
+                  <ul id="schedule-items" style="list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto;">
+                    <li style="padding: 12px; background: #f8f9fa; border-radius: 6px; color: #6c757d; text-align: center;">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                      </svg>
+                      No schedules assigned yet
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Form to add schedule -->
+              <form id="schedule-form" method="POST" action="/admin/instructors/schedules">
+                @csrf
+                <input type="hidden" name="instructor_id" id="schedule-instructor-id">
+
+                <div style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 16px 20px; border-radius: 10px; margin-bottom: 20px;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <div>
+                      <h4 style="margin: 0; font-size: 18px; font-weight: 600;">Add New Schedule</h4>
+                      <p style="margin: 2px 0 0 0; font-size: 13px; opacity: 0.9;">Fill in the details to create a new schedule entry. You can add multiple schedules for different times on the same day.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="background: transparent; border: none; padding: 20px 0;">
+                  <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="schedule-instructor-class-id" style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                      </svg>
+                      Class
+                    </label>
+                    <select
+                      name="instructor_class_id"
+                      id="schedule-instructor-class-id"
+                      required
+                      style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;"
+                      onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'"
+                      onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'"
+                    ></select>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="day_of_week" style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                      Day of the Week
+                    </label>
+                    <select name="day_of_week" id="day_of_week" required style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                      <option value="">Select Day</option>
+                      <option value="Monday">Monday</option>
+                      <option value="Tuesday">Tuesday</option>
+                      <option value="Wednesday">Wednesday</option>
+                      <option value="Thursday">Thursday</option>
+                      <option value="Friday">Friday</option>
+                    </select>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        Start Time
+                      </label>
+                      <input type="time" name="start_time" required style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        End Time
+                      </label>
+                      <input type="time" name="end_time" required style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                      </svg>
+                      Room
+                    </label>
+                    <input type="text" name="room" required placeholder="e.g., Room 101" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                  </div>
+                </div>
+
+                <!-- Enhanced Button Group -->
+                <div style="background: #f8f9fa; padding: 20px 24px; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #dee2e6;">
+                  <button type="button" class="btn cancel-btn" id="cancel-schedule" style="background: #fff; color: #6c757d; border: 1px solid #dee2e6; padding: 10px 24px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#fff'">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    Cancel
+                  </button>
+                  <button type="submit" class="btn save-btn" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; border: none; padding: 10px 32px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(122,34,43,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(122,34,43,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(122,34,43,0.2)'">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                      <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                      <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    Save Schedule
+                  </button>
+                </div>
+              </form>
             </div>
-
-            <!-- Form to add schedule -->
-            <form id="schedule-form" method="POST" action="/admin/instructors/schedules">
-              @csrf
-              <input type="hidden" name="instructor_id" id="schedule-instructor-id">
-
-              <div class="form-group">
-                <label for="schedule-instructor-class-id">Class</label>
-                <select
-                  name="instructor_class_id"
-                  id="schedule-instructor-class-id"
-                  required
-                ></select>
-              </div>
-
-              <div class="form-group">
-                <label for="day_of_week">Day of the Week:</label>
-                <select name="day_of_week" id="day_of_week" required>
-                  <option value="">Select</option>
-                  <option value="Monday">Monday</option>
-                  <option value="Tuesday">Tuesday</option>
-                  <option value="Wednesday">Wednesday</option>
-                  <option value="Thursday">Thursday</option>
-                  <option value="Friday">Friday</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>Start Time:</label>
-                <input type="time" name="start_time" required>
-              </div>
-
-              <div class="form-group">
-                <label>End Time:</label>
-                <input type="time" name="end_time" required>
-              </div>
-
-              <div class="form-group">
-                <label>Room:</label>
-                <input type="text" name="room" required>
-              </div>
-
-              <div class="button-group">
-                <button type="submit" class="btn save-btn">Save Schedule</button>
-                <button type="button" class="btn cancel-btn" id="cancel-schedule">Cancel</button>
-              </div>
-            </form>
           </div>
         </div>
         
-        <div id="assign-classes-overlay" class="overlay" style="display:none">
-          <div class="assign-classes-form" style="max-width: 900px; max-height: 90vh; overflow-y: auto; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
-            <div class="modal-header" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 24px; border-radius: 12px 12px 0 0; position: relative;">
+        <div id="assign-classes-overlay" class="overlay" style="display:none; opacity: 0; transition: opacity 0.3s ease;">
+          <div style="width: 1200px; max-width: 95vw; height: 85vh; max-height: 85vh; overflow-y: auto; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); background: white; transform: scale(0.9); transition: transform 0.3s ease, opacity 0.3s ease;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 24px; border-radius: 12px 12px 0 0; position: relative; margin: 0;">
               <div style="display: flex; align-items: center; gap: 16px;">
                 <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; backdrop-filter: blur(10px);">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
@@ -387,7 +518,7 @@
                   <p style="margin: 4px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400;">Select and assign classes for this instructor to teach</p>
                 </div>
               </div>
-              <button type="button" class="close-btn" onclick="document.getElementById('assign-classes-overlay').style.display='none'" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+              <button type="button" class="close-btn" onclick="closeClassesModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -395,9 +526,9 @@
               </button>
             </div>
 
-            <div style="padding: 24px; background: #fff;">
+            <div style="padding: 24px;">
               <!-- Instructor Info Card -->
-              <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 10px; padding: 20px; margin-bottom: 24px; border-left: 4px solid #7a222b;">
+              <div style="background: transparent; border-radius: 10px; padding: 20px; margin-bottom: 24px; border-left: 4px solid #7a222b; border: 1px solid #e9ecef;">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -409,7 +540,7 @@
               </div>
 
               <!-- Currently Assigned Classes Card -->
-              <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 10px; padding: 20px; margin-bottom: 24px;">
+              <div style="background: transparent; border: 1px solid #dee2e6; border-radius: 10px; padding: 20px; margin-bottom: 24px;">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #e9ecef;">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2">
                     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -451,15 +582,15 @@
               <div class="form-group">
                 <!-- Core Subjects Section -->
                 <div class="default-subjects-section" style="margin-bottom: 24px;">
-                  <div style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 16px 20px; border-radius: 10px 10px 0 0; display: flex; align-items: center; justify-content: space-between;">
+                  <div style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 16px 20px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
                     <div style="display: flex; align-items: center; gap: 12px;">
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                         <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
                         <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
                       </svg>
                       <div>
-                        <h4 style="margin: 0; font-size: 18px; font-weight: 600;">Core Subjects</h4>
-                        <p style="margin: 2px 0 0 0; font-size: 13px; opacity: 0.9;">Recommended essential classes</p>
+                        <h4 style="margin: 0; font-size: 18px; font-weight: 600; color: white;">Core Subjects</h4>
+                        <p style="margin: 2px 0 0 0; font-size: 13px; opacity: 0.9; color: white;">Recommended essential classes</p>
                       </div>
                     </div>
                     <button type="button" id="select-all-default" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
@@ -470,7 +601,60 @@
                       Select All
                     </button>
                   </div>
-                  <div style="background: #fff; border: 1px solid #dee2e6; border-top: none; border-radius: 0 0 10px 10px; padding: 20px;">
+                  
+                  <!-- Filter Section -->
+                  <div class="core-subjects-filter" style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6c757d" stroke-width="2">
+                          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        <span style="font-weight: 500; color: #495057; font-size: 14px;">Filter Classes:</span>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <!-- Grade Level Filter -->
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                          <label style="font-size: 13px; color: #6c757d; font-weight: 500;">Grade:</label>
+                          <select id="grade-filter" onchange="filterCoreSubjects()" style="padding: 4px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; background: white; min-width: 80px;">
+                            <option value="">All</option>
+                            <option value="7">Grade 7</option>
+                            <option value="8">Grade 8</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                          </select>
+                        </div>
+                        
+                        <!-- Section Filter -->
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                          <label style="font-size: 13px; color: #6c757d; font-weight: 500;">Section:</label>
+                          <select id="section-filter" onchange="filterCoreSubjects()" style="padding: 4px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; background: white; min-width: 100px;">
+                            <option value="">All Sections</option>
+                          </select>
+                        </div>
+                        
+                        <!-- Strand Filter -->
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                          <label style="font-size: 13px; color: #6c757d; font-weight: 500;">Strand:</label>
+                          <select id="strand-filter" onchange="filterCoreSubjects()" style="padding: 4px 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; background: white; min-width: 100px;">
+                            <option value="">All Strands</option>
+                          </select>
+                        </div>
+                        
+                        <!-- Clear Filter Button -->
+                        <button type="button" id="clear-filters" onclick="clearAllFilters()" style="background: #6c757d; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='#5a6268'" onmouseout="this.style.background='#6c757d'">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div style="background: transparent; border: none; padding: 20px 0;">
                     <div class="default-subjects-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
                     @php
                         $defaultSubjects = \App\Models\Subject::where('is_default', true)->get();
@@ -529,7 +713,7 @@
                 
                 <!-- All Subjects Section -->
                 <div class="all-subjects-section">
-                  <div style="background: linear-gradient(135deg, #495057 0%, #6c757d 100%); color: white; padding: 16px 20px; border-radius: 10px 10px 0 0; display: flex; align-items: center; gap: 12px;">
+                  <div style="background: linear-gradient(135deg, #495057 0%, #6c757d 100%); color: white; padding: 16px 20px; border-radius: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
                       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
@@ -541,7 +725,7 @@
                       <p style="margin: 2px 0 0 0; font-size: 13px; opacity: 0.9; color: white;">Search and select additional classes (Select2 Dropdown)</p>
                     </div>
                   </div>
-                  <div style="background: #fff; border: 1px solid #dee2e6; border-top: none; border-radius: 0 0 10px 10px; padding: 20px;">
+                  <div style="background: transparent; border: none; padding: 20px 0;">
                     <select id="class_ids" name="class_ids[]" multiple style="width:100%; height: 200px;">
                       @php
                         $allClasses = \App\Models\SchoolClass::with(['subject','gradeLevel','strand','section'])
@@ -602,25 +786,25 @@
 
         <!-- Enhanced Add Instructor Modal -->
         <div id="add-instructor-overlay" class="overlay" style="display: none;">
-          <div class="add-student-modal">
+          <div class="add-student-modal" style="max-width: 1000px; max-height: 90vh; overflow-y: auto; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); background: white;">
             <!-- Modal Header -->
-            <div class="modal-header">
-              <div class="header-content">
-                <div class="icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="modal-header" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 24px; border-radius: 12px 12px 0 0; position: relative; margin: 0;">
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; backdrop-filter: blur(10px);">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                   </svg>
                 </div>
-                <div class="header-text">
-                  <h2>Add New Instructor</h2>
-                  <p>Register a new instructor in the system</p>
+                <div style="flex: 1;">
+                  <h3 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: white;">Add New Instructor</h3>
+                  <p style="margin: 4px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400;">Register a new instructor in the system</p>
                 </div>
               </div>
-              <button type="button" class="close-btn" id="cancel-add-instructor">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button type="button" class="close-btn" id="cancel-add-instructor" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
@@ -813,15 +997,15 @@
                 </svg>
                 <span>Instructor credentials will be auto-generated upon submission</span>
               </div>
-              <div class="footer-actions">
-                <button type="button" class="btn btn-secondary" onclick="closeInstructorModal()">
+              <div style="background: #f8f9fa; padding: 20px 24px; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #dee2e6; margin: 0 -24px -24px -24px;">
+                <button type="button" class="btn btn-secondary" onclick="closeInstructorModal()" style="background: #fff; color: #6c757d; border: 1px solid #dee2e6; padding: 10px 24px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#fff'">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                   </svg>
                   Cancel
                 </button>
-                <button type="submit" form="add-instructor-form" class="btn btn-primary">
+                <button type="submit" form="add-instructor-form" class="btn btn-primary" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; border: none; padding: 10px 32px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(122,34,43,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(122,34,43,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(122,34,43,0.2)'">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="8.5" cy="7" r="4"></circle>
@@ -838,23 +1022,23 @@
 
         <!-- Enhanced Edit Instructor Modal -->
         <div id="editInstructorOverlay" class="overlay" style="display: none;">
-          <div class="add-student-modal">
+          <div class="add-student-modal" style="max-width: 900px; max-height: 90vh; overflow-y: auto; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
             <!-- Modal Header -->
-            <div class="modal-header">
-              <div class="header-content">
-                <div class="icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="modal-header" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 24px; border-radius: 12px 12px 0 0; position: relative;">
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; backdrop-filter: blur(10px);">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                   </svg>
                 </div>
-                <div class="header-text">
-                  <h2>Edit Instructor</h2>
-                  <p>Update instructor information in the system</p>
+                <div style="flex: 1;">
+                  <h3 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: white;">Edit Instructor</h3>
+                  <p style="margin: 4px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400;">Update instructor information in the system</p>
                 </div>
               </div>
-              <button type="button" class="close-btn" id="cancel-edit-instructor">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button type="button" class="close-btn" id="cancel-edit-instructor" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
@@ -944,9 +1128,22 @@
                   </div>
                 </div>
 
-                <div class="button-group">
-                  <button type="submit" class="btn save-btn">Save Changes</button>
-                  <button type="button" class="btn cancel-btn" id="cancel-edit-instructor-btn">Cancel</button>
+                <div style="background: #f8f9fa; padding: 20px 24px; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #dee2e6; margin: 0 -24px -24px -24px;">
+                  <button type="button" class="btn cancel-btn" id="cancel-edit-instructor-btn" style="background: #fff; color: #6c757d; border: 1px solid #dee2e6; padding: 10px 24px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#fff'">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    Cancel
+                  </button>
+                  <button type="submit" class="btn save-btn" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; border: none; padding: 10px 32px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(122,34,43,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(122,34,43,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(122,34,43,0.2)'">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                      <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                      <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    Save Changes
+                  </button>
                 </div>
               </form>
             </div>

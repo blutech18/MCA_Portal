@@ -8,73 +8,7 @@
   <link rel="stylesheet" href="{{ asset('css/styles_admin_dashboard.css') }}">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <style>
-    .modal.large {
-      max-width: 80%;
-      max-height: 90%;
-    }
-    
-    .student-details {
-      padding: 20px;
-    }
-    
-    .student-header {
-      border-bottom: 2px solid #e0e0e0;
-      padding-bottom: 15px;
-      margin-bottom: 20px;
-    }
-    
-    .student-info h4 {
-      margin: 0 0 5px 0;
-      color: #2c3e50;
-      font-size: 1.5em;
-    }
-    
-    .student-id, .lrn {
-      margin: 3px 0;
-      color: #7f8c8d;
-      font-size: 0.9em;
-    }
-    
-    .details-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 30px;
-      margin-bottom: 20px;
-    }
-    
-    .detail-section {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 8px;
-      border-left: 4px solid #3498db;
-    }
-    
-    .detail-section h5 {
-      margin: 0 0 15px 0;
-      color: #2c3e50;
-      font-size: 1.1em;
-      border-bottom: 1px solid #dee2e6;
-      padding-bottom: 8px;
-    }
-    
-    .detail-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 10px;
-      padding: 5px 0;
-    }
-    
-    .detail-row .label {
-      font-weight: 600;
-      color: #495057;
-      min-width: 120px;
-    }
-    
-    .detail-row .value {
-      color: #212529;
-      text-align: right;
-      flex: 1;
-    }
+    /* Old CSS classes removed - using inline styles in modal */
     
     .grades-table {
       margin-top: 15px;
@@ -409,12 +343,28 @@
 
   <!-- Student Details Modal -->
   <div id="student-details-modal" class="modal" style="display: none;">
-    <div class="modal-content large">
-      <div class="modal-header">
-        <h3>Student Details</h3>
-        <button class="close-btn" onclick="closeStudentModal()">&times;</button>
+    <div style="width: 1050px; max-width: 90vw; height: 85vh; max-height: 85vh; overflow-x: hidden; overflow-y: auto; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); background: white; display: flex; flex-direction: column;">
+      <div class="modal-header" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 24px; border-radius: 12px 12px 0 0; position: relative; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+          <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; backdrop-filter: blur(10px);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: white;">Student Details</h3>
+            <p style="margin: 4px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400;">View archived student information</p>
+          </div>
+        </div>
+        <button class="close-btn" onclick="closeStudentModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
-      <div class="modal-body" id="student-details-content">
+      <div class="modal-body" id="student-details-content" style="padding: 16px 20px; overflow-y: auto; overflow-x: hidden; flex: 1;">
         <!-- Content loaded via AJAX -->
       </div>
     </div>
@@ -628,67 +578,34 @@
       }
       
       const content = `
-        <div class="student-details">
-          <div class="student-header">
-            <div class="student-info">
-              <h4>${student.first_name} ${student.middle_name || ''} ${student.last_name} ${student.suffix || ''}</h4>
-              <p class="student-id">Student ID: ${student.school_student_id || student.student_number || 'N/A'}</p>
-              <p class="lrn">LRN: ${student.lrn || 'N/A'}</p>
-            </div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 14px;">
+          <div style="margin-bottom: 14px; padding: 14px; background: #ffffff; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <h5 style="margin: 0 0 12px 0; padding-bottom: 8px; font-size: 14px; font-weight: 700; color: #7a222b; border-bottom: 2px solid #7a222b; display: flex; align-items: center; gap: 8px;">
+              👤 Personal Information
+            </h5>
+            <p style="margin: 6px 0; padding: 6px 0; font-size: 13px; line-height: 1.5; display: grid; grid-template-columns: 140px 1fr; gap: 12px; border-bottom: 1px solid #f1f3f5;"><strong style="font-weight: 600; color: #495057;">Full Name:</strong><span style="color: #212529;">${student.first_name} ${student.middle_name || ''} ${student.last_name} ${student.suffix || ''}</span></p>
+            <p style="margin: 6px 0; padding: 6px 0; font-size: 13px; line-height: 1.5; display: grid; grid-template-columns: 140px 1fr; gap: 12px; border-bottom: 1px solid #f1f3f5;"><strong style="font-weight: 600; color: #495057;">Student ID:</strong><span style="color: #212529;">${student.school_student_id || student.student_number || 'N/A'}</span></p>
+            <p style="margin: 6px 0; padding: 6px 0; font-size: 13px; line-height: 1.5; display: grid; grid-template-columns: 140px 1fr; gap: 12px; border-bottom: 1px solid #f1f3f5;"><strong style="font-weight: 600; color: #495057;">LRN:</strong><span style="color: #212529;">${student.lrn || 'N/A'}</span></p>
+            <p style="margin: 6px 0; padding: 6px 0; font-size: 13px; line-height: 1.5; display: grid; grid-template-columns: 140px 1fr; gap: 12px; border-bottom: 1px solid #f1f3f5;"><strong style="font-weight: 600; color: #495057;">Gender:</strong><span style="color: #212529;">${student.gender || 'N/A'}</span></p>
+            <p style="margin: 6px 0; padding: 6px 0; font-size: 13px; line-height: 1.5; display: grid; grid-template-columns: 140px 1fr; gap: 12px; border-bottom: 1px solid #f1f3f5;"><strong style="font-weight: 600; color: #495057;">Date of Birth:</strong><span style="color: #212529;">${student.date_of_birth ? new Date(student.date_of_birth).toLocaleDateString() : 'N/A'}</span></p>
+            <p style="margin: 6px 0; padding: 6px 0; font-size: 13px; line-height: 1.5; display: grid; grid-template-columns: 140px 1fr; gap: 12px; border-bottom: 1px solid #f1f3f5;"><strong style="font-weight: 600; color: #495057;">Contact:</strong><span style="color: #212529;">${student.contact_number || 'N/A'}</span></p>
+            <p style="margin: 6px 0; padding: 6px 0; font-size: 13px; line-height: 1.5; display: grid; grid-template-columns: 140px 1fr; gap: 12px; border-bottom: 1px solid #f1f3f5;"><strong style="font-weight: 600; color: #495057;">Email:</strong><span style="color: #212529;">${student.email || 'N/A'}</span></p>
+            <p style="margin: 6px 0; padding: 6px 0; font-size: 13px; line-height: 1.5; display: grid; grid-template-columns: 140px 1fr; gap: 12px;"><strong style="font-weight: 600; color: #495057;">Address:</strong><span style="color: #212529;">${student.address || 'N/A'}</span></p>
           </div>
           
-          <div class="details-grid">
-            <div class="detail-section">
-              <h5>Personal Information</h5>
-              <div class="detail-row">
-                <span class="label">Gender:</span>
-                <span class="value">${student.gender || 'N/A'}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">Date of Birth:</span>
-                <span class="value">${student.date_of_birth ? new Date(student.date_of_birth).toLocaleDateString() : 'N/A'}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">Contact:</span>
-                <span class="value">${student.contact_number || 'N/A'}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">Email:</span>
-                <span class="value">${student.email || 'N/A'}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">Address:</span>
-                <span class="value">${student.address || 'N/A'}</span>
-              </div>
-            </div>
-            
-            <div class="detail-section">
-              <h5>Academic Information</h5>
-              <div class="detail-row">
-                <span class="label">Grade Level:</span>
-                <span class="value">${isCurrent ? (student.grade_level?.name || 'N/A') : (student.grade_level_name || 'N/A')}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">Section:</span>
-                <span class="value">${isCurrent ? (student.section?.section_name || 'N/A') : (student.section_name || 'N/A')}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">Strand:</span>
-                <span class="value">${isCurrent ? (student.strand?.name || 'N/A') : (student.strand_name || 'N/A')}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">Status:</span>
-                <span class="value">${isCurrent ? (student.status?.name || 'N/A') : (student.status || 'N/A')}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">Date Enrolled:</span>
-                <span class="value">${student.date_enrolled ? new Date(student.date_enrolled).toLocaleDateString() : 'N/A'}</span>
-              </div>
-            </div>
+          <div style="margin-bottom: 14px; padding: 14px; background: #ffffff; border-radius: 8px; border: 1px solid #dee2e6; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <h5 style="margin: 0 0 12px 0; padding-bottom: 8px; font-size: 14px; font-weight: 700; color: #7a222b; border-bottom: 2px solid #7a222b; display: flex; align-items: center; gap: 8px;">
+              🎓 Academic Information
+            </h5>
+            <p style="margin: 6px 0; padding: 6px 0; font-size: 13px; line-height: 1.5; display: grid; grid-template-columns: 140px 1fr; gap: 12px; border-bottom: 1px solid #f1f3f5;"><strong style="font-weight: 600; color: #495057;">Grade Level:</strong><span style="color: #212529;">${isCurrent ? (student.grade_level?.name || 'N/A') : (student.grade_level_name || 'N/A')}</span></p>
+            <p style="margin: 6px 0; padding: 6px 0; font-size: 13px; line-height: 1.5; display: grid; grid-template-columns: 140px 1fr; gap: 12px; border-bottom: 1px solid #f1f3f5;"><strong style="font-weight: 600; color: #495057;">Section:</strong><span style="color: #212529;">${isCurrent ? (student.section?.section_name || 'N/A') : (student.section_name || 'N/A')}</span></p>
+            <p style="margin: 6px 0; padding: 6px 0; font-size: 13px; line-height: 1.5; display: grid; grid-template-columns: 140px 1fr; gap: 12px; border-bottom: 1px solid #f1f3f5;"><strong style="font-weight: 600; color: #495057;">Strand:</strong><span style="color: #212529;">${isCurrent ? (student.strand?.name || 'N/A') : (student.strand_name || 'N/A')}</span></p>
+            <p style="margin: 6px 0; padding: 6px 0; font-size: 13px; line-height: 1.5; display: grid; grid-template-columns: 140px 1fr; gap: 12px; border-bottom: 1px solid #f1f3f5;"><strong style="font-weight: 600; color: #495057;">Status:</strong><span style="color: #212529;">${isCurrent ? (student.status?.name || 'N/A') : (student.status || 'N/A')}</span></p>
+            <p style="margin: 6px 0; padding: 6px 0; font-size: 13px; line-height: 1.5; display: grid; grid-template-columns: 140px 1fr; gap: 12px;"><strong style="font-weight: 600; color: #495057;">Date Enrolled:</strong><span style="color: #212529;">${student.date_enrolled ? new Date(student.date_enrolled).toLocaleDateString() : 'N/A'}</span></p>
           </div>
-          
-          ${gradesHtml}
         </div>
+        
+        ${gradesHtml}
       `;
       
       document.getElementById('student-details-content').innerHTML = content;

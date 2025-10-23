@@ -171,34 +171,89 @@
 </div>
 
 <!-- Edit Fee Modal -->
-<div id="editFeeModal" class="modal">
-  <div class="modal-content">
-    <h2>Edit Enrollment Fee</h2>
+<div id="editFeeModal" class="modal" style="display: none;">
+  <div class="modal-content" style="max-width: 600px; max-height: 90vh; overflow-y: auto; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
+    <div class="modal-header" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 24px; border-radius: 12px 12px 0 0; position: relative; margin: -20px -20px 20px -20px;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; backdrop-filter: blur(10px);">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </div>
+        <div style="flex: 1;">
+          <h3 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: white;">Edit Enrollment Fee</h3>
+          <p style="margin: 4px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400;">Update fee amount and effective date</p>
+        </div>
+      </div>
+      <button type="button" class="close-btn" onclick="closeEditModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
     
     <form id="editFeeForm">
       @csrf
       <input type="hidden" id="feeType" name="fee_type">
       <input type="hidden" id="currentAmount" name="current_amount">
       
-      <div class="form-group">
-        <label>Fee Type</label>
-        <input type="text" id="feeTypeLabel" readonly style="background-color: #f9fafb;">
+      <div class="form-group" style="margin-bottom: 24px;">
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-weight: 600; color: #495057; font-size: 13px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          Fee Type
+        </label>
+        <input type="text" id="feeTypeLabel" readonly style="width: 100%; padding: 10px 14px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 14px; background-color: #f8f9fa; color: #495057; cursor: not-allowed;">
       </div>
       
-      <div class="form-group">
-        <label for="newAmount">New Fee Amount</label>
-        <input type="number" id="newAmount" name="amount" step="0.01" min="0" required>
-        <small style="color: #6b7280; font-size: 12px;">Current: <span id="currentAmountDisplay">₱0.00</span></small>
+      <div class="form-group" style="margin-bottom: 24px;">
+        <label for="newAmount" style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-weight: 600; color: #495057; font-size: 13px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          New Fee Amount
+        </label>
+        <div style="position: relative;">
+          <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #6c757d; font-weight: 600; font-size: 14px;">₱</span>
+          <input type="number" id="newAmount" name="amount" step="0.01" min="0" required placeholder="0.00" style="width: 100%; padding: 10px 14px 10px 32px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; transition: all 0.2s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#ced4da'; this.style.boxShadow='none'">
+        </div>
+        <small style="color: #6c757d; font-size: 11px; display: block; margin-top: 6px; font-style: italic;">Current: <span id="currentAmountDisplay" style="font-weight: 600; color: #7a222b;">₱0.00</span></small>
       </div>
       
-      <div class="form-group">
-        <label for="effectiveDate">Effective Date</label>
-        <input type="date" id="effectiveDate" name="effective_date" required>
+      <div class="form-group" style="margin-bottom: 24px;">
+        <label for="effectiveDate" style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-weight: 600; color: #495057; font-size: 13px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          Effective Date
+        </label>
+        <input type="date" id="effectiveDate" name="effective_date" required style="width: 100%; padding: 10px 14px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; transition: all 0.2s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#ced4da'; this.style.boxShadow='none'">
       </div>
       
-      <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary">Update Fee</button>
+      <div style="background: #f8f9fa; padding: 20px 24px; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #dee2e6; margin: 20px -20px -20px -20px;">
+        <button type="button" class="btn btn-secondary" onclick="closeEditModal()" style="background: #fff; color: #6c757d; border: 1px solid #dee2e6; padding: 10px 24px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#fff'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; border: none; padding: 10px 32px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(122,34,43,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(122,34,43,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(122,34,43,0.2)'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          Update Fee
+        </button>
       </div>
     </form>
   </div>

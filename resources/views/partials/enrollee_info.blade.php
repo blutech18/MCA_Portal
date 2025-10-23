@@ -7,65 +7,100 @@ use Illuminate\Support\Facades\Storage;
 .enrollee-modal-wrapper {
   background: white;
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 1050px;
+  max-width: 90vw;
+  height: 85vh;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
 }
 
 .enrollee-modal-header {
-  background: linear-gradient(135deg, #1f3f49, #2c5a6b);
+  background: linear-gradient(135deg, #7a222b 0%, #922832 100%);
   color: white;
-  padding: 20px 24px;
+  padding: 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 3px solid #f8d210;
+  position: relative;
+  border-radius: 12px 12px 0 0;
+  flex-shrink: 0;
 }
 
 .enrollee-modal-header h3 {
   margin: 0;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .enrollee-modal-body {
-  padding: 24px;
+  padding: 16px 20px;
   overflow-y: auto;
-  max-height: calc(85vh - 80px);
+  overflow-x: hidden;
+  flex: 1;
 }
 
 .enrollee-section {
-  margin-bottom: 24px;
-  padding: 16px;
-  background: #f8f9fa;
+  margin-bottom: 14px;
+  padding: 14px;
+  background: #ffffff;
   border-radius: 8px;
-  border-left: 4px solid #1f3f49;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.enrollee-two-column-wrapper {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.enrollee-two-column-wrapper .enrollee-section {
+  margin-bottom: 0;
 }
 
 .enrollee-section h4 {
   margin: 0 0 12px 0;
-  font-size: 16px;
+  padding-bottom: 8px;
+  font-size: 14px;
   font-weight: 700;
-  color: #1f3f49;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #7a222b;
+  border-bottom: 2px solid #7a222b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .enrollee-section p {
-  margin: 8px 0;
-  padding: 4px 0;
-  font-size: 14px;
-  line-height: 1.6;
+  margin: 6px 0;
+  padding: 6px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 12px;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.enrollee-section p:last-child {
+  border-bottom: none;
 }
 
 .enrollee-section p span.font-medium {
   font-weight: 600;
-  color: #2c5a6b;
-  display: inline-block;
-  min-width: 150px;
+  color: #495057;
+}
+
+.enrollee-section p span:not(.font-medium) {
+  color: #212529;
 }
 
 /* Assessment Information Modal Styling */
@@ -127,24 +162,24 @@ use Illuminate\Support\Facades\Storage;
 
 .modal-close-button {
   background: rgba(255, 255, 255, 0.2);
-  border: 2px solid white;
+  border: none;
   color: white;
-  padding: 8px 20px;
-  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 14px;
-  transition: all 0.3s ease;
+  font-size: 20px;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  padding: 0;
 }
 
 .modal-close-button:hover {
-  background: white;
-  color: #1f3f49;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .enrollee-grid {
@@ -191,16 +226,30 @@ use Illuminate\Support\Facades\Storage;
 <div class="enrollee-modal-wrapper">
   {{-- Header --}}
   <div class="enrollee-modal-header">
-    <h3>📋 New Student Enrollee Details</h3>
-    <button class="modal-close modal-close-button" aria-label="Close">
-      <span>✕</span>
-      <span>Close</span>
+    <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+      <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; backdrop-filter: blur(10px);">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <div>
+        <h3>New Student Enrollee Details</h3>
+        <p style="margin: 4px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400;">Complete application information and documents</p>
+      </div>
+    </div>
+    <button class="modal-close modal-close-button" aria-label="Close" onclick="this.closest('.overlay').style.display='none'">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
     </button>
   </div>
 
   {{-- Body --}}
   <div class="enrollee-modal-body">
-    <div class="enrollee-grid">
+    {{-- Two Column Layout for First Two Sections --}}
+    <div class="enrollee-two-column-wrapper">
       {{-- Personal Information --}}
       <div class="enrollee-section">
         <h4>👤 Personal Information</h4>
@@ -227,7 +276,9 @@ use Illuminate\Support\Facades\Storage;
         <p><span class="font-medium">Address:</span> {{ $enrollee->address }}</p>
         <p><span class="font-medium">Living With:</span> {{ $enrollee->living_with }}</p>
       </div>
+    </div>
 
+    <div class="enrollee-grid">
       {{-- Academic Information --}}
       <div class="enrollee-section">
         <h4>🎓 Academic Information</h4>
@@ -356,61 +407,99 @@ use Illuminate\Support\Facades\Storage;
     {{-- Payment Info --}}
     <div class="enrollee-section">
       <h4>💳 Payment Information</h4>
-      <p><span class="font-medium">Applicant Name:</span> {{ $enrollee->payment_applicant_name ?? '–' }}</p>
-      <p><span class="font-medium">Reference #:</span> {{ $enrollee->payment_reference ?? '–' }}</p>
-      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-        <div>
-          <span class="font-medium">Payment Status:</span>
-          <form id="payment-status-form" onsubmit="return false;" style="display:inline-block; margin-left:8px;">
-            <select id="payment-status-select" name="payment_status" style="padding:6px 8px; border:1px solid #d1d5db; border-radius:6px;">
-              @php $ps = $enrollee->payment_status ?? ($enrollee->paid ? 'Verified' : 'Pending Verification'); @endphp
-              <option value="Pending Verification" {{ $ps === 'Pending Verification' ? 'selected' : '' }}>Pending Verification</option>
-              <option value="Verified" {{ $ps === 'Verified' ? 'selected' : '' }}>Verified</option>
-              <option value="Invalid" {{ $ps === 'Invalid' ? 'selected' : '' }}>Invalid</option>
-              <option value="Rejected" {{ $ps === 'Rejected' ? 'selected' : '' }}>Rejected</option>
-            </select>
-            <button type="button" id="save-payment-status" onclick="updatePaymentStatus('{{ $enrollee->id }}', 'new')" style="margin-left:8px; padding:6px 10px; background:#2563eb; color:#fff; border:none; border-radius:6px; cursor:pointer;">Save</button>
-          </form>
-        </div>
-        <div id="payment-status-meta" style="font-size:12px; color:#6b7280;">
-          @if($enrollee->payment_status_changed_at)
-            Updated {{ $enrollee->payment_status_changed_at->diffForHumans() }} by {{ $enrollee->payment_status_changed_by ?? '—' }}
-          @endif
-        </div>
-      </div>
+      <p><span class="font-medium">Payment Method:</span> {{ $enrollee->payment_applicant_name ?? '–' }}</p>
+      <p><span class="font-medium">Reference Number:</span> {{ $enrollee->payment_reference ?? '–' }}</p>
+      
+      {{-- Receipt Section --}}
       @if($enrollee->payment_receipt_path && Storage::disk('public')->exists($enrollee->payment_receipt_path))
-        <p>
-          <span class="font-medium">Receipt:</span>
-          <div style="display: inline-flex; gap: 8px; margin-left: 8px;">
+        <div style="margin: 12px 0; padding: 10px; background: #f0f9ff; border-radius: 6px; border-left: 3px solid #3b82f6;">
+          <div style="margin-bottom: 8px;">
+            <strong style="color: #495057; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Payment Receipt</strong>
+          </div>
+          <div style="display: flex; gap: 8px;">
             <button 
               type="button"
               onclick="viewDocument('{{ Storage::url($enrollee->payment_receipt_path) }}', 'Payment Receipt')"
-              style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s;"
-              onmouseover="this.style.background='#2563eb'"
-              onmouseout="this.style.background='#3b82f6'"
-            >👁️ View</button>
+              style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
+              onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(59,130,246,0.3)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              View
+            </button>
             <a 
               href="{{ Storage::url($enrollee->payment_receipt_path) }}" 
               download
-              style="padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; text-decoration: none; transition: all 0.2s; display: inline-block;"
-              onmouseover="this.style.background='#059669'"
-              onmouseout="this.style.background='#10b981'"
-            >📥 Download</a>
+              style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
+              onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(16,185,129,0.3)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Download
+            </a>
           </div>
-        </p>
+        </div>
       @elseif($enrollee->payment_receipt_path)
-        <p>
-          <span class="font-medium">Receipt:</span>
-          <span style="color: #dc2626; font-size: 13px;">❌ File missing</span>
-        </p>
+        <div style="margin: 12px 0; padding: 10px; background: #fee2e2; border-radius: 6px; border-left: 3px solid #dc2626;">
+          <span style="color: #dc2626; font-size: 13px; font-weight: 600;">❌ Receipt file is missing from server</span>
+        </div>
       @endif
       
+      {{-- Payment Status Section --}}
+      <div style="margin-top: 16px; padding: 12px; background: #f8f9fa; border-radius: 6px; border-left: 3px solid #7a222b;">
+        <div style="margin-bottom: 10px;">
+          <strong style="color: #495057; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Payment Status</strong>
+        </div>
+        <form id="payment-status-form" onsubmit="return false;">
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <select id="payment-status-select" name="payment_status" style="padding: 8px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; font-weight: 500; min-width: 180px; background: white;">
+              @php $ps = $enrollee->payment_status ?? ($enrollee->paid ? 'Verified' : 'Pending Verification'); @endphp
+              <option value="Pending Verification" {{ $ps === 'Pending Verification' ? 'selected' : '' }}>⏳ Pending Verification</option>
+              <option value="Verified" {{ $ps === 'Verified' ? 'selected' : '' }}>✅ Verified</option>
+              <option value="Invalid" {{ $ps === 'Invalid' ? 'selected' : '' }}>❌ Invalid</option>
+              <option value="Rejected" {{ $ps === 'Rejected' ? 'selected' : '' }}>🚫 Rejected</option>
+            </select>
+            <button type="button" id="save-payment-status" onclick="updatePaymentStatus('{{ $enrollee->id }}', 'new')" style="padding: 8px 16px; background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(122,34,43,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              Update Status
+            </button>
+          </div>
+        </form>
+        @if($enrollee->payment_status_changed_at)
+          <div id="payment-status-meta" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #dee2e6; font-size: 11px; color: #6c757d; font-style: italic;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Last updated {{ $enrollee->payment_status_changed_at->diffForHumans() }} by <strong>{{ $enrollee->payment_status_changed_by ?? 'System' }}</strong>
+          </div>
+        @endif
+      </div>
+      
+      {{-- Payment Verification Warning --}}
       @php $isPaymentVerified = ($enrollee->payment_status ?? ($enrollee->paid ? 'Verified' : 'Pending Verification')) === 'Verified'; @endphp
       @if(!$isPaymentVerified)
-        <div style="margin-top: 12px; padding: 12px; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 6px;">
-          <p style="font-size: 13px; color: #92400e; margin: 0;">
-            <strong>⚠ Payment Verification Required:</strong> This enrollee cannot be accepted until payment is verified.
-          </p>
+        <div style="margin-top: 12px; padding: 12px 14px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px; display: flex; align-items: center; gap: 10px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" style="flex-shrink: 0;">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <div style="flex: 1;">
+            <strong style="font-size: 13px; color: #92400e; font-weight: 700;">Payment Verification Required:</strong>
+            <span style="font-size: 13px; color: #92400e;"> This enrollee cannot be accepted until payment is verified.</span>
+          </div>
         </div>
       @endif
     </div>

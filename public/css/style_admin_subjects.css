@@ -318,60 +318,8 @@ body {
   z-index: 999; /* Make sure it’s on top of other content */
 }
 
-/* Form Container (Modal) */
-#add-subject-form {
-  display: none; /* Hidden by default */
-  background-color: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
-  width: 90%; /* Ensure it’s responsive */
-  position: fixed;
-  top: 50%; /* Center vertically */
-  left: 50%; /* Center horizontally */
-  transform: translate(-50%, -50%); /* Perfect centering */
-  z-index: 1000; /* Make sure it's above the overlay */
-}
-
-/* Form Layout */
-#add-subject-form form {
-  display: flex;
-  flex-direction: column;
-}
-
-#add-subject-form label {
-  font-size: 14px;
-  margin-bottom: 5px;
-}
-
-#add-subject-form input {
-  padding: 8px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 16px;
-}
-
-#add-subject-form button {
-  background-color: #4CAF50;
-  color: white;
-  padding: 10px;
-  font-size: 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-#add-subject-form button:hover {
-  background-color: #45a049;
-}
-
-#cancel-btn {
-  background-color: #f44336;
-  margin-top: 10px;
-}
+/* Form Container (Modal) - Using inline styles in HTML */
+/* Old CSS removed to prevent conflicts with inline styles */
 
 #cancel-btn:hover {
   background-color: #e53935;

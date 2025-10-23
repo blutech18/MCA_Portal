@@ -8,6 +8,273 @@
   <link rel="stylesheet" href="{{ asset('css/style_admin_classes.css') }}">
   <link rel="stylesheet" href="{{ asset('css/add-student-modal.css') }}">
   <style>
+    /* Compact Modal Layout - Remove all extra padding/margins */
+    .modal-body {
+      padding: 12px 16px !important;
+      overflow: visible !important;
+      max-height: none !important;
+      box-sizing: border-box !important;
+    }
+    
+    .student-form {
+      overflow: visible !important;
+      max-height: none !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    
+    .form-sections {
+      overflow: visible !important;
+      max-height: none !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    
+    .form-section {
+      margin-bottom: 14px !important;
+      padding: 14px !important;
+      border: 1px solid #dee2e6 !important;
+      border-radius: 8px !important;
+      background: #ffffff !important;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    }
+    
+    .form-section.profile-section {
+      padding: 14px !important;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%) !important;
+      text-align: center !important;
+    }
+    
+    .section-header {
+      margin-bottom: 12px !important;
+      padding-bottom: 8px !important;
+      border-bottom: 2px solid #7a222b !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+    }
+    
+    .section-header h3 {
+      font-size: 14px !important;
+      margin: 0 !important;
+      font-weight: 700 !important;
+      color: #7a222b !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+    }
+    
+    .section-header svg {
+      color: #7a222b !important;
+      stroke: #7a222b !important;
+    }
+    
+    .form-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 12px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    
+    .form-group {
+      margin-bottom: 0 !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+    }
+    
+    .form-group label {
+      font-size: 12px !important;
+      margin-bottom: 5px !important;
+      display: block !important;
+      font-weight: 600 !important;
+      color: #495057 !important;
+    }
+    
+    .form-group label.required::after {
+      content: " *" !important;
+      color: #dc3545 !important;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 8px 12px !important;
+      font-size: 13px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+      min-width: 0 !important;
+      border: 1px solid #ced4da !important;
+      border-radius: 6px !important;
+      transition: all 0.2s !important;
+      background: #fff !important;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: #7a222b !important;
+      box-shadow: 0 0 0 3px rgba(122, 34, 43, 0.1) !important;
+      outline: none !important;
+    }
+    
+    .form-group input:read-only {
+      background: #e9ecef !important;
+      cursor: not-allowed !important;
+    }
+    
+    .form-help {
+      font-size: 10px !important;
+      margin-top: 4px !important;
+      display: block !important;
+      color: #6c757d !important;
+      font-style: italic !important;
+    }
+    
+    .profile-upload {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      gap: 12px !important;
+      justify-content: center !important;
+      padding: 10px !important;
+    }
+    
+    .photo-container {
+      width: 100px !important;
+      height: 100px !important;
+      flex-shrink: 0 !important;
+      border-radius: 50% !important;
+      overflow: hidden !important;
+      border: 3px solid #7a222b !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+      position: relative !important;
+    }
+    
+    .photo-container img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+    }
+    
+    .btn-upload {
+      padding: 8px 16px !important;
+      font-size: 12px !important;
+      background: linear-gradient(135deg, #7a222b 0%, #922832 100%) !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 6px !important;
+      cursor: pointer !important;
+      font-weight: 600 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      transition: all 0.2s !important;
+    }
+    
+    .btn-upload:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 4px 12px rgba(122, 34, 43, 0.3) !important;
+    }
+    
+    .modal-footer {
+      padding: 14px 20px !important;
+      margin: 0 !important;
+      background: #f8f9fa !important;
+      border-top: 1px solid #dee2e6 !important;
+      border-radius: 0 0 12px 12px !important;
+      display: flex !important;
+      justify-content: flex-end !important;
+      gap: 10px !important;
+    }
+    
+    .modal-footer .btn {
+      padding: 10px 20px !important;
+      font-size: 13px !important;
+      border-radius: 6px !important;
+      font-weight: 600 !important;
+      transition: all 0.2s !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+    }
+    
+    .modal-footer .btn-secondary {
+      background: #fff !important;
+      color: #6c757d !important;
+      border: 1px solid #dee2e6 !important;
+    }
+    
+    .modal-footer .btn-secondary:hover {
+      background: #e9ecef !important;
+    }
+    
+    .modal-footer .btn-primary {
+      background: linear-gradient(135deg, #7a222b 0%, #922832 100%) !important;
+      color: white !important;
+      border: none !important;
+      box-shadow: 0 2px 8px rgba(122, 34, 43, 0.2) !important;
+    }
+    
+    .modal-footer .btn-primary:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 4px 12px rgba(122, 34, 43, 0.3) !important;
+    }
+    
+    /* Remove any overflow from parent containers */
+    #student-form {
+      overflow: visible !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* Ensure radio buttons don't cause overflow */
+    .radio-group {
+      display: flex !important;
+      gap: 16px !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+    }
+    
+    .radio-label {
+      font-size: 13px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      cursor: pointer !important;
+      padding: 8px 16px !important;
+      border: 1px solid #ced4da !important;
+      border-radius: 6px !important;
+      background: #fff !important;
+      transition: all 0.2s !important;
+      margin: 0 !important;
+    }
+    
+    .radio-label:hover {
+      border-color: #7a222b !important;
+      background: #f8f9fa !important;
+    }
+    
+    .radio-label input[type="radio"] {
+      width: 18px !important;
+      height: 18px !important;
+      margin: 0 !important;
+      cursor: pointer !important;
+      accent-color: #7a222b !important;
+    }
+    
+    .radio-label input[type="radio"]:checked + span,
+    .radio-label:has(input[type="radio"]:checked) {
+      border-color: #7a222b !important;
+      background: rgba(122, 34, 43, 0.1) !important;
+      font-weight: 600 !important;
+    }
+    
+    .radio-custom {
+      display: none !important;
+    }
+    
     /* Alert Notification Styles */
     .alert {
       position: fixed;
@@ -699,24 +966,24 @@
                 @csrf
 
                 @php $en = $enrollee ?? null; @endphp
-                <div class="overlay" style="display: none;">
-                    <div class="add-student-modal">
+                <div class="overlay" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
+                    <div style="width: 1050px; max-width: 90vw; height: 85vh; max-height: 85vh; overflow-y: auto; overflow-x: hidden; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); background: white; transform: scale(0.9); transition: transform 0.3s ease, opacity 0.3s ease;">
                       <!-- Modal Header -->
-                      <div class="modal-header">
-                        <div class="header-content">
-                          <div class="icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <div class="modal-header" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 24px; border-radius: 12px 12px 0 0; position: relative;">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                          <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; backdrop-filter: blur(10px);">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                               <circle cx="12" cy="7" r="4"></circle>
                             </svg>
                           </div>
-                          <div class="header-text">
-                            <h2>Add New Student</h2>
-                            <p>Register a new student in the system</p>
+                          <div style="flex: 1;">
+                            <h3 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: white;">Add New Student</h3>
+                            <p style="margin: 4px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400;">Register a new student in the system</p>
                           </div>
                         </div>
-                        <button type="button" class="close-btn" onclick="closeStudentModal()">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <button type="button" class="close-btn" onclick="closeStudentModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
                           </svg>
@@ -881,8 +1148,11 @@
                                     id="dob" 
                                     name="dob" 
                                     value="{{ old('dob', optional($en)->dob) }}"
+                                    max="{{ date('Y-m-d', strtotime('-18 years')) }}"
                                     required
+                                    onchange="validateAge(this)"
                                   >
+                                  <small class="form-help">Student must be at least 18 years old</small>
                                 </div>
                               </div>
                             </div>
@@ -1037,15 +1307,15 @@
                           </svg>
                           <span>Student credentials will be auto-generated upon submission</span>
                         </div>
-                        <div class="footer-actions">
-                          <button type="button" class="btn btn-secondary" onclick="closeStudentModal()">
+                        <div style="background: #f8f9fa; padding: 20px 24px; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #dee2e6; margin: 0 -24px -24px -24px;">
+                          <button type="button" class="btn btn-secondary" onclick="closeStudentModal()" style="background: #fff; color: #6c757d; border: 1px solid #dee2e6; padding: 10px 24px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#fff'">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                               <line x1="18" y1="6" x2="6" y2="18"></line>
                               <line x1="6" y1="6" x2="18" y2="18"></line>
                             </svg>
                             Cancel
                           </button>
-                          <button type="submit" class="btn btn-primary">
+                          <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; border: none; padding: 10px 32px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(122,34,43,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(122,34,43,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(122,34,43,0.2)'">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                               <circle cx="12" cy="7" r="4"></circle>
@@ -1141,32 +1411,86 @@
     </div>
 
     <!-- Add Section Modal -->
-            <div class="overlay-section" style="display: none;">
-              <div class="add-section-form">
-                <h3>Add Section</h3>
+            <div class="overlay-section" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
+              <div style="width: 800px; max-width: 95vw; max-height: 90vh; overflow-y: auto; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); background: white; transform: scale(0.9); transition: transform 0.3s ease, opacity 0.3s ease;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 24px; border-radius: 12px 12px 0 0; position: relative;">
+                  <div style="display: flex; align-items: center; gap: 16px;">
+                    <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; backdrop-filter: blur(10px);">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                      </svg>
+                    </div>
+                    <div style="flex: 1;">
+                      <h3 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: white;">Add Section</h3>
+                      <p style="margin: 4px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400;">Create a new section for Junior High School</p>
+                    </div>
+                  </div>
+                  <button type="button" class="close-btn" onclick="closeAddSectionModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+
                 <form action="{{ route('admin_classes.section.store') }}" method="POST">
                   @csrf
-                  <div class="form-group">
-                    <label for="grade_level">Grade Level:</label>
-                    <select id="section-grade-level" name="grade_level_id" required>
-                      <option value="">-- Select Grade Level --</option>
-                      @foreach($gradeLevels as $g)
-                        @if($g->grade_level_id <= 10)
-                          <option value="{{ $g->grade_level_id }}" data-name="{{ $g->name }}">{{ $g->name }}</option>
-                        @endif
-                      @endforeach
-                    </select>
+                  <div style="padding: 24px;">
+                    <div class="form-group" style="margin-bottom: 20px;">
+                      <label for="grade_level" style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                        </svg>
+                        Grade Level
+                      </label>
+                      <select id="section-grade-level" name="grade_level_id" required style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                        <option value="">-- Select Grade Level --</option>
+                        @foreach($gradeLevels as $g)
+                          @if($g->grade_level_id <= 10)
+                            <option value="{{ $g->grade_level_id }}" data-name="{{ $g->name }}">{{ $g->name }}</option>
+                          @endif
+                        @endforeach
+                      </select>
+                    </div>
+              
+                    <div class="form-group" style="margin-bottom: 20px;">
+                      <label for="section_name" style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                        Section Name
+                      </label>
+                      <input type="text" name="section_name" placeholder="e.g., Section A, Section B" required style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                      <small style="display: block; margin-top: 8px; color: #6c757d; font-size: 12px;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="16" x2="12" y2="12"></line>
+                          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        Only Junior High School (Grades 7-10) sections can be created manually. Senior High School sections are automatically created for each strand.
+                      </small>
+                    </div>
                   </div>
             
-                  <div class="form-group">
-                    <label for="section_name">Section Name:</label>
-                    <input type="text" name="section_name" placeholder="e.g., Section A, Section B" required>
-                    <small class="form-text text-muted">
-                      Only Junior High School (Grades 7-10) sections can be created manually. Senior High School sections are automatically created for each strand.
-                    </small>
+                  <div style="background: #f8f9fa; padding: 20px 24px; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #dee2e6;">
+                    <button type="button" class="btn btn-secondary" onclick="document.querySelector('.overlay-section').style.display='none'" style="background: #fff; color: #6c757d; border: 1px solid #dee2e6; padding: 10px 24px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#fff'">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                      Cancel
+                    </button>
+                    <button type="submit" class="add-to-section-btn" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; border: none; padding: 10px 32px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(122,34,43,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(122,34,43,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(122,34,43,0.2)'">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                      </svg>
+                      Add Section
+                    </button>
                   </div>
-            
-                  <button type="submit" class="add-to-section-btn">Add Section</button>
                 </form>
             </div>
         </div>
@@ -1776,6 +2100,118 @@
         const modal = document.getElementById('confirm-modal');
         if (modal) {
           modal.style.display = 'none';
+        }
+      }
+      
+      // Add Section Modal Functions
+      document.addEventListener('DOMContentLoaded', function() {
+        const addSectionBtn = document.querySelector(".add-section-btn");
+        const overlaySection = document.querySelector(".overlay-section");
+        
+        if (addSectionBtn && overlaySection) {
+          // Show the modal with smooth animation
+          addSectionBtn.addEventListener("click", () => {
+            overlaySection.style.display = "flex";
+            
+            // Trigger animation
+            setTimeout(() => {
+              overlaySection.style.opacity = '1';
+              const modalContent = overlaySection.querySelector('div[style*="transform"]');
+              if (modalContent) {
+                modalContent.style.transform = 'scale(1)';
+                modalContent.style.opacity = '1';
+              }
+            }, 10);
+          });
+          
+          // Hide when clicking outside the form
+          overlaySection.addEventListener("click", e => {
+            if (e.target === overlaySection) {
+              closeAddSectionModal();
+            }
+          });
+        }
+      });
+      
+      // Close modal with smooth animation
+      window.closeAddSectionModal = function() {
+        const overlaySection = document.querySelector(".overlay-section");
+        if (overlaySection) {
+          const modalContent = overlaySection.querySelector('div[style*="transform"]');
+          overlaySection.style.opacity = '0';
+          if (modalContent) {
+            modalContent.style.transform = 'scale(0.9)';
+            modalContent.style.opacity = '0';
+          }
+          setTimeout(() => {
+            overlaySection.style.display = 'none';
+          }, 300);
+        }
+      }
+      
+      // Validate age (18+ only)
+      function validateAge(input) {
+        const selectedDate = new Date(input.value);
+        const today = new Date();
+        const age = Math.floor((today - selectedDate) / (365.25 * 24 * 60 * 60 * 1000));
+        
+        if (age < 18) {
+          alert('Student must be at least 18 years old.');
+          input.value = '';
+          return false;
+        }
+        return true;
+      }
+      
+      // Set max date on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        const dobInput = document.getElementById('dob');
+        if (dobInput) {
+          const eighteenYearsAgo = new Date();
+          eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
+          dobInput.max = eighteenYearsAgo.toISOString().split('T')[0];
+        }
+        
+        // Add Student Modal Animation
+        const addStudentBtn = document.querySelector('.add-student-btn');
+        const studentOverlay = document.querySelector('.overlay');
+        
+        if (addStudentBtn && studentOverlay) {
+          addStudentBtn.addEventListener('click', function() {
+            studentOverlay.style.display = 'flex';
+            
+            setTimeout(() => {
+              studentOverlay.style.opacity = '1';
+              const modalContent = studentOverlay.querySelector('div[style*="transform"]');
+              if (modalContent) {
+                modalContent.style.transform = 'scale(1)';
+                modalContent.style.opacity = '1';
+              }
+            }, 10);
+          });
+          
+          // Close on overlay click
+          studentOverlay.addEventListener('click', function(e) {
+            if (e.target === studentOverlay) {
+              closeStudentModal();
+            }
+          });
+        }
+      });
+      
+      // Close Student Modal with animation
+      window.closeStudentModal = function() {
+        const studentOverlay = document.querySelector('.overlay');
+        if (studentOverlay) {
+          const modalContent = studentOverlay.querySelector('div[style*="transform"]');
+          studentOverlay.style.opacity = '0';
+          if (modalContent) {
+            modalContent.style.transform = 'scale(0.9)';
+            modalContent.style.opacity = '0';
+          }
+          setTimeout(() => {
+            studentOverlay.style.display = 'none';
+          }, 300);
         }
       }
     </script>

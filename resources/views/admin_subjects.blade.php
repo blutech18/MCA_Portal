@@ -65,35 +65,80 @@
       <div id="overlay"></div>
 
       <!-- Add Subject Form (Hidden by default) -->
-      <div id="add-subject-form">
-          <button type="button" id="close-modal-btn">&times;</button>
-          <form action="{{ route('admin.subjects.store') }}" method="POST">
-              @csrf
-              <div>
-                <label for="code">Subject Code:</label>
-                <input type="text" name="code" id="code" required maxlength="10" pattern="[A-Z0-9\-]+" title="Only uppercase letters, numbers, and hyphens allowed (max 10 characters)">
-                <small style="display: block; color: #666; margin-top: 5px;">
-                    *Only uppercase letters, numbers, and hyphens (max 10 characters)
-                </small>
-            </div>
-              <div>
-                  <label for="name">Subject Name:</label>
-                  <input type="text" name="name" id="name" required maxlength="255" pattern="[a-zA-Z0-9\s\-\.]+" title="Only letters, numbers, spaces, hyphens, and periods allowed">
-                  <small style="display: block; color: #666; margin-top: 5px;">
-                      *Only letters, numbers, spaces, hyphens, and periods allowed
-                  </small>
+      <div id="add-subject-form" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 550px; max-width: 90vw; background: white; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 1001; max-height: 90vh; overflow-y: auto;">
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 24px; border-radius: 12px 12px 0 0; position: relative;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; backdrop-filter: blur(10px);">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                </svg>
               </div>
               <div>
-                  <label for="is_default">
-                      <input type="checkbox" name="is_default" id="is_default" value="1">
-                      Mark as Core Subject (Default)
+                <h3 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">Add New Subject</h3>
+                <p style="margin: 4px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400;">Create a new subject for the curriculum</p>
+              </div>
+            </div>
+            <button type="button" id="close-modal-btn" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; backdrop-filter: blur(10px); font-size: 24px; line-height: 1;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">&times;</button>
+          </div>
+          
+          <!-- Form Body -->
+          <form action="{{ route('admin.subjects.store') }}" method="POST" style="padding: 24px;">
+              @csrf
+              <div style="margin-bottom: 20px;">
+                <label for="code" style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-weight: 600; color: #495057; font-size: 13px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2">
+                    <polyline points="16 18 22 12 16 6"></polyline>
+                    <polyline points="8 6 2 12 8 18"></polyline>
+                  </svg>
+                  Subject Code
+                </label>
+                <input type="text" name="code" id="code" required maxlength="10" pattern="[A-Z0-9\-]+" title="Only uppercase letters, numbers, and hyphens allowed (max 10 characters)" placeholder="e.g., MATH-101" style="width: 100%; padding: 10px 14px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; transition: all 0.2s ease; background-color: #fff; box-sizing: border-box;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#ced4da'; this.style.boxShadow='none'">
+                <small style="display: block; color: #6c757d; font-size: 11px; margin-top: 6px; font-style: italic;">
+                    Only uppercase letters, numbers, and hyphens (max 10 characters)
+                </small>
+            </div>
+              <div style="margin-bottom: 20px;">
+                  <label for="name" style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-weight: 600; color: #495057; font-size: 13px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2">
+                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    </svg>
+                    Subject Name
                   </label>
-                  <small style="display: block; color: #666; margin-top: 5px;">
+                  <input type="text" name="name" id="name" required maxlength="255" pattern="[a-zA-Z0-9\s\-\.]+" title="Only letters, numbers, spaces, hyphens, and periods allowed" placeholder="e.g., Mathematics" style="width: 100%; padding: 10px 14px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; transition: all 0.2s ease; background-color: #fff; box-sizing: border-box;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#ced4da'; this.style.boxShadow='none'">
+                  <small style="display: block; color: #6c757d; font-size: 11px; margin-top: 6px; font-style: italic;">
+                      Only letters, numbers, spaces, hyphens, and periods allowed
+                  </small>
+              </div>
+              <div style="margin-bottom: 24px; padding: 14px; background: #f8f9fa; border-radius: 6px; border-left: 3px solid #7a222b;">
+                  <label for="is_default" style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; font-weight: 500; color: #495057;">
+                      <input type="checkbox" name="is_default" id="is_default" value="1" style="width: 18px; height: 18px; cursor: pointer; accent-color: #7a222b;">
+                      <span>Mark as Core Subject (Default)</span>
+                  </label>
+                  <small style="display: block; color: #6c757d; font-size: 11px; margin-top: 8px; margin-left: 28px; font-style: italic;">
                       Core subjects are automatically assigned to all students
                   </small>
               </div>
-              <button type="submit" class="btn">Add Subject</button>
-              <button type="button" id="cancel-btn" class="btn">Cancel</button>
+              
+              <!-- Footer Buttons -->
+              <div style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 16px; border-top: 1px solid #dee2e6;">
+                <button type="button" id="cancel-btn" style="background: #fff; color: #6c757d; border: 1px solid #dee2e6; padding: 10px 24px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#fff'">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                  Cancel
+                </button>
+                <button type="submit" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; border: none; padding: 10px 32px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(122,34,43,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(122,34,43,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(122,34,43,0.2)'">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Add Subject
+                </button>
+              </div>
           </form>
       </div>
 

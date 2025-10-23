@@ -1,4 +1,153 @@
 /* MCA Portal JS - Version: 2025-09-29 22:56:16 - Cache Busted */
+
+// Global variables and functions that need to be accessible from HTML onchange handlers
+let allCoreSubjects = []; // Store all core subjects for filtering
+let selectedInstructorRow = null;
+
+// Function to update the default classes checkboxes section
+function updateDefaultClassesSection(defaultClasses) {
+  const gridContainer = document.querySelector('.default-subjects-grid');
+  if (!gridContainer) return;
+  
+  gridContainer.innerHTML = '';
+  
+  if (defaultClasses.length === 0) {
+    gridContainer.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 24px; text-align: center; background: #f8f9fa; border: 1px dashed #dee2e6; border-radius: 8px; color: #6c757d;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: 8px;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <p style="margin: 0; font-weight: 500;">Empty</p>
+        <small>No classes match the selected filters. Try adjusting your filter criteria.</small>
+      </div>
+    `;
+    return;
+  }
+  
+  defaultClasses.forEach(course => {
+    const label = document.createElement('label');
+    label.className = 'default-subject-option';
+    label.style.cssText = 'display: flex; align-items: flex-start; gap: 12px; padding: 14px; border: 2px solid #e9ecef; border-radius: 8px; cursor: pointer; background: #f8f9fa; transition: all 0.2s;';
+    label.onmouseover = function() {
+      this.style.borderColor = '#7a222b';
+      this.style.background = '#fff';
+      this.style.transform = 'translateY(-2px)';
+      this.style.boxShadow = '0 4px 12px rgba(122,34,43,0.1)';
+    };
+    label.onmouseout = function() {
+      this.style.borderColor = '#e9ecef';
+      this.style.background = '#f8f9fa';
+      this.style.transform = 'translateY(0)';
+      this.style.boxShadow = 'none';
+    };
+    
+    const strandHtml = course.strand ? `
+      <span style="background: #f0fdf4; color: #15803d; font-size: 12px; padding: 2px 8px; border-radius: 4px; font-weight: 500;">
+        ${course.strand.name}
+      </span>
+    ` : '';
+    
+    label.innerHTML = `
+      <input type="checkbox" name="class_ids[]" value="${course.id}" style="margin-top: 3px; width: 18px; height: 18px; cursor: pointer; accent-color: #7a222b;">
+      <div style="flex: 1;">
+        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+          </svg>
+          <strong style="color: #212529; font-size: 15px;">${course.subject.name}</strong>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
+          <span style="background: #e7f1ff; color: #0066cc; font-size: 12px; padding: 2px 8px; border-radius: 4px; font-weight: 500;">
+            ${course.section.section_name}
+          </span>
+          <span style="background: #fff4e6; color: #b45309; font-size: 12px; padding: 2px 8px; border-radius: 4px; font-weight: 500;">
+            ${course.gradeLevel.name}
+          </span>
+          ${strandHtml}
+        </div>
+      </div>
+    `;
+    
+    gridContainer.appendChild(label);
+  });
+}
+
+// Function to filter core subjects
+function filterCoreSubjects() {
+  console.log('🔍 filterCoreSubjects() called');
+  
+  const gradeFilter = document.getElementById('grade-filter');
+  const sectionFilter = document.getElementById('section-filter');
+  const strandFilter = document.getElementById('strand-filter');
+  
+  if (!gradeFilter || !sectionFilter || !strandFilter) {
+    console.log('❌ Filter elements not found:', { gradeFilter, sectionFilter, strandFilter });
+    return;
+  }
+  
+  const selectedGrade = gradeFilter.value;
+  const selectedSection = sectionFilter.value;
+  const selectedStrand = strandFilter.value;
+  
+  console.log('Filtering with:', { selectedGrade, selectedSection, selectedStrand });
+  console.log('All core subjects count:', allCoreSubjects.length);
+  console.log('Sample core subject:', allCoreSubjects[0]);
+  
+  let filteredClasses = [...allCoreSubjects]; // Create a copy
+  
+  // Apply filters
+  if (selectedGrade) {
+    filteredClasses = filteredClasses.filter(c => {
+      const gradeName = c.gradeLevel?.name || '';
+      console.log('Checking grade:', gradeName, 'against selected:', selectedGrade);
+      
+      // More precise matching - check for exact grade number
+      // Handle formats like "Grade 7", "7", "Grade 11", "11"
+      const gradeNumber = gradeName.toString().replace(/[^0-9]/g, '');
+      const selectedNumber = selectedGrade.toString();
+      
+      console.log('Grade number extracted:', gradeNumber, 'selected number:', selectedNumber);
+      return gradeNumber === selectedNumber;
+    });
+  }
+  
+  if (selectedSection) {
+    filteredClasses = filteredClasses.filter(c => {
+      const sectionName = c.section?.section_name || '';
+      return sectionName === selectedSection;
+    });
+  }
+  
+  if (selectedStrand) {
+    filteredClasses = filteredClasses.filter(c => {
+      const strandName = c.strand?.name || '';
+      return strandName === selectedStrand;
+    });
+  }
+  
+  console.log('Filtered classes:', filteredClasses);
+  
+  // Update the display
+  updateDefaultClassesSection(filteredClasses);
+}
+
+// Function to clear all filters
+function clearAllFilters() {
+  const gradeFilter = document.getElementById('grade-filter');
+  const sectionFilter = document.getElementById('section-filter');
+  const strandFilter = document.getElementById('strand-filter');
+  
+  if (gradeFilter) gradeFilter.value = '';
+  if (sectionFilter) sectionFilter.value = '';
+  if (strandFilter) strandFilter.value = '';
+  
+  // Show all core subjects
+  updateDefaultClassesSection(allCoreSubjects);
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   const addStudentBtn = document.querySelector(".add-instructor-btn");
   const overlay = document.querySelector(".instructor-overlay");
@@ -45,10 +194,14 @@ document.addEventListener("DOMContentLoaded", function () {
     classBtn.title = 'Please select an instructor first';
   }
   
-  // Function to load available classes dynamically via AJAX
-  async function loadAvailableClasses() {
+  // Function to load available classes dynamically
+  async function loadAvailableClasses(instructorId = null) {
     try {
-      const response = await fetch('/admin/api/admin/available-classes', {
+      const url = instructorId 
+        ? `/admin/api/admin/available-classes?instructor_id=${instructorId}`
+        : '/admin/api/admin/available-classes';
+      
+      const response = await fetch(url, {
         headers: {
           'X-Requested-With': 'XMLHttpRequest',
           'Accept': 'application/json',
@@ -63,8 +216,19 @@ document.addEventListener("DOMContentLoaded", function () {
       const data = await response.json();
       
       if (data.success) {
+        // Store all core subjects for filtering
+        allCoreSubjects = data.defaultClasses;
+        
         // Update the default subjects checkboxes section
         updateDefaultClassesSection(data.defaultClasses);
+        
+        // Populate filter dropdowns
+        populateFilterDropdowns(data.defaultClasses);
+        
+        // Initialize filter event listeners after elements are created
+        setTimeout(() => {
+          initializeFilterListeners();
+        }, 100);
         
         // Update the "Other Classes" multi-select dropdown
         updateAllClassesDropdown(data.allClasses);
@@ -75,77 +239,6 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error('Error loading available classes:', error);
       showNotification('Failed to load latest classes. Please refresh the page.', 'error');
     }
-  }
-  
-  // Function to update the default classes checkboxes section
-  function updateDefaultClassesSection(defaultClasses) {
-    const gridContainer = document.querySelector('.default-subjects-grid');
-    if (!gridContainer) return;
-    
-    gridContainer.innerHTML = '';
-    
-    if (defaultClasses.length === 0) {
-      gridContainer.innerHTML = `
-        <div style="grid-column: 1 / -1; padding: 24px; text-align: center; background: #fff3cd; border: 1px dashed #ffc107; border-radius: 8px; color: #856404;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: 8px;">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
-          <p style="margin: 0; font-weight: 500;">No classes available yet</p>
-          <small>Accept a student to auto-create default classes, or add classes under Admin Dashboard.</small>
-        </div>
-      `;
-      return;
-    }
-    
-    defaultClasses.forEach(course => {
-      const label = document.createElement('label');
-      label.className = 'default-subject-option';
-      label.style.cssText = 'display: flex; align-items: flex-start; gap: 12px; padding: 14px; border: 2px solid #e9ecef; border-radius: 8px; cursor: pointer; background: #f8f9fa; transition: all 0.2s;';
-      label.onmouseover = function() {
-        this.style.borderColor = '#7a222b';
-        this.style.background = '#fff';
-        this.style.transform = 'translateY(-2px)';
-        this.style.boxShadow = '0 4px 12px rgba(122,34,43,0.1)';
-      };
-      label.onmouseout = function() {
-        this.style.borderColor = '#e9ecef';
-        this.style.background = '#f8f9fa';
-        this.style.transform = 'translateY(0)';
-        this.style.boxShadow = 'none';
-      };
-      
-      const strandHtml = course.strand ? `
-        <span style="background: #f0fdf4; color: #15803d; font-size: 12px; padding: 2px 8px; border-radius: 4px; font-weight: 500;">
-          ${course.strand.name}
-        </span>
-      ` : '';
-      
-      label.innerHTML = `
-        <input type="checkbox" name="class_ids[]" value="${course.id}" style="margin-top: 3px; width: 18px; height: 18px; cursor: pointer; accent-color: #7a222b;">
-        <div style="flex: 1;">
-          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-            </svg>
-            <strong style="color: #212529; font-size: 15px;">${course.subject.name}</strong>
-          </div>
-          <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
-            <span style="background: #e7f1ff; color: #0066cc; font-size: 12px; padding: 2px 8px; border-radius: 4px; font-weight: 500;">
-              ${course.section.section_name}
-            </span>
-            <span style="background: #fff4e6; color: #b45309; font-size: 12px; padding: 2px 8px; border-radius: 4px; font-weight: 500;">
-              ${course.gradeLevel.name}
-            </span>
-            ${strandHtml}
-          </div>
-        </div>
-      `;
-      
-      gridContainer.appendChild(label);
-    });
   }
   
   // Function to update the "Other Classes" multi-select dropdown
@@ -199,8 +292,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const instrId  = selectedInstructorRow.dataset.instructorId;
     let fullname = selectedInstructorRow.dataset.fullname;
     
-    // Load latest classes dynamically
-    await loadAvailableClasses();
+    // Load latest classes dynamically, filtered by instructor's advisory section
+    await loadAvailableClasses(instrId);
     
     console.log('Debug - Instructor data:', {
       instrId: instrId,
@@ -280,8 +373,20 @@ document.addEventListener("DOMContentLoaded", function () {
     // update the form's action
     if (form) form.action = `/admin/instructors/${instrId}/classes`;
   
-    // show the overlay
-    if (assignOverlay) assignOverlay.style.display = 'flex';
+    // show the overlay with smooth animation
+    if (assignOverlay) {
+      assignOverlay.style.display = 'flex';
+      
+      // Trigger animation
+      setTimeout(() => {
+        assignOverlay.style.opacity = '1';
+        const modalContent = assignOverlay.querySelector('div[style*="transform"]');
+        if (modalContent) {
+          modalContent.style.transform = 'scale(1)';
+          modalContent.style.opacity = '1';
+        }
+      }, 10);
+    }
 }
 
   // Handle "Select All Core Subjects" button
@@ -363,11 +468,33 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Add close button functionality
+  // Add close button functionality with smooth animation
+  window.closeClassesModal = function() {
+    const assignOverlay = document.getElementById('assign-classes-overlay');
+    if (assignOverlay) {
+      const modalContent = assignOverlay.querySelector('div[style*="transform"]');
+      assignOverlay.style.opacity = '0';
+      if (modalContent) {
+        modalContent.style.transform = 'scale(0.9)';
+        modalContent.style.opacity = '0';
+      }
+      setTimeout(() => {
+        assignOverlay.style.display = 'none';
+      }, 300);
+    }
+  }
+  
   const cancelAssignBtn = document.getElementById('cancel-assign-classes');
   if (cancelAssignBtn) {
-    cancelAssignBtn.addEventListener('click', function() {
-      assignOverlay.style.display = 'none';
+    cancelAssignBtn.addEventListener('click', closeClassesModal);
+  }
+  
+  // Close on overlay click
+  if (assignOverlay) {
+    assignOverlay.addEventListener('click', function(e) {
+      if (e.target === assignOverlay) {
+        closeClassesModal();
+      }
     });
   }
 
@@ -652,20 +779,45 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
       }
     }
   
-    // 5) show modal
+    // 5) show modal with smooth animation
+    scheduleOverlay.style.display = 'flex';
     scheduleOverlay.classList.add('show');
+    
+    // Trigger animation
+    setTimeout(() => {
+      scheduleOverlay.style.opacity = '1';
+      const modalContent = scheduleOverlay.querySelector('div[style*="transform"]');
+      if (modalContent) {
+        modalContent.style.transform = 'scale(1)';
+        modalContent.style.opacity = '1';
+      }
+    }, 10);
   }
 
   // Wire up the buttons AFTER function is defined
   scheduleBtns.forEach(btn => btn.addEventListener('click', handleSchedulesClick));
-  cancelSchedule.addEventListener('click', ()=> {
-    resetScheduleForm();
-    scheduleOverlay.classList.remove('show');
-  });
+  
+  window.closeScheduleModal = function() {
+    const scheduleOverlay = document.getElementById('schedules-overlay');
+    if (scheduleOverlay) {
+      const modalContent = scheduleOverlay.querySelector('div[style*="transform"]');
+      scheduleOverlay.style.opacity = '0';
+      if (modalContent) {
+        modalContent.style.transform = 'scale(0.9)';
+        modalContent.style.opacity = '0';
+      }
+      setTimeout(() => {
+        scheduleOverlay.style.display = 'none';
+        scheduleOverlay.classList.remove('show');
+        resetScheduleForm();
+      }, 300);
+    }
+  }
+  
+  cancelSchedule.addEventListener('click', closeScheduleModal);
   scheduleOverlay.addEventListener('click', e => {
     if (e.target === scheduleOverlay) {
-      resetScheduleForm();
-      scheduleOverlay.classList.remove('show');
+      closeScheduleModal();
     }
   });
   
@@ -696,13 +848,13 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
       })
       .then(response => {
         if (!response.ok) {
-          return response.json().then(err => { throw err; });
+          return response.json().then(err => Promise.reject(err));
         }
         return response.json();
       })
       .then(data => {
-        // Show success message
-        showNotification('Schedule added successfully!', 'success');
+        // Show success message with additional info about multiple schedules
+        showNotification(data.message || 'Schedule added successfully! You can add more schedules for different times on the same day.', 'success');
         
         // Reset only the form inputs (not the class dropdown)
         const daySelect = scheduleForm.querySelector('[name="day_of_week"]');
@@ -731,9 +883,15 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
         let errorMessage = 'Failed to add schedule. Please try again.';
         
         if (error.errors) {
-          // Laravel validation errors
-          const errors = Object.values(error.errors).flat();
-          errorMessage = errors.join(' ');
+          // Laravel validation errors - handle specific error types
+          const errors = error.errors;
+          if (errors.duplicate) {
+            errorMessage = 'This exact schedule already exists. Try different times or room.';
+          } else if (errors.time_conflict) {
+            errorMessage = errors.time_conflict[0];
+          } else {
+            errorMessage = Object.values(errors).flat().join(' ');
+          }
         } else if (error.message) {
           errorMessage = error.message;
         }
@@ -821,28 +979,66 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
     const ul     = document.querySelector('#existing-schedules-list ul');
     ul.innerHTML = '';
 
+    // Helper function to convert 24-hour time to 12-hour format
+    function formatTime(time24) {
+      if (!time24) return '';
+      const [hours, minutes] = time24.split(':');
+      let hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      hour = hour % 12 || 12; // Convert 0 to 12 for midnight
+      return `${hour}:${minutes} ${ampm}`;
+    }
+
     if (scheds.length) {
       scheds.forEach(s => {
-        console.dir(s);
-        console.log('─ keys:', Object.keys(s).join(', '));
-        const schedId = s.id;
-        console.log('🗑 will delete schedule id =', schedId);
         const li = document.createElement('li');
-
-        // schedule text
-        const txt = document.createElement('span');
-        txt.textContent = `${s.day_of_week} ${s.start_time}–${s.end_time} @ ${s.room}`;
-        console.log('schedule object:', s);
-        li.appendChild(txt);
-
-        // delete button
+        li.style.cssText = 'padding: 14px 16px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #7a222b; transition: all 0.2s;';
+        
+        // Schedule info container
+        const infoDiv = document.createElement('div');
+        infoDiv.style.cssText = 'flex: 1; display: flex; flex-direction: column; gap: 4px;';
+        
+        // Day and time
+        const dayTime = document.createElement('div');
+        dayTime.style.cssText = 'font-weight: 600; color: #212529; font-size: 14px;';
+        dayTime.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          ${s.day_of_week} • ${formatTime(s.start_time)} – ${formatTime(s.end_time)}
+        `;
+        
+        // Room
+        const room = document.createElement('div');
+        room.style.cssText = 'font-size: 13px; color: #6c757d;';
+        room.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6c757d" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          ${s.room}
+        `;
+        
+        infoDiv.appendChild(dayTime);
+        infoDiv.appendChild(room);
+        
+        // Delete button
         const del = document.createElement('button');
-        del.textContent = 'Delete';
-        del.classList.add('btn','delete-schedule-btn');
-        del.style.marginLeft = '1em';
+        del.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          Delete
+        `;
+        del.style.cssText = 'background: #dc3545; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; display: flex; align-items: center; gap: 4px;';
+        del.onmouseover = () => del.style.background = '#c82333';
+        del.onmouseout = () => del.style.background = '#dc3545';
+        
         del.addEventListener('click', () => {
           if (!confirm('Delete this schedule?')) return;
-          const schedId = s.schedule_id;    // no longer null!
+          const schedId = s.schedule_id;
           const url     = window.deleteScheduleUrl.replace('##ID##', schedId);
           fetch(url, {
             method: 'DELETE',
@@ -855,16 +1051,19 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
             if (!r.ok) throw new Error('Delete failed');
             pivot.schedules = pivot.schedules.filter(x => x.schedule_id !== schedId);
             renderSchedulesForPivot(pivotId, payload);
+            showNotification('Schedule deleted successfully!', 'success');
           })
-          .catch(err => alert(err.message));
+          .catch(err => {
+            showNotification('Failed to delete schedule: ' + err.message, 'error');
+          });
         });
-        
 
+        li.appendChild(infoDiv);
         li.appendChild(del);
         ul.appendChild(li);
       });
     } else {
-      ul.innerHTML = '<li>None added yet.</li>';
+      ul.innerHTML = '<li style="padding: 12px; background: #f8f9fa; border-radius: 6px; color: #6c757d; text-align: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>No schedules assigned yet</li>';
     }
   }
 
@@ -1205,4 +1404,76 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+});
+
+// Core Subjects Filter Functionality
+
+// Function to populate filter dropdowns
+function populateFilterDropdowns(classes) {
+  const sectionFilter = document.getElementById('section-filter');
+  const strandFilter = document.getElementById('strand-filter');
+  
+  if (!sectionFilter || !strandFilter) return;
+  
+  // Get unique sections and strands
+  const sections = [...new Set(classes.map(c => c.section.section_name).filter(Boolean))];
+  const strands = [...new Set(classes.map(c => c.strand?.name).filter(Boolean))];
+  
+  // Populate section filter
+  sectionFilter.innerHTML = '<option value="">All Sections</option>';
+  sections.forEach(section => {
+    const option = document.createElement('option');
+    option.value = section;
+    option.textContent = section;
+    sectionFilter.appendChild(option);
+  });
+  
+  // Populate strand filter
+  strandFilter.innerHTML = '<option value="">All Strands</option>';
+  strands.forEach(strand => {
+    const option = document.createElement('option');
+    option.value = strand;
+    option.textContent = strand;
+    strandFilter.appendChild(option);
+  });
+}
+
+// Function to initialize filter event listeners
+function initializeFilterListeners() {
+  const gradeFilter = document.getElementById('grade-filter');
+  const sectionFilter = document.getElementById('section-filter');
+  const strandFilter = document.getElementById('strand-filter');
+  const clearButton = document.getElementById('clear-filters');
+  
+  console.log('Initializing filter listeners:', { gradeFilter, sectionFilter, strandFilter, clearButton });
+  
+  if (gradeFilter) {
+    gradeFilter.removeEventListener('change', filterCoreSubjects); // Remove existing listener
+    gradeFilter.addEventListener('change', filterCoreSubjects);
+    console.log('Grade filter listener added');
+  }
+  
+  if (sectionFilter) {
+    sectionFilter.removeEventListener('change', filterCoreSubjects);
+    sectionFilter.addEventListener('change', filterCoreSubjects);
+    console.log('Section filter listener added');
+  }
+  
+  if (strandFilter) {
+    strandFilter.removeEventListener('change', filterCoreSubjects);
+    strandFilter.addEventListener('change', filterCoreSubjects);
+    console.log('Strand filter listener added');
+  }
+  
+  if (clearButton) {
+    clearButton.removeEventListener('click', clearAllFilters);
+    clearButton.addEventListener('click', clearAllFilters);
+    console.log('Clear button listener added');
+  }
+}
+
+// Add event listeners for filters
+document.addEventListener('DOMContentLoaded', function() {
+  // Try to initialize filters on page load
+  initializeFilterListeners();
 });

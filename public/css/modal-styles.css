@@ -1,0 +1,291 @@
+/* Modern Modal Styles - Reusable across all admin pages */
+
+/* Modal Header Template */
+.modern-modal-header {
+  background: linear-gradient(135deg, #7a222b 0%, #922832 100%);
+  color: white;
+  padding: 24px;
+  border-radius: 12px 12px 0 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.modern-modal-header .icon-container {
+  background: rgba(255,255,255,0.15);
+  padding: 12px;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modern-modal-header .header-content {
+  flex: 1;
+}
+
+.modern-modal-header h2,
+.modern-modal-header h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: white;
+}
+
+.modern-modal-header p {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 400;
+}
+
+.modern-modal-header .close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.modern-modal-header .close-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* Modal Container */
+.modern-modal-container {
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  background: white;
+}
+
+/* Modal Body */
+.modern-modal-body {
+  padding: 24px;
+  background: #fff;
+}
+
+/* Info Card */
+.modern-info-card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border-left: 4px solid #7a222b;
+}
+
+.modern-info-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.modern-info-card .card-label {
+  color: #495057;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.modern-info-card .card-value {
+  color: #7a222b;
+  font-weight: 700;
+  font-size: 20px;
+  display: block;
+}
+
+/* Section Card */
+.modern-section-card {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.modern-section-card .section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.modern-section-card .section-title {
+  color: #212529;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Form Section Header */
+.modern-form-section-header {
+  background: linear-gradient(135deg, #7a222b 0%, #922832 100%);
+  color: white;
+  padding: 16px 20px;
+  border-radius: 10px 10px 0 0;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modern-form-section-header h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modern-form-section-header p {
+  margin: 2px 0 0 0;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+/* Form Container */
+.modern-form-container {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  padding: 20px;
+}
+
+/* Form Group */
+.modern-form-group {
+  margin-bottom: 20px;
+}
+
+.modern-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #1f3f49;
+  font-size: 14px;
+}
+
+.modern-form-group input,
+.modern-form-group select,
+.modern-form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+.modern-form-group input:focus,
+.modern-form-group select:focus,
+.modern-form-group textarea:focus {
+  outline: none;
+  border-color: #7a222b;
+  box-shadow: 0 0 0 3px rgba(122,34,43,0.1);
+}
+
+.modern-form-group input:hover,
+.modern-form-group select:hover,
+.modern-form-group textarea:hover {
+  border-color: #cbd5e0;
+}
+
+/* Button Group */
+.modern-button-group {
+  background: #f8f9fa;
+  padding: 20px 24px;
+  border-radius: 0 0 12px 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid #dee2e6;
+}
+
+.modern-btn-cancel {
+  background: #fff;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modern-btn-cancel:hover {
+  background: #e9ecef;
+}
+
+.modern-btn-save,
+.modern-btn-primary {
+  background: linear-gradient(135deg, #7a222b 0%, #922832 100%);
+  color: white;
+  border: none;
+  padding: 10px 32px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(122,34,43,0.2);
+}
+
+.modern-btn-save:hover,
+.modern-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(122,34,43,0.3);
+}
+
+/* Grid Layout for Forms */
+.modern-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.modern-form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modern-form-grid-2,
+  .modern-form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  .modern-modal-container {
+    max-width: 95%;
+    margin: 10px;
+  }
+  
+  .modern-button-group {
+    flex-direction: column;
+  }
+}

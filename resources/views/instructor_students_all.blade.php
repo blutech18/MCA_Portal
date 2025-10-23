@@ -115,12 +115,37 @@
                         </div>
 
                         <div class="filter-group">
+                            <label for="class"><i class="fas fa-book"></i> Class/Subject:</label>
+                            <select name="class" id="class">
+                                <option value="">All Classes</option>
+                                @foreach($classes as $class)
+                                    <option value="{{ $class['id'] }}" 
+                                            {{ ($filters['class'] ?? '') == $class['id'] ? 'selected' : '' }}>
+                                        {{ $class['name'] }} ({{ $class['section'] }} - {{ $class['grade'] }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
                             <label for="search"><i class="fas fa-search"></i> Search:</label>
                             <input type="text" 
                                    name="search" 
                                    id="search" 
                                    placeholder="Search by name or ID..." 
                                    value="{{ $filters['search'] ?? '' }}">
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="sort"><i class="fas fa-sort"></i> Sort By:</label>
+                            <select name="sort" id="sort">
+                                <option value="name_asc" {{ ($filters['sort'] ?? 'name_asc') == 'name_asc' ? 'selected' : '' }}>Name (A-Z)</option>
+                                <option value="name_desc" {{ ($filters['sort'] ?? '') == 'name_desc' ? 'selected' : '' }}>Name (Z-A)</option>
+                                <option value="id_asc" {{ ($filters['sort'] ?? '') == 'id_asc' ? 'selected' : '' }}>Student ID (Low-High)</option>
+                                <option value="id_desc" {{ ($filters['sort'] ?? '') == 'id_desc' ? 'selected' : '' }}>Student ID (High-Low)</option>
+                                <option value="grade_asc" {{ ($filters['sort'] ?? '') == 'grade_asc' ? 'selected' : '' }}>Grade Level (Low-High)</option>
+                                <option value="grade_desc" {{ ($filters['sort'] ?? '') == 'grade_desc' ? 'selected' : '' }}>Grade Level (High-Low)</option>
+                            </select>
                         </div>
 
                         <div class="filter-actions">
@@ -875,6 +900,34 @@
     </script>
     
     <script>
+        // Auto-submit form when filters change for better UX
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterForm = document.querySelector('form[method="GET"]');
+            const filterSelects = filterForm.querySelectorAll('select[name="section"], select[name="grade_level"], select[name="class"], select[name="sort"]');
+            
+            filterSelects.forEach(select => {
+                select.addEventListener('change', function() {
+                    // Add a small delay to prevent rapid submissions
+                    setTimeout(() => {
+                        filterForm.submit();
+                    }, 100);
+                });
+            });
+            
+            // Add search input debouncing
+            const searchInput = filterForm.querySelector('input[name="search"]');
+            let searchTimeout;
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        filterForm.submit();
+                    }, 500); // Wait 500ms after user stops typing
+                });
+            }
+        });
+        
         // Mobile menu toggle
         document.querySelector('.mobile-menu-btn').addEventListener('click', function() {
             document.querySelector('.sidebar').classList.toggle('active');

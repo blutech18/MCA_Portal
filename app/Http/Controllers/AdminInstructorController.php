@@ -72,13 +72,38 @@ class AdminInstructorController extends Controller
     /**
      * Get all available classes for assignment (AJAX endpoint)
      */
-    public function getAvailableClasses()
+    public function getAvailableClasses(Request $request)
     {
+        $instructorId = $request->input('instructor_id');
+        $instructor = null;
+        $advisoryGradeLevelId = null;
+        
+        // Get instructor's advisory section to filter classes
+        if ($instructorId) {
+            $instructor = Instructor::with('advisorySection.gradeLevel')->find($instructorId);
+            if ($instructor && $instructor->advisorySection) {
+                $advisoryGradeLevelId = $instructor->advisorySection->grade_level_id;
+            }
+        }
+        
         $defaultSubjects = \App\Models\Subject::where('is_default', true)->get();
         $defaultClassesQuery = \App\Models\SchoolClass::with(['subject', 'gradeLevel', 'strand', 'section']);
         
         if ($defaultSubjects->count() > 0) {
             $defaultClassesQuery->whereIn('subject_id', $defaultSubjects->pluck('id'));
+        }
+        
+        // Filter based on advisory section (JHS: grades 7-10, SHS: grades 11-12)
+        if ($advisoryGradeLevelId) {
+            $defaultClassesQuery->whereHas('gradeLevel', function($query) use ($advisoryGradeLevelId) {
+                if ($advisoryGradeLevelId >= 11) {
+                    // SHS: show only grades 11-12
+                    $query->whereIn('grade_level_id', [11, 12]);
+                } else {
+                    // JHS: show only grades 7-10
+                    $query->whereIn('grade_level_id', [7, 8, 9, 10]);
+                }
+            });
         }
         
         $defaultClasses = $defaultClassesQuery->get();
@@ -439,9 +464,59 @@ public function update(Request $request, $id)
             'instructor_class_id' => 'required|exists:instructor_classes,id', 
             'day_of_week' => 'required',
             'start_time' => 'required',
-            'end_time' => 'required',
+            'end_time' => 'required|after:start_time',
             'room' => 'required|string',
         ]);
+        
+        // Check for duplicate schedules (same class, day, time, and room)
+        $existingSchedule = Schedule::where([
+            'instructor_class_id' => $validated['instructor_class_id'],
+            'day_of_week' => $validated['day_of_week'],
+            'start_time' => $validated['start_time'],
+            'end_time' => $validated['end_time'],
+            'room' => $validated['room']
+        ])->first();
+        
+        if ($existingSchedule) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This exact schedule already exists for this class.',
+                    'errors' => ['duplicate' => 'Schedule with same day, time, and room already exists.']
+                ], 422);
+            }
+            return back()->withErrors(['duplicate' => 'This exact schedule already exists for this class.']);
+        }
+        
+        // Check for time conflicts (overlapping schedules on the same day for the same class)
+        $conflictingSchedule = Schedule::where('instructor_class_id', $validated['instructor_class_id'])
+            ->where('day_of_week', $validated['day_of_week'])
+            ->where(function($query) use ($validated) {
+                $query->where(function($q) use ($validated) {
+                    // New schedule starts during existing schedule
+                    $q->where('start_time', '<=', $validated['start_time'])
+                      ->where('end_time', '>', $validated['start_time']);
+                })->orWhere(function($q) use ($validated) {
+                    // New schedule ends during existing schedule
+                    $q->where('start_time', '<', $validated['end_time'])
+                      ->where('end_time', '>=', $validated['end_time']);
+                })->orWhere(function($q) use ($validated) {
+                    // New schedule completely contains existing schedule
+                    $q->where('start_time', '>=', $validated['start_time'])
+                      ->where('end_time', '<=', $validated['end_time']);
+                });
+            })->first();
+            
+        if ($conflictingSchedule) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Time conflict detected with existing schedule.',
+                    'errors' => ['time_conflict' => "Schedule conflicts with existing schedule: {$conflictingSchedule->start_time} - {$conflictingSchedule->end_time} in {$conflictingSchedule->room}"]
+                ], 422);
+            }
+            return back()->withErrors(['time_conflict' => "Schedule conflicts with existing schedule: {$conflictingSchedule->start_time} - {$conflictingSchedule->end_time} in {$conflictingSchedule->room}"]);
+        }
         
         $schedule = Schedule::create([
             'instructor_class_id' => $validated['instructor_class_id'], 
@@ -455,12 +530,12 @@ public function update(Request $request, $id)
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Schedule added successfully.',
+                'message' => 'Schedule added successfully! You can add more schedules for different times on the same day.',
                 'schedule' => $schedule
             ]);
         }
     
-        return back()->with('success', 'Schedule added.');
+        return back()->with('success', 'Schedule added successfully! You can add more schedules for different times on the same day.');
     }
     
     public function updateSchedule(Request $request, $scheduleId)

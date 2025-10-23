@@ -339,15 +339,38 @@ document.addEventListener("DOMContentLoaded", function () {
     const strandGroup = document.getElementById("strand-group");
     const strandEl    = document.getElementById("section-strand");
     
-    // Show the modal
+    // Show the modal with smooth animation
     addSectionBtn.addEventListener("click", () => {
-        overlaySection.style.display = "flex";    // or "block", depending on your CSS
+        overlaySection.style.display = "flex";
+        
+        // Trigger animation
+        setTimeout(() => {
+            overlaySection.style.opacity = '1';
+            const modalContent = overlaySection.querySelector('div[style*="transform"]');
+            if (modalContent) {
+                modalContent.style.transform = 'scale(1)';
+                modalContent.style.opacity = '1';
+            }
+        }, 10);
     });
+    
+    // Close modal with smooth animation
+    window.closeAddSectionModal = function() {
+        const modalContent = overlaySection.querySelector('div[style*="transform"]');
+        overlaySection.style.opacity = '0';
+        if (modalContent) {
+            modalContent.style.transform = 'scale(0.9)';
+            modalContent.style.opacity = '0';
+        }
+        setTimeout(() => {
+            overlaySection.style.display = 'none';
+        }, 300);
+    }
 
     // Hide when clicking outside the form
     overlaySection.addEventListener("click", e => {
         if (e.target === overlaySection) {
-        overlaySection.style.display = "none";
+            closeAddSectionModal();
         }
     });
 

@@ -276,9 +276,28 @@
 </div>
 
 <!-- Create/Edit Section Modal -->
-<div id="sectionModal" class="modal">
-  <div class="modal-content">
-    <h2 id="modalTitle">Create Section</h2>
+<div id="sectionModal" class="modal" style="display: none;">
+  <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
+    <div class="modal-header" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 24px; border-radius: 12px 12px 0 0; position: relative; margin: -24px -24px 24px -24px;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; backdrop-filter: blur(10px);">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+        </div>
+        <div style="flex: 1;">
+          <h3 id="modalTitle" style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: white;">Create Section</h3>
+          <p style="margin: 4px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400;">Configure section details and capacity</p>
+        </div>
+      </div>
+      <button type="button" class="close-btn" onclick="closeModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
     
     <form id="sectionForm">
       <input type="hidden" id="sectionId" name="section_id">
@@ -341,32 +360,96 @@
         </div>
       </div>
       
-      <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary" id="submitBtn">Create Section</button>
+      <div style="background: #f8f9fa; padding: 20px 24px; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #dee2e6; margin: 24px -24px -24px -24px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()" style="background: #fff; color: #6c757d; border: 1px solid #dee2e6; padding: 10px 24px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#fff'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" id="submitBtn" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; border: none; padding: 10px 32px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(122,34,43,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(122,34,43,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(122,34,43,0.2)'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          <span id="submitBtnText">Create Section</span>
+        </button>
       </div>
     </form>
   </div>
 </div>
 
 <!-- View Section Details Modal -->
-<div id="viewModal" class="modal">
-  <div class="modal-content">
-    <h2>Section Details</h2>
-    <div id="sectionDetails"></div>
-    <div class="modal-actions">
-      <button type="button" class="btn btn-secondary" onclick="closeViewModal()">Close</button>
+<div id="viewModal" class="modal" style="display: none;">
+  <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
+    <div class="modal-header" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 24px; border-radius: 12px 12px 0 0; position: relative; margin: -24px -24px 24px -24px;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; backdrop-filter: blur(10px);">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </div>
+        <div style="flex: 1;">
+          <h3 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: white;">Section Details</h3>
+          <p style="margin: 4px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400;">View complete section information</p>
+        </div>
+      </div>
+      <button type="button" class="close-btn" onclick="closeViewModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div id="sectionDetails" style="padding: 0 24px;"></div>
+    <div style="background: #f8f9fa; padding: 20px 24px; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #dee2e6; margin: 24px -24px -24px -24px;">
+      <button type="button" class="btn btn-secondary" onclick="closeViewModal()" style="background: #fff; color: #6c757d; border: 1px solid #dee2e6; padding: 10px 24px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#fff'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        Close
+      </button>
     </div>
   </div>
 </div>
 
 <!-- Capacity Report Modal -->
-<div id="capacityReportModal" class="modal">
-  <div class="modal-content" style="max-width: 900px;">
-    <h2>📊 Capacity Report</h2>
-    <div id="capacityReportContent" style="max-height: 70vh; overflow-y: auto;"></div>
-    <div class="modal-actions">
-      <button type="button" class="btn btn-secondary" onclick="closeCapacityReportModal()">Close</button>
+<div id="capacityReportModal" class="modal" style="display: none;">
+  <div class="modal-content" style="max-width: 1000px; max-height: 90vh; overflow-y: auto; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
+    <div class="modal-header" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 24px; border-radius: 12px 12px 0 0; position: relative; margin: -24px -24px 24px -24px;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 10px; backdrop-filter: blur(10px);">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+        </div>
+        <div style="flex: 1;">
+          <h3 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: white;">📊 Capacity Report</h3>
+          <p style="margin: 4px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400;">Overview of section capacities and enrollment status</p>
+        </div>
+      </div>
+      <button type="button" class="close-btn" onclick="closeCapacityReportModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; backdrop-filter: blur(10px);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div id="capacityReportContent" style="max-height: 70vh; overflow-y: auto; padding: 0 24px;"></div>
+    <div style="background: #f8f9fa; padding: 20px 24px; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #dee2e6; margin: 24px -24px -24px -24px;">
+      <button type="button" class="btn btn-secondary" onclick="closeCapacityReportModal()" style="background: #fff; color: #6c757d; border: 1px solid #dee2e6; padding: 10px 24px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#fff'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        Close
+      </button>
     </div>
   </div>
 </div>
@@ -540,28 +623,91 @@
         const section = data.section;
         const students = section.students || [];
         
+        const statusBadge = section.is_full ? 
+          '<span style="background: #dc3545; color: white; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">Full</span>' :
+          (section.is_active ? 
+            '<span style="background: #28a745; color: white; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">Active</span>' :
+            '<span style="background: #6c757d; color: white; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">Inactive</span>');
+        
+        const capacityPercent = section.max_capacity > 0 ? (section.current_count / section.max_capacity * 100) : 0;
+        const capacityColor = capacityPercent >= 90 ? '#dc3545' : (capacityPercent >= 70 ? '#ffc107' : '#28a745');
+        
         let html = `
-          <div style="margin-bottom: 16px;">
-            <strong>Section Name:</strong> ${section.section_name}<br>
-            <strong>Grade Level:</strong> Grade ${section.grade_level?.name || 'N/A'}<br>
-            <strong>Strand:</strong> ${section.strand?.name || '-'}<br>
-            <strong>Priority:</strong> ${section.section_priority}<br>
-            <strong>Capacity:</strong> ${section.current_count}/${section.max_capacity}<br>
-            <strong>Status:</strong> ${section.is_full ? 'Full' : (section.is_active ? 'Active' : 'Inactive')}
+          <div style="background: transparent; border: 1px solid #e9ecef; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+              <div>
+                <div style="color: #6c757d; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Section Name</div>
+                <div style="color: #212529; font-weight: 600; font-size: 16px;">${section.section_name}</div>
+              </div>
+              <div>
+                <div style="color: #6c757d; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Grade Level</div>
+                <div style="color: #212529; font-weight: 600; font-size: 16px;">Grade ${section.grade_level?.name || 'N/A'}</div>
+              </div>
+              <div>
+                <div style="color: #6c757d; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Strand</div>
+                <div style="color: #212529; font-weight: 600; font-size: 16px;">${section.strand?.name || '-'}</div>
+              </div>
+              <div>
+                <div style="color: #6c757d; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Priority</div>
+                <div style="color: #212529; font-weight: 600; font-size: 16px;">${section.section_priority}</div>
+              </div>
+              <div>
+                <div style="color: #6c757d; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Capacity</div>
+                <div style="color: #212529; font-weight: 600; font-size: 16px;">${section.current_count}/${section.max_capacity}</div>
+                <div style="background: #e9ecef; height: 6px; border-radius: 3px; margin-top: 6px; overflow: hidden;">
+                  <div style="background: ${capacityColor}; height: 100%; width: ${capacityPercent}%; transition: width 0.3s;"></div>
+                </div>
+              </div>
+              <div>
+                <div style="color: #6c757d; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Status</div>
+                <div>${statusBadge}</div>
+              </div>
+            </div>
           </div>
-          <hr style="margin: 16px 0; border: none; border-top: 1px solid #e5e7eb;">
-          <h3 style="margin: 16px 0 12px 0; font-size: 16px;">Enrolled Students (${students.length})</h3>
+          
+          <div style="background: transparent; border: 1px solid #e9ecef; border-radius: 10px; padding: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #e9ecef;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <strong style="color: #212529; font-size: 16px;">Enrolled Students (${students.length})</strong>
+            </div>
         `;
         
         if (students.length > 0) {
-          html += '<ul style="list-style: none; padding: 0; margin: 0;">';
-          students.forEach(student => {
-            html += `<li style="padding: 8px 0; border-bottom: 1px solid #f3f4f6;">${student.lname}, ${student.fname} ${student.mname || ''}</li>`;
+          html += '<div style="max-height: 300px; overflow-y: auto;">';
+          students.forEach((student, index) => {
+            html += `
+              <div style="padding: 12px 16px; background: ${index % 2 === 0 ? '#f8f9fa' : 'transparent'}; border-radius: 6px; margin-bottom: 4px; display: flex; align-items: center; gap: 12px;">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7a222b, #922832); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px;">
+                  ${student.fname.charAt(0)}${student.lname.charAt(0)}
+                </div>
+                <div style="flex: 1;">
+                  <div style="font-weight: 600; color: #212529; font-size: 14px;">${student.lname}, ${student.fname} ${student.mname || ''}</div>
+                  ${student.lrn ? `<div style="font-size: 12px; color: #6c757d;">LRN: ${student.lrn}</div>` : ''}
+                </div>
+              </div>
+            `;
           });
-          html += '</ul>';
+          html += '</div>';
         } else {
-          html += '<p style="color: #6b7280; font-style: italic;">No students enrolled yet.</p>';
+          html += `
+            <div style="padding: 40px 20px; text-align: center; color: #6c757d;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 12px;">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <p style="margin: 0; font-style: italic;">No students enrolled yet.</p>
+            </div>
+          `;
         }
+        
+        html += '</div>';
         
         document.getElementById('sectionDetails').innerHTML = html;
         document.getElementById('viewModal').style.display = 'flex';
