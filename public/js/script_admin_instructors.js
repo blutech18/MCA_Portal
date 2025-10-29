@@ -4,6 +4,56 @@
 let allCoreSubjects = []; // Store all core subjects for filtering
 let selectedInstructorRow = null;
 
+// Function to close alert notification - defined at global scope
+window.closeAlert = function(alertId) {
+  const alert = document.getElementById(alertId);
+  if (alert) {
+    alert.style.animation = 'slideOutRight 0.3s ease-in';
+    setTimeout(function() {
+      alert.remove();
+    }, 300);
+  }
+}
+
+// Professional notification system - defined at global scope
+window.showNotification = function(message, type = 'info', duration = 5000) {
+  const container = document.getElementById('notification-container');
+  if (!container) return;
+
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  
+  const messageSpan = document.createElement('span');
+  messageSpan.textContent = message;
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'notification-close';
+  closeBtn.innerHTML = '&times;';
+  closeBtn.onclick = () => window.removeNotification(notification);
+  
+  notification.appendChild(messageSpan);
+  notification.appendChild(closeBtn);
+  container.appendChild(notification);
+
+  // Auto-remove after duration
+  if (duration > 0) {
+    setTimeout(() => {
+      window.removeNotification(notification);
+    }, duration);
+  }
+}
+
+window.removeNotification = function(notification) {
+  if (notification && notification.parentNode) {
+    notification.style.animation = 'slideOutRight 0.3s ease-in';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }
+}
+
 // Function to update the default classes checkboxes section
 function updateDefaultClassesSection(defaultClasses) {
   const gridContainer = document.querySelector('.default-subjects-grid');
@@ -507,29 +557,89 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Form validation
+  // Form validation and AJAX submission
   const assignForm = document.getElementById('assign-classes-form');
   if (assignForm) {
+    console.log('Assign form found:', assignForm);
     assignForm.addEventListener('submit', function(e) {
-      const selectedClasses = document.querySelectorAll('input[name="class_ids[]"]:checked, select[name="class_ids[]"] option:selected');
+      console.log('Form submitted');
+      e.preventDefault(); // Prevent default form submission
+      
+      // Get selected classes from checkboxes and multi-select dropdown
+      const checkedBoxes = document.querySelectorAll('input[name="class_ids[]"]:checked');
+      const multiSelect = document.getElementById('class_ids');
+      const selectedOptions = multiSelect ? Array.from(multiSelect.selectedOptions) : [];
+      
+      const selectedClasses = [...checkedBoxes, ...selectedOptions];
+      
+      console.log('Selected classes:', selectedClasses);
       
       if (selectedClasses.length === 0) {
-        e.preventDefault();
         showNotification('Please select at least one class to assign.', 'warning');
         return false;
       }
       
       // Show loading state
-      const submitBtn = assignForm.querySelector('button[type="submit"]');
+      let submitBtn = assignForm.querySelector('button[type="submit"]');
+      
+      // Fallback if not found in form
+      if (!submitBtn) {
+        submitBtn = document.querySelector('#assign-classes-overlay button[type="submit"]');
+      }
+      
+      console.log('Submit button:', submitBtn);
+      
+      if (!submitBtn) {
+        console.error('Submit button not found. Form:', assignForm);
+        console.error('Available buttons in form:', assignForm.querySelectorAll('button'));
+        return;
+      }
+      
       const originalText = submitBtn.textContent;
       submitBtn.textContent = 'Assigning...';
       submitBtn.disabled = true;
       
-      // Re-enable button after 3 seconds in case of error
-      setTimeout(() => {
+      // Submit via AJAX
+      const formData = new FormData(assignForm);
+      
+      fetch(assignForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.text(); // Get the full HTML response
+        }
+        throw new Error('Network response was not ok');
+      })
+      .then(data => {
+        // Show success notification outside the modal
+        showNotification('Classes assigned successfully!', 'success');
+        
+        // Close the modal
+        closeClassesModal();
+        
+        // Refresh the assigned classes display
+        setTimeout(() => {
+          refreshAssignedClasses();
+        }, 500);
+        
+        // Re-enable button
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
-      }, 3000);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showNotification('Failed to assign classes. Please try again.', 'error');
+        
+        // Re-enable button
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      });
     });
   }
 
@@ -540,104 +650,113 @@ document.addEventListener("DOMContentLoaded", function () {
     
     if (successAlert) {
       setTimeout(function() {
-        closeAlert('assign-success-alert');
+        window.closeAlert('assign-success-alert');
       }, 5000);
     }
     
     if (errorAlert) {
       setTimeout(function() {
-        closeAlert('assign-error-alert');
+        window.closeAlert('assign-error-alert');
       }, 7000);
     }
   });
 
-  // Function to close alert notification
-  function closeAlert(alertId) {
-    const alert = document.getElementById(alertId);
-    if (alert) {
-      alert.style.animation = 'slideOutRight 0.3s ease-in';
-      setTimeout(function() {
-        alert.remove();
-      }, 300);
-    }
-  }
-
-  // Professional notification system
-  function showNotification(message, type = 'info', duration = 5000) {
-    const container = document.getElementById('notification-container');
-    if (!container) return;
-
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    
-    const messageSpan = document.createElement('span');
-    messageSpan.textContent = message;
-    
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'notification-close';
-    closeBtn.innerHTML = '&times;';
-    closeBtn.onclick = () => removeNotification(notification);
-    
-    notification.appendChild(messageSpan);
-    notification.appendChild(closeBtn);
-    container.appendChild(notification);
-
-    // Auto-remove after duration
-    if (duration > 0) {
-      setTimeout(() => {
-        removeNotification(notification);
-      }, duration);
-    }
-  }
-
-  function removeNotification(notification) {
-    if (notification && notification.parentNode) {
-      notification.style.animation = 'slideOutRight 0.3s ease-in';
-      setTimeout(() => {
-        if (notification.parentNode) {
-          notification.parentNode.removeChild(notification);
-        }
-      }, 300);
-    }
-  }
-
   // Function to refresh assigned classes display
-  function refreshAssignedClasses() {
+  async function refreshAssignedClasses() {
     if (!selectedInstructorRow) return;
     
-    const payload = selectedInstructorRow.dataset.instructorClasses;
-    const instructorClasses = JSON.parse(payload || '[]');
-    const assignedList = document.querySelector('#assigned-classes-list');
+    const instructorId = selectedInstructorRow.dataset.instructorId;
     
-    if (assignedList) {
-      assignedList.innerHTML = '';
+    try {
+      // Fetch the updated instructor data from the server
+      const response = await fetch(`/admin/instructors/${instructorId}/data`, {
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+      });
       
-      if (instructorClasses && instructorClasses.length > 0) {
-        instructorClasses.forEach((classData) => {
-          const li = document.createElement('li');
-          li.style.marginBottom = '8px';
-          li.style.padding = '8px';
-          li.style.backgroundColor = '#f8f9fa';
-          li.style.borderRadius = '4px';
-          li.style.borderLeft = '4px solid #7a222b';
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Update the row's data attribute with the new classes
+        if (data.instructor_classes) {
+          selectedInstructorRow.dataset.instructorClasses = JSON.stringify(data.instructor_classes);
+        }
+        
+        // Refresh the assigned classes display
+        const instructorClasses = data.instructor_classes || [];
+        const assignedList = document.querySelector('#assigned-classes-list');
+        
+        if (assignedList) {
+          assignedList.innerHTML = '';
           
-          const classInfo = classData.class;
-          if (classInfo) {
-            li.innerHTML = `
-              <div style="font-weight: bold; color: #7a222b;">${classInfo.name || 'Unknown Class'}</div>
-              <div style="font-size: 12px; color: #666; margin-top: 2px;">
-                ${classInfo.section_name || 'N/A'} — ${classInfo.code || 'N/A'} / ${classInfo.grade_level || 'Unknown Grade'}
-                ${classInfo.strand ? ' / ' + classInfo.strand : ''}
-              </div>
-            `;
+          if (instructorClasses && instructorClasses.length > 0) {
+            instructorClasses.forEach((classData) => {
+              const li = document.createElement('li');
+              li.style.marginBottom = '8px';
+              li.style.padding = '8px';
+              li.style.backgroundColor = '#f8f9fa';
+              li.style.borderRadius = '4px';
+              li.style.borderLeft = '4px solid #7a222b';
+              
+              const classInfo = classData.class;
+              if (classInfo) {
+                li.innerHTML = `
+                  <div style="font-weight: bold; color: #7a222b;">${classInfo.name || 'Unknown Class'}</div>
+                  <div style="font-size: 12px; color: #666; margin-top: 2px;">
+                    ${classInfo.section_name || 'N/A'} — ${classInfo.code || 'N/A'} / ${classInfo.grade_level || 'Unknown Grade'}
+                    ${classInfo.strand ? ' / ' + classInfo.strand : ''}
+                  </div>
+                `;
+              } else {
+                li.textContent = `Class ID ${classData.class_id}`;
+              }
+              assignedList.appendChild(li);
+            });
           } else {
-            li.textContent = `Class ID ${classData.class_id}`;
+            assignedList.innerHTML = '<li style="color: #666; font-style: italic;">No classes assigned yet.</li>';
           }
-          assignedList.appendChild(li);
-        });
+        }
       } else {
-        assignedList.innerHTML = '<li style="color: #666; font-style: italic;">No classes assigned yet.</li>';
+        // Fallback to using cached data if the fetch fails
+        const payload = selectedInstructorRow.dataset.instructorClasses;
+        const instructorClasses = JSON.parse(payload || '[]');
+        const assignedList = document.querySelector('#assigned-classes-list');
+        
+        if (assignedList) {
+          assignedList.innerHTML = '';
+          
+          if (instructorClasses && instructorClasses.length > 0) {
+            instructorClasses.forEach((classData) => {
+              const li = document.createElement('li');
+              li.style.marginBottom = '8px';
+              li.style.padding = '8px';
+              li.style.backgroundColor = '#f8f9fa';
+              li.style.borderRadius = '4px';
+              li.style.borderLeft = '4px solid #7a222b';
+              
+              const classInfo = classData.class;
+              if (classInfo) {
+                li.innerHTML = `
+                  <div style="font-weight: bold; color: #7a222b;">${classInfo.name || 'Unknown Class'}</div>
+                  <div style="font-size: 12px; color: #666; margin-top: 2px;">
+                    ${classInfo.section_name || 'N/A'} — ${classInfo.code || 'N/A'} / ${classInfo.grade_level || 'Unknown Grade'}
+                    ${classInfo.strand ? ' / ' + classInfo.strand : ''}
+                  </div>
+                `;
+              } else {
+                li.textContent = `Class ID ${classData.class_id}`;
+              }
+              assignedList.appendChild(li);
+            });
+          } else {
+            assignedList.innerHTML = '<li style="color: #666; font-style: italic;">No classes assigned yet.</li>';
+          }
+        }
       }
+    } catch (error) {
+      console.error('Error refreshing assigned classes:', error);
     }
   }
 
@@ -706,76 +825,100 @@ document.addEventListener("DOMContentLoaded", function () {
 const scheduleBtns    = document.querySelectorAll('.schedule-btn');
 const scheduleOverlay = document.getElementById('schedules-overlay');
 const cancelSchedule  = document.getElementById('cancel-schedule');
-const scheduleSelect  = document.getElementById('schedule-instructor-class-id');
 const instructorName  = document.getElementById('schedule-instructor-name');
 const existingUL      = document.querySelector('#existing-schedules-list ul');
+
+  // Initialize schedule buttons as disabled
+  if (scheduleBtns.length > 0) {
+    scheduleBtns.forEach(btn => {
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      btn.style.cursor = 'not-allowed';
+      btn.title = 'Please select an instructor first';
+    });
+  }
 
   // Define handleSchedulesClick BEFORE using it in event listeners
   // Make handleSchedulesClick globally accessible
   window.handleSchedulesClick = function handleSchedulesClick() {
-    if (!selectedInstructorRow) return alert('Please click an instructor row first.');
+    if (!selectedInstructorRow) {
+      showNotification('Please select an instructor first by clicking on a row in the table.', 'warning');
+      return;
+    }
   
     // pull the JSON payload off the <tr>
     const payload = JSON.parse(selectedInstructorRow.dataset.instructorClasses || '[]');
     const fullname = selectedInstructorRow.dataset.fullname;
+    const instructorId = selectedInstructorRow.dataset.instructorId;
   
-    // 1) fill instructor name
+    // 1) fill instructor name and ID
     document.getElementById('schedule-instructor-name').textContent = fullname;
+    document.getElementById('schedule-instructor-id').value = instructorId;
   
-    // 2) rebuild the class-pivot <select>
-    const scheduleSelect = document.getElementById('schedule-instructor-class-id');
-    scheduleSelect.innerHTML = '';
+    // 2) rebuild ALL class-pivot <select> elements (for multiple entries)
+    const scheduleSelects = document.querySelectorAll('.schedule-class-select');
+    
+    // Get form and submit button
+    const form = document.getElementById('schedule-form');
+    const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+    const inputs = form ? form.querySelectorAll('input, select') : [];
     
     // Check if instructor has any classes assigned
     if (payload.length === 0) {
       // No classes assigned - show message and disable form
-      const opt = document.createElement('option');
-      opt.value = '';
-      opt.textContent = 'No classes assigned to this instructor';
-      opt.disabled = true;
-      scheduleSelect.appendChild(opt);
-      
-      // Clear existing schedules
-      const ul = document.querySelector('#existing-schedules-list ul');
-      ul.innerHTML = '<li style="color: #666; font-style: italic;">No classes assigned. Please assign classes first using the "Classes" button.</li>';
-      
-      // Disable the form
-      const form = document.getElementById('schedule-form');
-      const submitBtn = form.querySelector('button[type="submit"]');
-      const inputs = form.querySelectorAll('input, select');
-      
-      inputs.forEach(input => input.disabled = true);
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Assign Classes First';
-      
-    } else {
-      // Classes are assigned - populate dropdown normally
-      payload.forEach(item => {
+      scheduleSelects.forEach(scheduleSelect => {
+        scheduleSelect.innerHTML = '';
         const opt = document.createElement('option');
-        opt.value = item.pivot_id;
-        opt.textContent = [
-          item.class.name,
-          `(${item.class.code})`,
-          item.class.grade_level ? `Grade ${item.class.grade_level}` : null,
-          item.class.strand      ? `/ ${item.class.strand}`      : null,
-          `— Section ${item.class.section_name}`
-        ].filter(Boolean).join(' ');
+        opt.value = '';
+        opt.textContent = 'No classes assigned to this instructor';
+        opt.disabled = true;
         scheduleSelect.appendChild(opt);
       });
       
+      // Clear existing schedules
+      const ul = document.querySelector('#existing-schedules-list ul');
+      if (ul) {
+        ul.innerHTML = '<li style="color: #666; font-style: italic;">No classes assigned. Please assign classes first using the "Classes" button.</li>';
+      }
+      
+      // Disable the form
+      inputs.forEach(input => input.disabled = true);
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Assign Classes First';
+      }
+      
+    } else {
+      // Classes are assigned - populate all dropdowns normally
+      scheduleSelects.forEach(scheduleSelect => {
+        scheduleSelect.innerHTML = '';
+        
+        payload.forEach(item => {
+          const opt = document.createElement('option');
+          opt.value = item.pivot_id;
+          opt.textContent = [
+            item.class.name,
+            `(${item.class.code})`,
+            item.class.grade_level ? `Grade ${item.class.grade_level}` : null,
+            item.class.strand      ? `/ ${item.class.strand}`      : null,
+            `— Section ${item.class.section_name}`
+          ].filter(Boolean).join(' ');
+          scheduleSelect.appendChild(opt);
+        });
+      });
+      
       // Enable the form
-      const form = document.getElementById('schedule-form');
-      const submitBtn = form.querySelector('button[type="submit"]');
-      const inputs = form.querySelectorAll('input, select');
-      
       inputs.forEach(input => input.disabled = false);
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Save Schedule';
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save All Schedules';
+      }
       
-      // Render schedules for first class
-      if (payload.length > 0) {
+      // Render schedules for first class (only need to do this once, not for each select)
+      if (payload.length > 0 && scheduleSelects.length > 0) {
         renderSchedulesForPivot(payload[0].pivot_id, payload);
-        scheduleSelect.onchange = e => renderSchedulesForPivot(e.target.value, payload);
+        // Attach onChange to first select only
+        scheduleSelects[0].onchange = e => renderSchedulesForPivot(e.target.value, payload);
       }
     }
   
@@ -822,88 +965,6 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
   });
   
   const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-
-  // Handle schedule form submission via AJAX
-  const scheduleForm = document.getElementById('schedule-form');
-  if (scheduleForm) {
-    scheduleForm.addEventListener('submit', function(e) {
-      e.preventDefault(); // Prevent default form submission
-      
-      const formData = new FormData(scheduleForm);
-      const submitBtn = scheduleForm.querySelector('button[type="submit"]');
-      const originalText = submitBtn.textContent;
-      
-      // Show loading state
-      submitBtn.textContent = 'Saving...';
-      submitBtn.disabled = true;
-      
-      fetch(scheduleForm.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-CSRF-TOKEN': csrfToken,
-          'X-Requested-With': 'XMLHttpRequest',
-          'Accept': 'application/json'
-        }
-      })
-      .then(response => {
-        if (!response.ok) {
-          return response.json().then(err => Promise.reject(err));
-        }
-        return response.json();
-      })
-      .then(data => {
-        // Show success message with additional info about multiple schedules
-        showNotification(data.message || 'Schedule added successfully! You can add more schedules for different times on the same day.', 'success');
-        
-        // Reset only the form inputs (not the class dropdown)
-        const daySelect = scheduleForm.querySelector('[name="day_of_week"]');
-        const startTime = scheduleForm.querySelector('[name="start_time"]');
-        const endTime = scheduleForm.querySelector('[name="end_time"]');
-        const room = scheduleForm.querySelector('[name="room"]');
-        
-        if (daySelect) daySelect.value = '';
-        if (startTime) startTime.value = '';
-        if (endTime) endTime.value = '';
-        if (room) room.value = '';
-        
-        // Refresh the schedules list for the current class
-        const selectedPivotId = document.getElementById('schedule-instructor-class-id').value;
-        if (selectedPivotId && selectedInstructorRow) {
-          // Reload instructor data to get updated schedules
-          reloadInstructorSchedules(selectedPivotId);
-        }
-        
-        // Re-enable submit button
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-      })
-      .catch(error => {
-        console.error('Error adding schedule:', error);
-        let errorMessage = 'Failed to add schedule. Please try again.';
-        
-        if (error.errors) {
-          // Laravel validation errors - handle specific error types
-          const errors = error.errors;
-          if (errors.duplicate) {
-            errorMessage = 'This exact schedule already exists. Try different times or room.';
-          } else if (errors.time_conflict) {
-            errorMessage = errors.time_conflict[0];
-          } else {
-            errorMessage = Object.values(errors).flat().join(' ');
-          }
-        } else if (error.message) {
-          errorMessage = error.message;
-        }
-        
-        showNotification(errorMessage, 'error');
-        
-        // Re-enable submit button
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-      });
-    });
-  }
   
   // Function to reload instructor schedules after adding a new one
   function reloadInstructorSchedules(pivotId) {
@@ -954,11 +1015,11 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
       }
     }
     
-    // Clear the class dropdown
-    const scheduleSelect = document.getElementById('schedule-instructor-class-id');
-    if (scheduleSelect) {
-      scheduleSelect.innerHTML = '';
-    }
+    // Clear all class dropdowns
+    const scheduleSelects = document.querySelectorAll('.schedule-class-select');
+    scheduleSelects.forEach(select => {
+      select.innerHTML = '';
+    });
     
     // Clear schedules list
     const ul = document.querySelector('#existing-schedules-list ul');
@@ -1066,6 +1127,9 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
       ul.innerHTML = '<li style="padding: 12px; background: #f8f9fa; border-radius: 6px; color: #6c757d; text-align: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>No schedules assigned yet</li>';
     }
   }
+  
+  // Make renderSchedulesForPivot accessible globally
+  window.renderSchedulesForPivot = renderSchedulesForPivot;
 
   /*--- Search functionality --- */
   document.getElementById('instructor-search').addEventListener('input', function () {
@@ -1134,6 +1198,14 @@ const existingUL      = document.querySelector('#existing-schedules-list ul');
         classesBtn.style.cursor = 'pointer';
         classesBtn.title = 'Click to assign classes to ' + fullname;
       }
+
+      // Enable schedule buttons and add visual feedback
+      scheduleBtns.forEach(btn => {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        btn.title = 'Click to manage schedules for ' + fullname;
+      });
 
       const first  = row.dataset.firstName  || '';
       const middle = row.dataset.middleName || '';
@@ -1239,7 +1311,7 @@ function triggerAssignModal() {
 }
 
 function triggerScheduleModal() {
-  // Check if handleSchedulesClick is available
+  // Directly call handleSchedulesClick - it will handle the validation internally
   if (typeof window.handleSchedulesClick === 'function') {
     window.handleSchedulesClick();
   } else {
@@ -1476,4 +1548,369 @@ function initializeFilterListeners() {
 document.addEventListener('DOMContentLoaded', function() {
   // Try to initialize filters on page load
   initializeFilterListeners();
+  
+  // Initialize dynamic schedule entries
+  initializeDynamicScheduleEntries();
 });
+
+// Dynamic Schedule Entries Functionality
+function initializeDynamicScheduleEntries() {
+  const addEntryBtn = document.getElementById('add-schedule-entry-btn');
+  const scheduleForm = document.getElementById('schedule-form');
+  
+  if (!addEntryBtn || !scheduleForm) return;
+  
+  let entryIndex = 1; // Start from 1 since we already have entry 0
+  
+  // Handle "Add Another" button click
+  addEntryBtn.addEventListener('click', function() {
+    addScheduleEntry();
+    updateRemoveButtons();
+  });
+  
+  // Handle remove entry buttons (using event delegation)
+  scheduleForm.addEventListener('click', function(e) {
+    if (e.target.closest('.remove-entry-btn')) {
+      const entry = e.target.closest('.schedule-entry');
+      if (entry) {
+        removeScheduleEntry(entry);
+        updateRemoveButtons();
+      }
+    }
+  });
+  
+  // Override form submission to handle multiple entries
+  scheduleForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    submitMultipleSchedules();
+  });
+  
+  // Function to add a new schedule entry
+  function addScheduleEntry() {
+    const entriesList = document.getElementById('schedule-entries-list');
+    const firstEntry = entriesList.querySelector('.schedule-entry');
+    
+    if (!entriesList || !firstEntry) return;
+    
+    const newEntry = firstEntry.cloneNode(true);
+    newEntry.setAttribute('data-entry-index', entryIndex);
+    
+    // Clear all input values
+    const inputs = newEntry.querySelectorAll('input, select');
+    inputs.forEach(input => {
+      if (input.type === 'text') input.value = '';
+      else if (input.type === 'time') input.value = '';
+      else if (input.tagName === 'SELECT') input.selectedIndex = 0;
+    });
+    
+    // Add the new entry to the list
+    entriesList.appendChild(newEntry);
+    
+    entryIndex++;
+  }
+  
+  // Function to remove a schedule entry
+  function removeScheduleEntry(entry) {
+    const entries = document.querySelectorAll('.schedule-entry');
+    if (entries.length <= 1) {
+      showNotification('At least one schedule entry is required.', 'warning');
+      return;
+    }
+    
+    entry.remove();
+  }
+  
+  // Function to update remove button visibility
+  function updateRemoveButtons() {
+    const entries = document.querySelectorAll('.schedule-entry');
+    const removeBtns = document.querySelectorAll('.remove-entry-btn');
+    
+    entries.forEach((entry, index) => {
+      const removeBtn = entry.querySelector('.remove-entry-btn');
+      if (removeBtn) {
+        // Show remove button only if there are multiple entries
+        if (entries.length > 1) {
+          removeBtn.style.display = 'block';
+        } else {
+          removeBtn.style.display = 'none';
+        }
+      }
+    });
+  }
+  
+  // Function to submit multiple schedules
+  function submitMultipleSchedules() {
+    const entries = document.querySelectorAll('.schedule-entry');
+    const instructorId = document.getElementById('schedule-instructor-id').value;
+    
+    if (!instructorId) {
+      showNotification('No instructor selected.', 'error');
+      return;
+    }
+    
+    // Collect all schedule data
+    const schedules = [];
+    let hasErrors = false;
+    
+    entries.forEach((entry, index) => {
+      const classId = entry.querySelector('.schedule-class-select').value;
+      const day = entry.querySelector('.schedule-day-select').value;
+      const startTime = entry.querySelector('.schedule-start-time').value;
+      const endTime = entry.querySelector('.schedule-end-time').value;
+      const room = entry.querySelector('.schedule-room').value;
+      
+      if (classId && day && startTime && endTime && room) {
+        schedules.push({
+          instructor_class_id: classId,
+          day_of_week: day,
+          start_time: startTime,
+          end_time: endTime,
+          room: room
+        });
+      } else if (index > 0) {
+        // Only allow empty entries for the first entry (in case user just wants to add one)
+        // For additional entries, they should be filled or removed
+        hasErrors = true;
+        return;
+      }
+    });
+    
+    if (hasErrors) {
+      showNotification('Please fill in all fields for each schedule entry, or remove empty entries.', 'warning');
+      return;
+    }
+    
+    if (schedules.length === 0) {
+      showNotification('Please fill in at least one schedule entry.', 'warning');
+      return;
+    }
+    
+    // Disable submit button
+    const submitBtn = document.querySelector('.save-btn');
+    
+    if (!submitBtn) {
+      console.error('Submit button not found');
+      showNotification('Error: Submit button not found. Please refresh the page.', 'error');
+      return;
+    }
+    
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+    
+    // Submit all schedules sequentially
+    let successCount = 0;
+    let errorCount = 0;
+    let currentIndex = 0;
+    
+    function submitNext() {
+      if (currentIndex >= schedules.length) {
+        // All done
+        if (successCount > 0) {
+          showNotification(`${successCount} schedule${successCount > 1 ? 's' : ''} added successfully!`, 'success');
+          
+          // Reset form
+          resetScheduleEntriesForm();
+          
+          // Reload schedules from server to get the updated data
+          if (selectedInstructorRow) {
+            const instructorId = selectedInstructorRow.dataset.instructorId;
+            
+            // Fetch updated instructor data
+            fetch(`/admin/instructors/${instructorId}/data`, {
+              headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+              }
+            })
+            .then(response => response.json())
+            .then(data => {
+              // Update the instructor row's dataset with new schedule data
+              if (data.instructor_classes) {
+                selectedInstructorRow.dataset.instructorClasses = JSON.stringify(data.instructor_classes);
+                
+                // Re-render the schedules for the currently selected class
+                const payload = data.instructor_classes;
+                if (payload.length > 0) {
+                  const firstPivotId = payload[0].pivot_id;
+                  renderSchedulesForPivot(firstPivotId, payload);
+                }
+              }
+            })
+            .catch(error => {
+              console.error('Error reloading schedules:', error);
+              // Fallback: use cached data
+              const payload = JSON.parse(selectedInstructorRow.dataset.instructorClasses || '[]');
+              if (payload.length > 0) {
+                const firstPivotId = payload[0].pivot_id;
+                renderSchedulesForPivot(firstPivotId, payload);
+              }
+            });
+          }
+        }
+        
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        
+        // Don't show generic error message if we already showed specific errors
+        // The individual error notifications were already displayed above
+        
+        return;
+      }
+      
+      const schedule = schedules[currentIndex];
+      const formData = new FormData();
+      formData.append('instructor_class_id', schedule.instructor_class_id);
+      formData.append('day_of_week', schedule.day_of_week);
+      formData.append('start_time', schedule.start_time);
+      formData.append('end_time', schedule.end_time);
+      formData.append('room', schedule.room);
+      
+      fetch('/admin/instructors/schedules', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json'
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(err => Promise.reject(err));
+        }
+        return response.json();
+      })
+      .then(data => {
+        successCount++;
+        currentIndex++;
+        submitNext();
+      })
+      .catch(error => {
+        console.error('Error adding schedule:', error);
+        
+        // Show specific error message if available
+        let errorMessage = 'Failed to add schedule.';
+        if (error.errors) {
+          // Laravel validation errors
+          errorMessage = Object.values(error.errors).flat().join(' ');
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        showNotification(errorMessage, 'error');
+        
+        errorCount++;
+        currentIndex++;
+        submitNext();
+      });
+    }
+    
+    submitNext();
+  }
+  
+  // Function to reset the schedule entries form
+  function resetScheduleEntriesForm() {
+    const entries = document.querySelectorAll('.schedule-entry');
+    
+    // Keep only the first entry and clear it
+    for (let i = entries.length - 1; i > 0; i--) {
+      entries[i].remove();
+    }
+    
+    // Clear the first entry
+    const firstEntry = entries[0];
+    if (firstEntry) {
+      const inputs = firstEntry.querySelectorAll('input, select');
+      inputs.forEach(input => {
+        if (input.type === 'text') input.value = '';
+        else if (input.type === 'time') input.value = '';
+        else if (input.tagName === 'SELECT') input.selectedIndex = 0;
+      });
+    }
+    
+    // Reset entry index
+    entryIndex = 1;
+    updateRemoveButtons();
+  }
+}
+
+// Function to refresh the schedules list manually - moved outside of initializeDynamicScheduleEntries
+window.refreshSchedulesList = function() {
+  // Get instructor ID from the hidden input field in the modal
+  const instructorIdInput = document.getElementById('schedule-instructor-id');
+  const instructorId = instructorIdInput ? instructorIdInput.value : null;
+  
+  if (!instructorId) {
+    showNotification('No instructor selected in the form.', 'warning');
+    return;
+  }
+  
+  const refreshBtn = document.getElementById('refresh-schedules-btn');
+  
+  // Show loading state
+  if (refreshBtn) {
+    const originalText = refreshBtn.innerHTML;
+    refreshBtn.disabled = true;
+    refreshBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg> Refreshing...';
+    
+    // Fetch updated instructor data
+    fetch(`instructors/${instructorId}/data`, {
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Accept': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Update the instructor row's dataset with new schedule data if it exists
+      if (selectedInstructorRow && data.instructor_classes) {
+        selectedInstructorRow.dataset.instructorClasses = JSON.stringify(data.instructor_classes);
+      }
+      
+      // Re-render the schedules for the currently selected class
+      if (data.instructor_classes) {
+        const payload = data.instructor_classes;
+        if (payload.length > 0) {
+          const firstPivotId = payload[0].pivot_id;
+          renderSchedulesForPivot(firstPivotId, payload);
+          showNotification('Schedules list refreshed successfully.', 'success');
+        } else {
+          const ul = document.querySelector('#existing-schedules-list ul');
+          if (ul) {
+            ul.innerHTML = '<li style="padding: 12px; background: #f8f9fa; border-radius: 6px; color: #6c757d; text-align: center;">No schedules assigned yet</li>';
+          }
+          showNotification('No schedules found.', 'info');
+        }
+      }
+      
+      // Restore button state
+      if (refreshBtn) {
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML = originalText;
+      }
+    })
+    .catch(error => {
+      console.error('Error refreshing schedules:', error);
+      showNotification('Failed to refresh schedules list.', 'error');
+      
+      // Restore button state
+      if (refreshBtn) {
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML = originalText;
+      }
+    });
+  }
+}
+
+// Add CSS for spin animation
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+`;
+document.head.appendChild(style);

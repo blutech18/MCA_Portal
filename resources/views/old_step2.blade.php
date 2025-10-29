@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MCA Montessori School Payment - Existing Students</title>
+  <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+  <link rel="icon" href="{{ asset('favicon.ico') }}">
   <link rel="stylesheet" href="{{ asset('css/mobile-compatibility.css') }}">
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -808,6 +810,34 @@ button[disabled] {
             
             setProgress(2);
             
+            // Load existing receipt from database if exists
+            @if(isset($existingReceipt) && $existingReceipt)
+            const existingReceipt = {
+                name: '{{ $existingReceipt->original_filename }}',
+                mime: '{{ $existingReceipt->mime_type }}',
+                size: {{ $existingReceipt->file_size }},
+                data: '{{ base64_encode($existingReceipt->file_data) }}'
+            };
+            console.log('Loading existing receipt:', existingReceipt);
+            
+            // Display existing receipt
+            const receiptPreview = document.getElementById('receiptPreview');
+            const receiptValidation = document.getElementById('receiptValidation');
+            if (receiptPreview && receiptValidation) {
+                receiptValidation.style.display = 'none';
+                receiptPreview.style.display = 'block';
+                receiptPreview.innerHTML = '<div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 12px; border-radius: 8px; color: #1e40af; font-weight: 600;">✓ Receipt stored in database: ' + existingReceipt.name + '</div>';
+            }
+            
+            // Remove required attribute since receipt exists
+            const receiptInputElement = document.getElementById('receiptUpload');
+            if (receiptInputElement) {
+                receiptInputElement.removeAttribute('required');
+            }
+            @else
+            const existingReceipt = null;
+            @endif
+            
             const form = document.getElementById('paymentForm');
             const studentIdInput = document.getElementById('studentId');
             const fullNameInput = document.getElementById('fullName');
@@ -910,13 +940,23 @@ button[disabled] {
             });
             
             // Handle form submission
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 if (checkAllFieldsFilled()) {
-                  alert('Payment pending verification. Your enrollment will be processed once payment is confirmed. Proceeding to next step.');
-                  clearCachedData(); // Clear all cached data on successful submission
-                  this.submit(); 
+                  const confirmed = await showConfirmation(
+                    'Confirm Payment Submission',
+                    'Your enrollment will be processed once payment is confirmed. Proceed to next step?',
+                    'question'
+                  );
+                  
+                  if (confirmed) {
+                    showToast('Proceeding to next step...', 'info');
+                    clearCachedData(); // Clear all cached data on successful submission
+                    this.submit(); 
+                  }
+                } else {
+                  showToast('Please fill in all required fields before submitting.', 'warning');
                 }
             });
             
@@ -988,8 +1028,10 @@ button[disabled] {
                 const isStudentIdFilled = studentIdInput.value.trim() !== '';
                 const isFullNameFilled = fullNameInput.value.trim() !== '';
                 const isPaymentRefFilled = paymentRefInput.value.trim() !== '';
+                // Check if receipt exists in input or database
                 const isReceiptUploaded = receiptInput.files.length > 0;
-                const hasExistingReceipt = document.getElementById('existingReceipt') !== null;
+                const hasExistingReceipt = (document.getElementById('existingReceipt') !== null) 
+                                         || (typeof existingReceipt !== 'undefined' && existingReceipt !== null);
 
                 console.log('Validation check:', {
                     studentId: isStudentIdFilled,
@@ -1320,5 +1362,8 @@ button[disabled] {
 
         }); // DOMContentLoaded
     </script>
+    
+    {{-- Include Modern Notification System --}}
+    @include('partials.modern_notifications')
 </body>
 </html>

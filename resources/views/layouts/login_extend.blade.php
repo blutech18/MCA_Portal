@@ -5,6 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login Form MCA</title>
+  <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+  <link rel="icon" href="{{ asset('favicon.ico') }}">
   <link rel="stylesheet" href="{{ secure_asset('css/styles_login.css') }}?v={{ time() }}">
 </head>
 <body>

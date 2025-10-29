@@ -19,9 +19,7 @@
             <nav class="sidebar-nav">
                 <ul>
                     <li><a href="{{ route('instructor.dashboard') }}" class="nav-item">DASHBOARD</a></li>
-                    <li>
-                        <a href="{{ route('instructor.schedule') }}" class="nav-item">CLASSES</a>
-                        <ul class="sub-menu">
+                    <li class="has-submenu">`n                        <a href="#" class="nav-item" onclick="toggleSubmenu(event)">CLASSES</a>`n                        <ul class="sub-menu" id="classes-submenu">
                             <li><a href="{{ route('instructor.schedule') }}" class="sub-item">SCHEDULES</a></li>
                             <li><a href="{{ route('instructor.student') }}" class="sub-item">STUDENTS</a></li>
                         </ul>

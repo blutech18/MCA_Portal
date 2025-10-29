@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MCA Montessori School Enrollment Confirmation</title>
+  <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+  <link rel="icon" href="{{ asset('favicon.ico') }}">
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
@@ -854,7 +856,7 @@ legend {
               </div>
               Print Enrollment Form
           </a>
-          <a href="{{ route('enroll.confirmation.report', ['type' => 'new', 'id' => $enrollee->id ?? 0]) }}?format=pdf" download="enrollment_form_{{ $enrollee->id ?? 0 }}.pdf" target="_blank" class="btn btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+          <a href="{{ route('enroll.confirmation.report', ['type' => 'new', 'id' => $enrollee->id ?? 0]) }}?format=pdf" id="downloadPDF" class="btn btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
               <div class="icon">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -867,7 +869,134 @@ legend {
         </div> 
 
 
+<style>
+  /* Toast notification styles */
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    max-width: 400px;
+  }
+  
+  .toast {
+    background: #fff;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn 0.3s ease-out;
+    border-left: 4px solid;
+  }
+  
+  .toast.success {
+    border-left-color: #4CAF50;
+  }
+  
+  .toast.error {
+    border-left-color: #f44336;
+  }
+  
+  .toast-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+  
+  .toast-message {
+    flex: 1;
+    font-size: 14px;
+    color: #333;
+  }
+  
+  .toast-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #999;
+    font-size: 18px;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .toast-close:hover {
+    color: #333;
+  }
+  
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideOut {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+  
+  .toast.hiding {
+    animation: slideOut 0.3s ease-out forwards;
+  }
+</style>
+
 <script>
+  // Toast notification function
+  function showToast(message, type = 'success') {
+    // Create toast container if it doesn't exist
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
+    
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    // Add icon based on type
+    let icon = '';
+    if (type === 'success') {
+      icon = '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17L4 12" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    } else if (type === 'error') {
+      icon = '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="#f44336" stroke-width="2"/><path d="M12 8V12" stroke="#f44336" stroke-width="2" stroke-linecap="round"/><path d="M12 16H12.01" stroke="#f44336" stroke-width="2" stroke-linecap="round"/></svg>';
+    }
+    
+    toast.innerHTML = `
+      ${icon}
+      <div class="toast-message">${message}</div>
+      <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+    `;
+    
+    container.appendChild(toast);
+    
+    // Auto remove after 4 seconds
+    setTimeout(() => {
+      toast.classList.add('hiding');
+      setTimeout(() => {
+        toast.remove();
+      }, 300);
+    }, 4000);
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     // Clear all cached data when enrollment is completed
     function clearAllCachedData() {
@@ -950,7 +1079,7 @@ legend {
 
     
     // Add click handler for download PDF to ensure it works
-    const downloadPDFLink = document.querySelector('a[href*="format=pdf"]');
+    const downloadPDFLink = document.getElementById('downloadPDF');
     if (downloadPDFLink) {
       downloadPDFLink.addEventListener('click', function(e) {
         e.preventDefault();
@@ -964,25 +1093,38 @@ legend {
         // Try to download the file
         fetch(url)
           .then(response => {
-            const contentType = response.headers.get('content-type');
+            console.log('Response status:', response.status);
+            console.log('Content-Type:', response.headers.get('content-type'));
             
-            if (contentType && contentType.includes('application/pdf')) {
-              // It's a PDF, download it
-              return response.blob();
-            } else {
-              // It's HTML (fallback), open in new tab
-              window.open(url, '_blank');
-              throw new Error('PDF not available, opening HTML version');
+            // Check if response is ok
+            if (!response.ok) {
+              throw new Error('HTTP error! status: ' + response.status);
             }
+            
+            // Always try to download as blob
+            return response.blob();
           })
           .then(blob => {
+            console.log('Blob size:', blob.size);
+            
+            // Check if blob is valid
+            if (!blob || blob.size === 0) {
+              throw new Error('Invalid PDF file received');
+            }
+            
             // Create a temporary URL for the blob
             const blobUrl = window.URL.createObjectURL(blob);
             
             // Create a temporary link element to trigger download
             const link = document.createElement('a');
             link.href = blobUrl;
-            link.download = 'enrollment_form_{{ $enrollee->id ?? 0 }}.pdf';
+            // Use the surname from the data for the filename
+            @php
+              $surname = $enrollee->surname ?? 'enrollment';
+              $surnamePart = preg_replace('/[^a-zA-Z0-9]/', '', $surname);
+              $filename = 'Enrollment_' . ucfirst(strtolower($surnamePart)) . '_' . now()->format('Ymd') . '.pdf';
+            @endphp
+            link.download = '{{ $filename }}';
             link.style.display = 'none';
             
             // Append to body, click, and remove
@@ -991,11 +1133,18 @@ legend {
             document.body.removeChild(link);
             
             // Clean up the blob URL
-            window.URL.revokeObjectURL(blobUrl);
+            setTimeout(() => {
+              window.URL.revokeObjectURL(blobUrl);
+            }, 100);
+            
+            console.log('Download completed');
+            
+            // Show success toast
+            showToast('PDF downloaded successfully!', 'success');
           })
           .catch(error => {
-            console.log('PDF download handling:', error.message);
-            // Fallback already handled above
+            console.error('Download error:', error);
+            showToast('Failed to download PDF. Please try again or contact support.', 'error');
           })
           .finally(() => {
             // Restore button state

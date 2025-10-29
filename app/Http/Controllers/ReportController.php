@@ -43,10 +43,27 @@ class ReportController extends Controller
             $data['paymentStatus'] = 'Verified';
         } elseif ($type === 'new') {
             $enrollee = NewStudentEnrollee::findOrFail($id);
-            $data['studentId']     = $enrollee->application_number;
+            
+            // Generate student ID
+            $studentNumber = sprintf('%02d%05d', (int) now()->format('y'), (int) $enrollee->id);
+            
+            $data['studentId']     = $enrollee->application_number ?? $studentNumber;
             $data['lrn']           = $enrollee->lrn;
             $data['fullName']      = trim("{$enrollee->given_name} {$enrollee->surname}");
-            $data['gradeLevel']    = $enrollee->grade_level;
+            $data['surname']       = $enrollee->surname; // For filename generation
+            
+            // Determine grade level
+            $gradeLevel = '';
+            if ($enrollee->jhs_grade) {
+                $gradeLevel = "Grade {$enrollee->jhs_grade} (JHS)";
+            } elseif ($enrollee->shs_grade) {
+                $strand = $enrollee->strand;
+                $gradeLevel = "Grade {$enrollee->shs_grade} - {$strand} (SHS)";
+            } else {
+                $gradeLevel = $enrollee->grade_level ?? 'N/A';
+            }
+            
+            $data['gradeLevel']    = $gradeLevel;
             $data['section']       = null;
             $data['enrolledAt']    = $enrollee->created_at;
             $data['schoolYear']    = \App\Models\AcademicYear::getCurrentAcademicYear()?->year_name;
@@ -80,38 +97,59 @@ class ReportController extends Controller
     private function generatePDF($data, $type, $id)
     {
         try {
-            // Check if GD extension is available
-            if (!extension_loaded('gd')) {
-                Log::warning('GD extension not available for PDF generation', [
-                    'type' => $type,
-                    'id' => $id
-                ]);
-                
-                // Return HTML view instead of PDF
-                return response()->view('reports.enrollment_summary', $data, 200, [
-                    'Content-Type' => 'text/html',
-                    'Cache-Control' => 'no-cache, no-store, must-revalidate',
-                    'Pragma' => 'no-cache',
-                    'Expires' => '0'
-                ]);
-            }
+            Log::info('Attempting to generate PDF', [
+                'type' => $type,
+                'id' => $id,
+                'data' => $data
+            ]);
             
-            // Generate PDF using DomPDF
-            $pdf = Pdf::loadView('reports.enrollment_summary', $data);
+            // Generate PDF using DomPDF with simplified template
+            $pdf = Pdf::loadView('reports.enrollment_pdf', $data);
             $pdf->setPaper('A4', 'portrait');
             
-            // Generate filename
-            $filename = 'enrollment_form_' . $type . '_' . $id . '_' . now()->format('Y_m_d_H_i_s') . '.pdf';
+            // Configure DomPDF options to avoid GD requirement
+            $pdf->setOptions([
+                'enable_remote' => false,
+                'dpi' => 96,
+            ]);
             
-            // Store PDF in storage
-            $pdfPath = 'enrollment_forms/' . $filename;
-            Storage::disk('public')->put($pdfPath, $pdf->output());
+            // Generate filename using student's surname
+            $surname = $data['surname'] ?? '';
+            if (empty($surname)) {
+                // Fallback to extracting from full name if surname not available
+                $fullName = $data['fullName'] ?? 'enrollment';
+                $nameParts = explode(',', $fullName);
+                $surname = trim($nameParts[0]);
+                if (empty($surname)) {
+                    $nameParts = explode(' ', $fullName);
+                    $surname = $nameParts[count($nameParts) - 1]; // Get last name
+                }
+            }
+            $surnameClean = preg_replace('/[^a-zA-Z0-9]/', '', $surname); // Remove special chars
+            $filename = 'Enrollment_' . ucfirst($surnameClean) . '_' . now()->format('Ymd') . '.pdf';
             
-            // Store document record if user exists
-            $this->storeEnrollmentDocument($type, $id, $pdfPath, $data);
+            // Generate PDF output
+            $pdfOutput = $pdf->output();
+            
+            Log::info('PDF generated successfully', [
+                'filename' => $filename
+            ]);
+            
+            // Try to store PDF in storage (optional, for logging purposes)
+            // Don't let storage errors block the download
+            try {
+                $pdfPath = 'enrollment_forms/' . $filename;
+                Storage::disk('public')->put($pdfPath, $pdfOutput);
+                
+                // Store document record if user exists
+                $this->storeEnrollmentDocument($type, $id, $pdfPath, $data);
+            } catch (\Exception $e) {
+                Log::warning('Could not store PDF in storage', ['error' => $e->getMessage()]);
+                // Continue anyway - PDF can still be downloaded
+            }
             
             // Return PDF for download
-            return response($pdf->output(), 200)
+            return response($pdfOutput, 200)
                 ->header('Content-Type', 'application/pdf')
                 ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
                 ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
@@ -122,16 +160,35 @@ class ReportController extends Controller
             Log::error('Failed to generate enrollment PDF', [
                 'type' => $type,
                 'id' => $id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             
-            // Return HTML view as fallback
-            return response()->view('reports.enrollment_summary', $data, 200, [
-                'Content-Type' => 'text/html',
-                'Cache-Control' => 'no-cache, no-store, must-revalidate',
-                'Pragma' => 'no-cache',
-                'Expires' => '0'
-            ]);
+            // Try to generate a simpler PDF or show error
+            try {
+                // Try to load the simplified PDF view
+                $simplePdf = Pdf::loadView('reports.enrollment_pdf', $data);
+                $simplePdf->setPaper('A4', 'portrait');
+                $filename = 'Enrollment_' . $id . '_' . now()->format('Ymd') . '.pdf';
+                
+                return response($simplePdf->output(), 200)
+                    ->header('Content-Type', 'application/pdf')
+                    ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                    ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                    ->header('Pragma', 'no-cache')
+                    ->header('Expires', '0');
+            } catch (\Exception $e2) {
+                // Return JSON error instead of trying to generate another PDF
+                Log::error('All PDF generation attempts failed', [
+                    'original_error' => $e->getMessage(),
+                    'fallback_error' => $e2->getMessage()
+                ]);
+                
+                return response()->json([
+                    'error' => 'Unable to generate PDF. Please contact the administrator.',
+                    'details' => 'PDF generation failed. Please try again later or contact support.'
+                ], 500);
+            }
         }
     }
 

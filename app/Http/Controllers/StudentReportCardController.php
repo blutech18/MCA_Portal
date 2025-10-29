@@ -32,7 +32,16 @@ class StudentReportCardController extends Controller
         \Log::info('Fetching grades for student', [
             'student_id' => $student->student_id,
             'user_id' => Auth::id(),
-            'student_name' => $student->display_name
+            'student_name' => $student->display_name,
+            'student_primary_key' => $student->getKey(),
+            'student_table_name' => $student->getTable()
+        ]);
+
+        // Debug: Check all grades in the system for debugging
+        $allGrades = Grade::all();
+        \Log::info('All grades in system', [
+            'total_grades' => $allGrades->count(),
+            'all_student_ids' => $allGrades->pluck('student_id')->unique()->values()->toArray()
         ]);
 
         $grades = Grade::where('student_id', $student->student_id)

@@ -1,6 +1,7 @@
 
 @php
 use Illuminate\Support\Facades\Storage;
+use App\Models\StudentDocument;
 @endphp
 
 <style>
@@ -52,8 +53,8 @@ use Illuminate\Support\Facades\Storage;
   padding: 14px;
   background: #ffffff;
   border-radius: 8px;
-  border: 1px solid #dee2e6;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid #bd8c91;
+  box-shadow: 0 2px 4px rgba(122, 34, 43, 0.1);
 }
 
 .enrollee-two-column-wrapper {
@@ -87,7 +88,7 @@ use Illuminate\Support\Facades\Storage;
   display: grid;
   grid-template-columns: 180px 1fr;
   gap: 12px;
-  border-bottom: 1px solid #f1f3f5;
+  border-bottom: 1px solid #f4e9ea;
 }
 
 .enrollee-section p:last-child {
@@ -96,7 +97,7 @@ use Illuminate\Support\Facades\Storage;
 
 .enrollee-section p span.font-medium {
   font-weight: 600;
-  color: #495057;
+  color: #5a1a20;
 }
 
 .enrollee-section p span:not(.font-medium) {
@@ -105,15 +106,15 @@ use Illuminate\Support\Facades\Storage;
 
 /* Assessment Information Modal Styling */
 .assessment-info-modal {
-  background: #e8f4fd;
-  border: 2px solid #3498db;
+  background: #f9f1f2;
+  border: 2px solid #7a222b;
   border-radius: 8px;
   padding: 15px;
   margin: 10px 0;
 }
 
 .assessment-recommended-strand {
-  background: #3498db;
+  background: #7a222b;
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
@@ -122,7 +123,7 @@ use Illuminate\Support\Facades\Storage;
 }
 
 .strand-override-badge {
-  background: #e74c3c;
+  background: #dc2626;
   color: white;
   padding: 2px 6px;
   border-radius: 4px;
@@ -131,7 +132,7 @@ use Illuminate\Support\Facades\Storage;
 }
 
 .strand-match-badge {
-  background: #27ae60;
+  background: #059669;
   color: white;
   padding: 2px 6px;
   border-radius: 4px;
@@ -146,7 +147,7 @@ use Illuminate\Support\Facades\Storage;
 .assessment-details summary {
   cursor: pointer;
   font-weight: 600;
-  color: #2c5a6b;
+  color: #5a1a20;
   padding: 5px 0;
 }
 
@@ -200,19 +201,20 @@ use Illuminate\Support\Facades\Storage;
   padding: 12px;
   background: white;
   border-radius: 6px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #bd8c91;
   text-align: center;
+  box-shadow: 0 1px 3px rgba(122, 34, 43, 0.1);
 }
 
 .document-item h5 {
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 8px;
-  color: #374151;
+  color: #5a1a20;
 }
 
 .document-item a {
-  color: #2563eb;
+  color: #7a222b;
   text-decoration: none;
   font-size: 13px;
   font-weight: 500;
@@ -273,8 +275,48 @@ use Illuminate\Support\Facades\Storage;
         <h4>📞 Contact & Address</h4>
         <p><span class="font-medium">Contact No.:</span> {{ $enrollee->contact_no }}</p>
         <p><span class="font-medium">Email:</span> {{ $enrollee->email }}</p>
-        <p><span class="font-medium">Address:</span> {{ $enrollee->address }}</p>
-        <p><span class="font-medium">Living With:</span> {{ $enrollee->living_with }}</p>
+        @php
+          // Parse the combined address field
+          // Format: "House, Unit, City" or "House, City"
+          $addressParts = !empty($enrollee->address) ? explode(', ', $enrollee->address) : [];
+          $addressHouse = $addressParts[0] ?? '';
+          $addressUnit = '';
+          $addressCity = '';
+          
+          // List of known Philippine cities in Luzon (from the form dropdown)
+          $knownCities = ['Metro Manila', 'Quezon City', 'Manila', 'Makati', 'Pasig', 'Taguig', 'Las Pinas', 'Muntinlupa', 'Paranaque', 'Parañaque', 'Pasay', 'Marikina', 'Mandaluyong', 'San Juan', 'Valenzuela', 'Malabon', 'Caloocan', 'Navotas', 'Calamba', 'Antipolo', 'Batangas City', 'Cabuyao', 'Laguna', 'Los Baños', 'San Pedro', 'Santa Rosa', 'Angeles', 'Olongapo', 'San Fernando (Pampanga)', 'Baguio', 'Dagupan', 'Baler', 'Ilagan', 'Tuguegarao', 'Naga', 'Iriga', 'Legazpi', 'Sorsogon City', 'Lucena', 'Tayabas', 'Calapan', 'Puerto Princesa'];
+          
+          if (count($addressParts) === 3) {
+            // Format: "House, Unit, City"
+            $addressHouse = $addressParts[0];
+            $addressUnit = $addressParts[1];
+            $addressCity = $addressParts[2];
+          } elseif (count($addressParts) === 2) {
+            // Format: "House, City" or "House, Unit"
+            // Check if second part is a known city
+            if (in_array($addressParts[1], $knownCities)) {
+              $addressHouse = $addressParts[0];
+              $addressCity = $addressParts[1];
+            } else {
+              // Second part might be unit (not in city list)
+              $addressHouse = $addressParts[0];
+              $addressUnit = $addressParts[1];
+            }
+          } elseif (count($addressParts) === 1) {
+            // Only house number - no city or unit
+            $addressHouse = $addressParts[0];
+          }
+        @endphp
+        
+        <p><span class="font-medium">House No. / Street:</span> {{ $addressHouse ?: 'N/A' }}</p>
+        @if($addressUnit)
+          <p><span class="font-medium">Apt., Suite, Unit:</span> {{ $addressUnit }}</p>
+        @endif
+        <p><span class="font-medium">City:</span> {{ $addressCity ?: 'N/A' }}</p>
+        @if(empty($addressHouse) && empty($addressUnit) && empty($addressCity))
+          {{-- Fallback to full address if parsing fails --}}
+          <p><span class="font-medium">Complete Address:</span> {{ $enrollee->address }}</p>
+        @endif
       </div>
     </div>
 
@@ -282,7 +324,20 @@ use Illuminate\Support\Facades\Storage;
       {{-- Academic Information --}}
       <div class="enrollee-section">
         <h4>🎓 Academic Information</h4>
-        <p><span class="font-medium">Strand:</span> {{ $enrollee->strand ?? '–' }}</p>
+        @php
+          // Determine grade level for JHS detection
+          $gradeLevel = $enrollee->desired_grade ?? $enrollee->shs_grade ?? $enrollee->jhs_grade ?? $enrollee->previous_grade ?? 0;
+          $isJHS = ($gradeLevel >= 7 && $gradeLevel <= 10);
+          
+          // Display strand based on grade level
+          $displayStrand = '–';
+          if ($isJHS) {
+            $displayStrand = 'JHS';
+          } elseif ($enrollee->strand) {
+            $displayStrand = $enrollee->strand;
+          }
+        @endphp
+        <p><span class="font-medium">Strand:</span> {{ $displayStrand }}</p>
         @if($enrollee->assessmentResult)
         <div class="assessment-info-modal">
           <p><span class="font-medium">Assessment Recommendation:</span> 
@@ -308,11 +363,10 @@ use Illuminate\Support\Facades\Storage;
         <p><span class="font-medium">Semester:</span> {{ $enrollee->semester ?? '–' }}</p>
         <p><span class="font-medium">Former School:</span> {{ $enrollee->former_school }}</p>
         <p><span class="font-medium">Grade Level:</span> 
-          @if($enrollee->shs_grade)
-              {{ $enrollee->shs_grade }}
-          @else
-              {{ $enrollee->previous_grade }}
-          @endif
+          @php
+            $gradeLevel = $enrollee->desired_grade ?? $enrollee->shs_grade ?? $enrollee->jhs_grade ?? $enrollee->previous_grade ?? 'N/A';
+          @endphp
+          {{ $gradeLevel }}
         </p>
         <p><span class="font-medium">Last School Year:</span> {{ $enrollee->last_school_year }}</p>
         <p><span class="font-medium">School Type:</span> {{ $enrollee->school_type }}</p>
@@ -346,31 +400,39 @@ use Illuminate\Support\Facades\Storage;
       <h4>📄 Documents</h4>
       <div class="document-grid">
         @foreach([
-          'report_card_path'       => 'Report Card',
-          'good_moral_path'        => 'Good Moral',
-          'birth_certificate_path' => 'Birth Certificate',
-        ] as $field => $label)
+          'report_card' => 'Report Card',
+          'good_moral' => 'Good Moral',
+          'birth_certificate' => 'Birth Certificate',
+        ] as $docType => $label)
           <div class="document-item">
             <h5>{{ $label }}</h5>
-            @if($enrollee->$field && Storage::disk('public')->exists($enrollee->$field))
+            @php
+              $document = \App\Models\StudentDocument::where('enrollment_id', $enrollee->id)
+                ->where('enrollment_type', 'new')
+                ->where('document_type', $docType)
+                ->first();
+            @endphp
+            @if($document)
+              @php
+                $docUrl = route('admin.documents.serve-by-id', ['id' => $document->id]);
+              @endphp
               <div style="display: flex; flex-direction: column; gap: 6px;">
                 <button 
                   type="button"
-                  onclick="viewDocument('{{ Storage::url($enrollee->$field) }}', '{{ $label }}')"
-                  style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s;"
-                  onmouseover="this.style.background='#2563eb'"
-                  onmouseout="this.style.background='#3b82f6'"
+                  onclick="viewDocumentWithFallback('{{ $docUrl }}', '{{ $docUrl }}', '{{ $label }}')"
+                  style="padding: 6px 12px; background: #7a222b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s;"
+                  onmouseover="this.style.background='#5a1a20'"
+                  onmouseout="this.style.background='#7a222b'"
                 >👁️ View</button>
                 <a 
-                  href="{{ Storage::url($enrollee->$field) }}" 
+                  href="{{ $docUrl }}" 
                   download
                   style="padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; text-align: center; text-decoration: none; transition: all 0.2s; display: block;"
                   onmouseover="this.style.background='#059669'"
                   onmouseout="this.style.background='#10b981'"
+                  onclick="event.preventDefault(); downloadDocWithFallback('{{ $docUrl }}', '{{ $docUrl }}')"
                 >📥 Download</a>
               </div>
-            @elseif($enrollee->$field)
-              <span style="color: #dc2626; font-size: 12px;">❌ File missing</span>
             @else
               <span style="color: #6b7280;">–</span>
             @endif
@@ -380,23 +442,32 @@ use Illuminate\Support\Facades\Storage;
         {{-- ID Picture --}}
         <div class="document-item">
           <h5>ID Picture</h5>
-          @if($enrollee->id_picture_path && Storage::disk('public')->exists($enrollee->id_picture_path))
+          @php
+            $idPicDocument = \App\Models\StudentDocument::where('enrollment_id', $enrollee->id)
+              ->where('enrollment_type', 'new')
+              ->where('document_type', 'id_picture')
+              ->first();
+          @endphp
+          @if($idPicDocument)
+            @php
+              $picUrl = route('admin.documents.serve-by-id', ['id' => $idPicDocument->id]);
+              // file_data is already base64 encoded
+              $picBase64 = 'data:' . $idPicDocument->mime_type . ';base64,' . $idPicDocument->file_data;
+            @endphp
             <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
               <img 
-                src="{{ Storage::url($enrollee->id_picture_path) }}"
+                src="{{ $picBase64 }}"
                 alt="ID Picture"
-                style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 2px solid #e5e7eb;"
+                style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 2px solid #bd8c91;"
               >
               <button 
                 type="button"
-                onclick="viewDocument('{{ Storage::url($enrollee->id_picture_path) }}', 'ID Picture')"
-                style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s; width: 100%;"
-                onmouseover="this.style.background='#2563eb'"
-                onmouseout="this.style.background='#3b82f6'"
+                onclick="viewDocumentWithFallback('{{ $picUrl }}', '{{ $picUrl }}', 'ID Picture')"
+                style="padding: 6px 12px; background: #7a222b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s; width: 100%;"
+                onmouseover="this.style.background='#5a1a20'"
+                onmouseout="this.style.background='#7a222b'"
               >👁️ View Full Size</button>
             </div>
-          @elseif($enrollee->id_picture_path)
-            <span style="color: #dc2626; font-size: 12px;">❌ Image missing</span>
           @else
             <span style="color: #6b7280;">–</span>
           @endif
@@ -407,21 +478,38 @@ use Illuminate\Support\Facades\Storage;
     {{-- Payment Info --}}
     <div class="enrollee-section">
       <h4>💳 Payment Information</h4>
-      <p><span class="font-medium">Payment Method:</span> {{ $enrollee->payment_applicant_name ?? '–' }}</p>
+      <p><span class="font-medium">Payment Method:</span> 
+        @if($enrollee->payment_applicant_name === 'Cash Payment')
+          Cash Payment
+        @elseif($enrollee->payment_applicant_name && $enrollee->payment_reference && !str_starts_with($enrollee->payment_reference, 'CASH-'))
+          Digital Payment (GCash, PayMaya, etc.)
+        @else
+          {{ $enrollee->payment_applicant_name ?? '–' }}
+        @endif
+      </p>
+      @if($enrollee->payment_applicant_name && $enrollee->payment_applicant_name !== 'Cash Payment')
+        <p><span class="font-medium">Paid By:</span> {{ $enrollee->payment_applicant_name }}</p>
+      @endif
       <p><span class="font-medium">Reference Number:</span> {{ $enrollee->payment_reference ?? '–' }}</p>
       
       {{-- Receipt Section --}}
       @if($enrollee->payment_receipt_path && Storage::disk('public')->exists($enrollee->payment_receipt_path))
-        <div style="margin: 12px 0; padding: 10px; background: #f0f9ff; border-radius: 6px; border-left: 3px solid #3b82f6;">
+        @php
+          $receiptPath = ltrim($enrollee->payment_receipt_path, '/');
+          $receiptPath = preg_replace('/^storage\//', '', $receiptPath);
+          $directUrl = Storage::url($enrollee->payment_receipt_path);
+          $fallbackUrl = route('admin.documents.serve', ['path' => $receiptPath]);
+        @endphp
+        <div style="margin: 12px 0; padding: 10px; background: #f9f1f2; border-radius: 6px; border-left: 3px solid #7a222b;">
           <div style="margin-bottom: 8px;">
-            <strong style="color: #495057; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Payment Receipt</strong>
+            <strong style="color: #5a1a20; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Payment Receipt</strong>
           </div>
           <div style="display: flex; gap: 8px;">
             <button 
               type="button"
-              onclick="viewDocument('{{ Storage::url($enrollee->payment_receipt_path) }}', 'Payment Receipt')"
-              style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
-              onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(59,130,246,0.3)'"
+              onclick="viewDocumentWithFallback('{{ $directUrl }}', '{{ $fallbackUrl }}', 'Payment Receipt')"
+              style="padding: 8px 16px; background: #7a222b; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
+              onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(122,34,43,0.3)'"
               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -431,11 +519,12 @@ use Illuminate\Support\Facades\Storage;
               View
             </button>
             <a 
-              href="{{ Storage::url($enrollee->payment_receipt_path) }}" 
+              href="{{ $directUrl }}" 
               download
               style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
               onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(16,185,129,0.3)'"
               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+              onclick="event.preventDefault(); downloadDocWithFallback('{{ $directUrl }}', '{{ $fallbackUrl }}')"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -450,12 +539,61 @@ use Illuminate\Support\Facades\Storage;
         <div style="margin: 12px 0; padding: 10px; background: #fee2e2; border-radius: 6px; border-left: 3px solid #dc2626;">
           <span style="color: #dc2626; font-size: 13px; font-weight: 600;">❌ Receipt file is missing from server</span>
         </div>
+      @else
+        @php
+          // Handle DB-stored receipt (document_type = payment_receipt)
+          $receiptDoc = \App\Models\StudentDocument::where('enrollment_id', $enrollee->id)
+            ->where('enrollment_type', 'new')
+            ->where('document_type', 'payment_receipt')
+            ->first();
+        @endphp
+        @if($receiptDoc)
+          @php $receiptDocUrl = route('admin.documents.serve-by-id', ['id' => $receiptDoc->id]); @endphp
+          <div style="margin: 12px 0; padding: 10px; background: #f9f1f2; border-radius: 6px; border-left: 3px solid #7a222b;">
+            <div style="margin-bottom: 8px;">
+              <strong style="color: #5a1a20; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Payment Receipt</strong>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button 
+                type="button"
+                onclick="viewDocumentWithFallback('{{ $receiptDocUrl }}', '{{ $receiptDocUrl }}', 'Payment Receipt')"
+                style="padding: 8px 16px; background: #7a222b; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(122,34,43,0.3)'"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+              >
+                View
+              </button>
+              <a 
+                href="{{ $receiptDocUrl }}" 
+                download
+                style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(16,185,129,0.3)'"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+                onclick="event.preventDefault(); downloadDocWithFallback('{{ $receiptDocUrl }}', '{{ $receiptDocUrl }}')"
+              >
+                Download
+              </a>
+            </div>
+          </div>
+        @else
+          <div style="margin: 12px 0; padding: 10px; background: #fff7ed; border-radius: 6px; border-left: 3px solid #f59e0b;">
+            <div style="color: #92400e; font-size: 13px; font-weight: 600; margin-bottom: 8px;">Receipt file not found.</div>
+            <form action="{{ route('admin.documents.reupload') }}" method="POST" enctype="multipart/form-data" style="display:flex; gap:8px; align-items:center; flex-wrap: wrap;">
+              @csrf
+              <input type="hidden" name="enrollee_id" value="{{ $enrollee->id }}">
+              <input type="hidden" name="enrollment_type" value="new">
+              <input type="hidden" name="document_type" value="payment_receipt">
+              <input type="file" name="file" accept=".jpg,.jpeg,.png,.pdf" required>
+              <button type="submit" style="padding: 6px 12px; background: #7a222b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;">Re-upload</button>
+            </form>
+          </div>
+        @endif
       @endif
       
       {{-- Payment Status Section --}}
-      <div style="margin-top: 16px; padding: 12px; background: #f8f9fa; border-radius: 6px; border-left: 3px solid #7a222b;">
+      <div style="margin-top: 16px; padding: 12px; background: #f9f1f2; border-radius: 6px; border-left: 3px solid #7a222b;">
         <div style="margin-bottom: 10px;">
-          <strong style="color: #495057; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Payment Status</strong>
+          <strong style="color: #5a1a20; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Payment Status</strong>
         </div>
         <form id="payment-status-form" onsubmit="return false;">
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
@@ -477,7 +615,7 @@ use Illuminate\Support\Facades\Storage;
           </div>
         </form>
         @if($enrollee->payment_status_changed_at)
-          <div id="payment-status-meta" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #dee2e6; font-size: 11px; color: #6c757d; font-style: italic;">
+          <div id="payment-status-meta" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #bd8c91; font-size: 11px; color: #6c757d; font-style: italic;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
@@ -545,10 +683,10 @@ use Illuminate\Support\Facades\Storage;
       @endphp
       
       @if($sectionInfo)
-        <div style="background: #dbeafe; border: 2px solid #3b82f6; border-radius: 8px; padding: 16px; margin-top: 12px;">
-            <p style="font-size: 14px; color: #1e40af; margin: 0 0 12px 0;"><strong>✓ Student automatically assigned to section!</strong></p>
-            <div style="background: white; border-radius: 6px; border: 1px solid #93c5fd; padding: 12px;">
-                <p style="font-weight: 600; color: #374151; margin: 8px 0;">Section: <span style="font-weight: 700;">{{ $sectionInfo }}</span></p>
+        <div style="background: #f9f1f2; border: 2px solid #7a222b; border-radius: 8px; padding: 16px; margin-top: 12px;">
+            <p style="font-size: 14px; color: #5a1a20; margin: 0 0 12px 0;"><strong>✓ Student automatically assigned to section!</strong></p>
+            <div style="background: white; border-radius: 6px; border: 1px solid #bd8c91; padding: 12px;">
+                <p style="font-weight: 600; color: #5a1a20; margin: 8px 0;">Section: <span style="font-weight: 700;">{{ $sectionInfo }}</span></p>
                 <p style="font-size: 13px; color: #6b7280; margin: 8px 0;">Capacity: {{ $sectionCapacity }}</p>
                 <div style="font-size: 12px; color: #9ca3af; margin-top: 8px;">
                     <p style="margin: 4px 0;"><strong>Assignment Logic:</strong> First-come, first-served basis</p>
@@ -625,23 +763,23 @@ use Illuminate\Support\Facades\Storage;
       @endphp
       
       @if($username && $password)
-        <div style="background: #d1fae5; border: 2px solid #10b981; border-radius: 8px; padding: 20px; margin-top: 12px;">
-          <p style="font-size: 16px; font-weight: 600; color: #065f46; margin: 0 0 16px 0;">✓ Student Login Credentials Ready</p>
+        <div style="background: #f9f1f2; border: 2px solid #7a222b; border-radius: 8px; padding: 20px; margin-top: 12px;">
+          <p style="font-size: 16px; font-weight: 600; color: #5a1a20; margin: 0 0 16px 0;">✓ Student Login Credentials Ready</p>
           
           {{-- Credentials Box --}}
-          <div style="background: white; border: 2px solid #6ee7b7; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <div style="background: white; border: 2px solid #bd8c91; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(122, 34, 43, 0.1);">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
               <div>
                 <label style="display: block; font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">USERNAME</label>
-                <div style="background: #dbeafe; border: 2px solid #3b82f6; border-radius: 6px; padding: 12px;">
-                  <code style="font-size: 16px; font-weight: 700; color: #1e40af; font-family: monospace;">{{ $username }}</code>
+                <div style="background: #f4e9ea; border: 2px solid #7a222b; border-radius: 6px; padding: 12px;">
+                  <code style="font-size: 16px; font-weight: 700; color: #7a222b; font-family: monospace;">{{ $username }}</code>
                 </div>
               </div>
               
               <div>
                 <label style="display: block; font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">PASSWORD</label>
-                <div style="background: #dbeafe; border: 2px solid #3b82f6; border-radius: 6px; padding: 12px;">
-                  <code style="font-size: 16px; font-weight: 700; color: #1e40af; font-family: monospace;">{{ $password }}</code>
+                <div style="background: #f4e9ea; border: 2px solid #7a222b; border-radius: 6px; padding: 12px;">
+                  <code style="font-size: 16px; font-weight: 700; color: #7a222b; font-family: monospace;">{{ $password }}</code>
                 </div>
               </div>
             </div>
@@ -649,7 +787,7 @@ use Illuminate\Support\Facades\Storage;
             {{-- Copy Buttons --}}
             <div style="display: flex; gap: 12px;">
               <button onclick="copyToClipboard('{{ $username }}')" 
-                      style="flex: 1; background: #2563eb; color: white; font-weight: 600; padding: 10px 16px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.3s ease;">
+                      style="flex: 1; background: #7a222b; color: white; font-weight: 600; padding: 10px 16px; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.3s ease;">
                 📋 Copy Username
               </button>
               <button onclick="copyToClipboard('{{ $password }}')" 
@@ -659,15 +797,120 @@ use Illuminate\Support\Facades\Storage;
             </div>
           </div>
 
-          {{-- Registrar Instructions --}}
-          <div style="background: #dbeafe; border: 2px solid #3b82f6; border-radius: 8px; padding: 16px; margin-top: 16px;">
-            <h5 style="font-weight: 600; color: #1e40af; margin: 0 0 12px 0; font-size: 14px;">📋 Instructions for School Registrar:</h5>
-            <div style="font-size: 13px; color: #1e3a8a;">
-              <p style="margin: 6px 0;">• <strong>Provide these credentials physically</strong> to the student</p>
-              <p style="margin: 6px 0;">• <strong>Username format:</strong> student surname + application number (e.g., {{ $username }})</p>
-              <p style="margin: 6px 0;">• <strong>Password format:</strong> student surname + birth year (e.g., {{ $password }})</p>
-              <p style="margin: 6px 0;">• <strong>No email notification needed</strong> - these are for physical distribution only</p>
-              <p style="margin: 6px 0;">• Student can login at: <code style="background: #bfdbfe; padding: 2px 6px; border-radius: 4px; font-size: 11px;">school-portal.login.url</code></p>
+          {{-- Distribution Options --}}
+          <div style="background: linear-gradient(135deg, #f9f1f2 0%, #fff 100%); border: 1px solid #bd8c91; border-left: 4px solid #7a222b; border-radius: 8px; padding: 18px; margin-top: 16px; box-shadow: 0 2px 8px rgba(122, 34, 43, 0.08);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #bd8c91;">
+              <div style="background: #7a222b; padding: 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <div>
+                <h5 style="font-weight: 700; color: #5a1a20; margin: 0; font-size: 15px; letter-spacing: -0.2px;">📤 Distribute Credentials</h5>
+                <p style="font-size: 11px; color: #6b7280; margin: 2px 0 0 0;">Choose your preferred distribution method</p>
+              </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+              {{-- PDF Download Button --}}
+              <a href="{{ route('admin.enrollees.credentials.pdf', $enrollee->id) }}" 
+                 class="credential-action-btn"
+                 style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; text-decoration: none; padding: 14px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; text-align: center; display: flex; flex-direction: column; gap: 6px; align-items: center; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3); position: relative; overflow: hidden;"
+                 onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(220, 38, 38, 0.4)'"
+                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(220, 38, 38, 0.3)'">
+                <span style="font-size: 24px; display: block;">🖨️</span>
+                <span>Generate PDF</span>
+                <span style="font-size: 10px; font-weight: 400; opacity: 0.9; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px;">Printable Sheet</span>
+              </a>
+              
+              {{-- Email Button --}}
+              <button data-enrollee-id="{{ $enrollee->id }}" onclick="window.sendCredentialsEmail({{ $enrollee->id }})" 
+                      class="credential-action-btn send-email-btn"
+                      style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 14px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; gap: 6px; align-items: center; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);"
+                      onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(16, 185, 129, 0.4)'"
+                      onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(16, 185, 129, 0.3)'">
+                <span style="font-size: 24px; display: block;">📧</span>
+                <span>Send Email</span>
+                <span style="font-size: 10px; font-weight: 400; opacity: 0.9; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px;">To {{ $enrollee->email ?? 'student' }}</span>
+              </button>
+            </div>
+            
+            {{-- Alternative Options --}}
+            <div style="margin-top: 14px; padding: 10px 12px; background: rgba(255, 255, 255, 0.8); border-radius: 6px; border-left: 3px solid #7a222b;">
+              <div style="display: flex; align-items: start; gap: 8px;">
+                <span style="font-size: 16px; flex-shrink: 0;">💡</span>
+                <div style="flex: 1; font-size: 11px; color: #2b0f12; line-height: 1.5;">
+                  <strong style="color: #5a1a20;">Quick Tip:</strong> You can also copy credentials above for manual distribution or use the "Generate PDF" button to create a printable document for in-person handouts.
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {{-- Credential Format Guide --}}
+          <div style="background: linear-gradient(135deg, #f9f1f2 0%, #fff 100%); border: 1px solid #bd8c91; border-left: 4px solid #7a222b; border-radius: 8px; padding: 18px; margin-top: 16px; box-shadow: 0 2px 8px rgba(122, 34, 43, 0.08);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 2px solid #bd8c91;">
+              <div style="background: #7a222b; padding: 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </div>
+              <div>
+                <h5 style="font-weight: 700; color: #5a1a20; margin: 0; font-size: 15px; letter-spacing: -0.2px;">📋 Credential Format Guide</h5>
+                <p style="font-size: 11px; color: #6b7280; margin: 2px 0 0 0;">Quick reference for registrars</p>
+              </div>
+            </div>
+            
+            <div style="display: grid; gap: 12px;">
+              {{-- Username Format --}}
+              <div style="background: white; border: 1px solid #f4e9ea; border-radius: 6px; padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                  <span style="background: #f4e9ea; color: #7a222b; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 10px;">USERNAME</span>
+                  <span style="font-size: 11px; color: #6b7280;">Format Pattern</span>
+                </div>
+                <div style="font-size: 13px; color: #2b0f12; font-weight: 500;">
+                  lastname<span style="color: #7a222b; font-weight: 700;">.</span>studentnumber
+                </div>
+                <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid #f4e9ea;">
+                  <span style="font-size: 11px; color: #6b7280;">Example: </span>
+                  <code style="background: #f9f1f2; color: #7a222b; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 700; font-family: 'Courier New', monospace;">{{ $username }}</code>
+                </div>
+              </div>
+              
+              {{-- Password Format --}}
+              <div style="background: white; border: 1px solid #f4e9ea; border-radius: 6px; padding: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                  <span style="background: #f4e9ea; color: #7a222b; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 10px;">PASSWORD</span>
+                  <span style="font-size: 11px; color: #6b7280;">Format Pattern</span>
+                </div>
+                <div style="font-size: 13px; color: #2b0f12; font-weight: 500;">
+                  lastname<span style="color: #7a222b; font-weight: 700;">+</span>birthyear
+                </div>
+                <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid #f4e9ea;">
+                  <span style="font-size: 11px; color: #6b7280;">Example: </span>
+                  <code style="background: #f9f1f2; color: #7a222b; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 700; font-family: 'Courier New', monospace;">{{ $password }}</code>
+                </div>
+              </div>
+              
+              {{-- Important Notes --}}
+              <div style="background: #fff5f5; border-left: 3px solid #7a222b; border-radius: 4px; padding: 10px;">
+                <div style="display: flex; align-items: start; gap: 8px;">
+                  <span style="font-size: 14px;">⚠️</span>
+                  <div style="flex: 1; font-size: 12px; color: #2b0f12; line-height: 1.5;">
+                    <strong style="color: #5a1a20;">Important:</strong> Student <strong>must</strong> change password on first login for security.
+                  </div>
+                </div>
+              </div>
+              
+              {{-- Login URL --}}
+              <div style="display: flex; align-items: center; justify-content: space-between; background: #f9f1f2; border-radius: 6px; padding: 10px;">
+                <span style="font-size: 12px; font-weight: 600; color: #5a1a20;">🔗 Login URL:</span>
+                <code style="background: white; color: #7a222b; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 600; font-family: 'Courier New', monospace; border: 1px solid #bd8c91;">{{ config('app.url') }}/login</code>
+              </div>
             </div>
           </div>
         </div>
@@ -687,9 +930,9 @@ use Illuminate\Support\Facades\Storage;
           </div>
         </div>
       @else
-        <div style="background: #dbeafe; border: 2px solid #3b82f6; border-radius: 8px; padding: 20px; margin-top: 12px;">
-          <p style="font-size: 16px; font-weight: 600; color: #1e40af; margin: 0 0 8px 0;">ℹ Student Record Not Found</p>
-          <p style="font-size: 14px; color: #1e3a8a; margin: 0 0 12px 0;">The student record has not been created yet. This may happen if the acceptance process is still running.</p>
+        <div style="background: #f9f1f2; border: 2px solid #7a222b; border-radius: 8px; padding: 20px; margin-top: 12px;">
+          <p style="font-size: 16px; font-weight: 600; color: #5a1a20; margin: 0 0 8px 0;">ℹ Student Record Not Found</p>
+          <p style="font-size: 14px; color: #2b0f12; margin: 0 0 12px 0;">The student record has not been created yet. This may happen if the acceptance process is still running.</p>
           <div style="background: white; border-radius: 6px; padding: 12px; font-size: 12px; color: #78716c;">
             <p style="margin: 4px 0;"><strong>What to check:</strong></p>
             <p style="margin: 4px 0;">1. Verify the enrollee has been accepted (status = accepted)</p>
@@ -729,4 +972,6 @@ use Illuminate\Support\Facades\Storage;
       alert('Failed to copy to clipboard. Please copy manually: ' + text);
     });
   }
+
+  // sendCredentialsEmail is defined in admin_new_enrollees.blade.php
 </script>

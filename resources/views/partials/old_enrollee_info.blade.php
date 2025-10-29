@@ -158,7 +158,18 @@ use Illuminate\Support\Facades\Storage;
     {{-- Payment Information --}}
     <div class="enrollee-section">
       <h4>💳 Payment Information</h4>
-      <p><strong>Payment Method:</strong> {{ $enrollee->payment_applicant_name ?? '–' }}</p>
+      <p><strong>Payment Method:</strong> 
+        @if($enrollee->payment_applicant_name === 'Cash Payment')
+          Cash Payment
+        @elseif($enrollee->payment_applicant_name && $enrollee->payment_reference && !str_starts_with($enrollee->payment_reference, 'CASH-'))
+          Digital Payment (GCash, PayMaya, etc.)
+        @else
+          {{ $enrollee->payment_applicant_name ?? '–' }}
+        @endif
+      </p>
+      @if($enrollee->payment_applicant_name && $enrollee->payment_applicant_name !== 'Cash Payment')
+        <p><strong>Paid By:</strong> {{ $enrollee->payment_applicant_name }}</p>
+      @endif
       <p><strong>Reference Number:</strong> {{ $enrollee->payment_reference ?? '–' }}</p>
       
       <div style="margin-top: 16px; padding: 12px; background: #f8f9fa; border-radius: 6px; border-left: 3px solid #7a222b;">
@@ -215,45 +226,76 @@ use Illuminate\Support\Facades\Storage;
     <p>
       <strong>Payment Receipt:</strong>
       @if($enrollee->payment_receipt_path && Storage::disk('public')->exists($enrollee->payment_receipt_path))
+        @php
+          $receiptPath = ltrim($enrollee->payment_receipt_path, '/');
+          $receiptPath = preg_replace('/^storage\//', '', $receiptPath);
+          $directUrl = Storage::url($enrollee->payment_receipt_path);
+          $fallbackUrl = route('admin.documents.serve', ['path' => $receiptPath]);
+        @endphp
         <div style="display: inline-flex; gap: 8px; margin-left: 8px;">
           <button 
             type="button"
-            onclick="viewDocument('{{ Storage::url($enrollee->payment_receipt_path) }}', 'Payment Receipt')"
+            onclick="viewDocumentWithFallback('{{ $directUrl }}', '{{ $fallbackUrl }}', 'Payment Receipt')"
             style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s;"
             onmouseover="this.style.background='#2563eb'"
             onmouseout="this.style.background='#3b82f6'"
           >👁️ View</button>
           <a 
-            href="{{ Storage::url($enrollee->payment_receipt_path) }}" 
+            href="{{ $directUrl }}" 
             download
             style="padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; text-decoration: none; transition: all 0.2s; display: inline-block;"
             onmouseover="this.style.background='#059669'"
             onmouseout="this.style.background='#10b981'"
+            onclick="event.preventDefault(); downloadDocWithFallback('{{ $directUrl }}', '{{ $fallbackUrl }}')"
           >📥 Download</a>
         </div>
       @elseif($enrollee->payment_receipt_path)
         <span style="color: #dc2626; font-size: 13px;">❌ File missing</span>
       @else
-        –
+        @php
+          $receiptDoc = \App\Models\StudentDocument::where('enrollment_id', $enrollee->id)
+            ->where('enrollment_type', 'old')
+            ->where('document_type', 'payment_receipt')
+            ->first();
+        @endphp
+        @if($receiptDoc)
+          <a href="{{ route('admin.documents.serve-by-id', ['id' => $receiptDoc->id]) }}" target="_blank">📥 Download</a>
+        @else
+          <form action="{{ route('admin.documents.reupload') }}" method="POST" enctype="multipart/form-data" style="display:inline-flex; gap:8px; margin-left:8px;">
+            @csrf
+            <input type="hidden" name="enrollee_id" value="{{ $enrollee->id }}">
+            <input type="hidden" name="enrollment_type" value="old">
+            <input type="hidden" name="document_type" value="payment_receipt">
+            <input type="file" name="file" accept=".jpg,.jpeg,.png,.pdf" required style="font-size:12px;">
+            <button type="submit" style="padding: 4px 8px; background: #7a222b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;">Re-upload</button>
+          </form>
+        @endif
       @endif
     </p>
     <p>
       <strong>Clearance:</strong>
       @if($enrollee->clearance_path && Storage::disk('public')->exists($enrollee->clearance_path))
+        @php
+          $clearancePath = ltrim($enrollee->clearance_path, '/');
+          $clearancePath = preg_replace('/^storage\//', '', $clearancePath);
+          $clearanceDirectUrl = Storage::url($enrollee->clearance_path);
+          $clearanceFallbackUrl = route('admin.documents.serve', ['path' => $clearancePath]);
+        @endphp
         <div style="display: inline-flex; gap: 8px; margin-left: 8px;">
           <button 
             type="button"
-            onclick="viewDocument('{{ Storage::url($enrollee->clearance_path) }}', 'Clearance Document')"
+            onclick="viewDocumentWithFallback('{{ $clearanceDirectUrl }}', '{{ $clearanceFallbackUrl }}', 'Clearance Document')"
             style="padding: 6px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s;"
             onmouseover="this.style.background='#2563eb'"
             onmouseout="this.style.background='#3b82f6'"
           >👁️ View</button>
           <a 
-            href="{{ Storage::url($enrollee->clearance_path) }}" 
+            href="{{ $clearanceDirectUrl }}" 
             download
             style="padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; text-decoration: none; transition: all 0.2s; display: inline-block;"
             onmouseover="this.style.background='#059669'"
             onmouseout="this.style.background='#10b981'"
+            onclick="event.preventDefault(); downloadDocWithFallback('{{ $clearanceDirectUrl }}', '{{ $clearanceFallbackUrl }}')"
           >📥 Download</a>
         </div>
       @elseif($enrollee->clearance_path)

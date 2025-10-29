@@ -41,6 +41,7 @@ use App\Http\Controllers\InstructorStudentGradeController;
 use App\Http\Controllers\ReportController;
 use Laravel\Fortify\Http\Controllers\NewPasswordController;
 use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
+use App\Models\Strands;
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
@@ -86,6 +87,46 @@ Route::prefix('enroll')->name('enroll.')->group(function(){
              ->name('step1');
         Route::post('step1', [NewEnrollmentController::class,'postStep1'])
              ->name('step1.post');
+        // Public API for strand availability used by Step 1
+        Route::get('strand-availability', function () {
+            $codeToName = [
+                'ABM' => 'ABM',
+                'GAS' => 'GAS',
+                'STEM' => 'STEM',
+                'HUMSS' => 'HUMSS',
+                'ICT' => 'TVL-ICT',
+                'HE' => 'TVL-HE',
+            ];
+
+            $strands = Strands::whereIn('name', array_values($codeToName))->get()->keyBy('name');
+
+            $result = [];
+            foreach ($codeToName as $code => $name) {
+                $s = $strands->get($name);
+                if ($s) {
+                    $capacity = (int) ($s->capacity ?? 0);
+                    $enrolled = (int) ($s->enrolled_count ?? 0);
+                    $available = max($capacity - $enrolled, 0);
+                    $result[$code] = [
+                        'name' => $name,
+                        'capacity' => $capacity,
+                        'enrolled' => $enrolled,
+                        'available' => $available,
+                        'is_full' => $capacity > 0 ? $enrolled >= $capacity : false,
+                    ];
+                } else {
+                    $result[$code] = [
+                        'name' => $name,
+                        'capacity' => 0,
+                        'enrolled' => 0,
+                        'available' => 0,
+                        'is_full' => false,
+                    ];
+                }
+            }
+
+            return response()->json($result);
+        })->name('strand-availability');
         Route::post('check-email', [NewEnrollmentController::class,'checkEmailAvailability'])
              ->name('check-email');
 
@@ -163,6 +204,9 @@ Route::prefix('student')
     
     // Documents
     Route::get('/documents', [StudentDocumentController::class, 'index'])->name('student.documents');
+    Route::get('/documents/serve/{path}', [StudentDocumentController::class, 'serveDocument'])
+        ->where('path', '.*')
+        ->name('student.documents.serve');
     Route::post('/documents/upload', [DocumentController::class, 'uploadOnline'])->name('documents.upload');
     Route::get('/documents/view/{id}', [DocumentController::class, 'viewDocument'])->name('documents.view');
 
@@ -177,6 +221,18 @@ Route::prefix('admin')
      ->middleware(['auth', CheckRole::class . ':admin'])
      ->group(function(){
     Route::get('dashboard', [ChartController::class, 'index'])->name('admin.dashboard');
+    
+    // Admin document serving route (for viewing enrollee documents)
+    Route::get('/documents/serve/{path}', [App\Http\Controllers\AdminDocumentController::class, 'serveDocument'])
+        ->where('path', '.*')
+        ->name('admin.documents.serve');
+    
+    // Admin document serving route by ID (more reliable)
+    Route::get('/documents/serve-by-id/{id}', [App\Http\Controllers\AdminDocumentController::class, 'serveDocumentById'])
+        ->name('admin.documents.serve-by-id');
+    // Admin document re-upload
+    Route::post('/documents/reupload', [App\Http\Controllers\AdminDocumentController::class, 'reupload'])
+        ->name('admin.documents.reupload');
     
     // Redirect old courses routes to subjects
     Route::get('admin/courses', function () {
@@ -216,6 +272,7 @@ Route::prefix('admin')
     Route::post('/instructors/{instructor}/classes',[App\Http\Controllers\AdminInstructorController::class, 'assignClasses'])->name('admin.instructors.assignClasses');
     Route::post('/instructors/assign-classes', [AdminInstructorController::class, 'assignClasses'])->name('instructors.assign.classes');
     Route::get('/api/admin/available-classes', [AdminInstructorController::class, 'getAvailableClasses'])->name('api.admin.available-classes');
+    Route::get('instructors/{instructorId}/data', [AdminInstructorController::class, 'getInstructorData'])->name('admin.instructors.data');
 
 
     Route::get('subjects', [SubjectController::class, 'index'])->name('admin.subjects');
@@ -308,6 +365,12 @@ Route::prefix('admin')
         ->name('admin.enrollees.accept');
     Route::post('enrollees/{enrollee}/decline', [AdminNewEnrolleeController::class, 'declineNew'])
         ->name('admin.enrollees.decline');
+    
+    // Credential distribution routes for new enrollees
+    Route::get('enrollees/{enrollee}/credentials/pdf', [AdminNewEnrolleeController::class, 'generateCredentialsPDF'])
+        ->name('admin.enrollees.credentials.pdf');
+    Route::post('enrollees/{enrollee}/credentials/email', [AdminNewEnrolleeController::class, 'sendCredentialsEmail'])
+        ->name('admin.enrollees.credentials.email');
 
     // Accept/Decline routes for old enrollees
     Route::post('old-enrollees/{enrollee}/accept', [AdminNewEnrolleeController::class, 'acceptOld'])

@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MCA Montessori School Payment</title>
+  <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+  <link rel="icon" href="{{ asset('favicon.ico') }}">
   <link rel="stylesheet" href="{{ asset('css/mobile-compatibility.css') }}">
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -910,9 +912,9 @@ button[disabled] {
             localStorage.removeItem(`new_step3_receiptUpload`);
             localStorage.removeItem('new_step3_form_data');
             localStorage.removeItem('new_step3_payment_method');
-            // Clear ALL local storage
-            localStorage.clear();
-            console.log('Cleared ALL cached data including localStorage');
+            // DON'T clear all localStorage - we need to keep step 2 files!
+            // localStorage.clear(); // REMOVED to preserve step 2 file cache
+            console.log('Cleared Step 3 cached data (preserving Step 2 files)');
         }
 
         function showFilePreview(inputId, fileData) {
@@ -1020,7 +1022,9 @@ button[disabled] {
             const refValid = isDigitalPayment ? 
                 (paymentRefInput && paymentRefInput.value.trim() !== '') : 
                 true; // Not required for cash payment
-            const receiptValid = receiptInput && receiptInput.files && receiptInput.files.length > 0;
+            // Check if receipt exists in input or database
+            const receiptValid = (receiptInput && receiptInput.files && receiptInput.files.length > 0) 
+                                || (typeof existingReceipt !== 'undefined' && existingReceipt !== null);
 
             const allValid = nameValid && refValid && receiptValid;
 
@@ -1033,6 +1037,34 @@ button[disabled] {
         document.addEventListener('DOMContentLoaded', function() {
             
             setProgress(3);
+            
+            // Load existing receipt from database if exists
+            @if(isset($existingReceipt) && $existingReceipt)
+            const existingReceipt = {
+                name: '{{ $existingReceipt->original_filename }}',
+                mime: '{{ $existingReceipt->mime_type }}',
+                size: {{ $existingReceipt->file_size }},
+                data: '{{ base64_encode($existingReceipt->file_data) }}'
+            };
+            console.log('Loading existing receipt:', existingReceipt);
+            
+            // Display existing receipt
+            const receiptPreview = document.getElementById('receiptPreview');
+            const receiptValidation = document.getElementById('receiptValidation');
+            if (receiptPreview && receiptValidation) {
+                receiptValidation.style.display = 'none';
+                receiptPreview.style.display = 'block';
+                receiptPreview.innerHTML = '<div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 12px; border-radius: 8px; color: #1e40af; font-weight: 600;">✓ Receipt stored in database: ' + existingReceipt.name + '</div>';
+            }
+            
+            // Remove required attribute since receipt exists
+            const receiptInput = document.getElementById('receiptUpload');
+            if (receiptInput) {
+                receiptInput.removeAttribute('required');
+            }
+            @else
+            const existingReceipt = null;
+            @endif
             
             const form = document.getElementById('paymentForm');
             const fullNameInput = document.getElementById('fullName');
@@ -1093,6 +1125,37 @@ button[disabled] {
             // Initialize payment method visibility
             updatePaymentMethodVisibility();
             
+            // Function to restore existing receipt display if needed
+            function restoreExistingReceiptDisplay() {
+                @if(isset($existingReceipt) && $existingReceipt)
+                if (typeof existingReceipt !== 'undefined' && existingReceipt !== null) {
+                    const receiptPreview = document.getElementById('receiptPreview');
+                    const receiptValidation = document.getElementById('receiptValidation');
+                    const receiptInputElem = document.getElementById('receiptUpload');
+                    
+                    // Only restore if no new file is uploaded
+                    if (receiptInputElem && (!receiptInputElem.files || receiptInputElem.files.length === 0)) {
+                        if (receiptPreview && receiptValidation) {
+                            receiptValidation.style.display = 'none';
+                            receiptPreview.style.display = 'block';
+                            receiptPreview.innerHTML = '<div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 12px; border-radius: 8px; color: #1e40af; font-weight: 600;">✓ Receipt stored in database: ' + existingReceipt.name + '</div>';
+                        }
+                        
+                        // Remove required attribute
+                        if (receiptInputElem) {
+                            receiptInputElem.removeAttribute('required');
+                        }
+                        
+                        console.log('Restored existing receipt display:', existingReceipt.name);
+                    }
+                }
+                @endif
+            }
+            
+            // Restore immediately and after delays
+            setTimeout(restoreExistingReceiptDisplay, 100);
+            setTimeout(restoreExistingReceiptDisplay, 500);
+            setTimeout(restoreExistingReceiptDisplay, 1000);
             
             fullNameInput.addEventListener('input', function() {
                 const validationMessage = document.getElementById('fullNameValidation');
@@ -1162,6 +1225,11 @@ button[disabled] {
                         // Add filename and remove button
                         addFileDetails(previewContainer, file.name);
                     }
+                } else if (!file && typeof existingReceipt !== 'undefined' && existingReceipt !== null) {
+                    // If input is cleared but receipt exists in database, restore display
+                    validationMessage.style.display = 'none';
+                    previewContainer.style.display = 'block';
+                    previewContainer.innerHTML = '<div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 12px; border-radius: 8px; color: #1e40af; font-weight: 600;">✓ Receipt stored in database: ' + existingReceipt.name + '</div>';
                 } else {
                     validationMessage.style.display = 'block';
                     previewContainer.style.display = 'none';
@@ -1172,7 +1240,7 @@ button[disabled] {
             });
             
             // Handle form submission
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
@@ -1183,10 +1251,19 @@ button[disabled] {
                 });
                 
                 if (checkAllFieldsFilled()) {
-                  alert(`Payment pending verification for ${paymentMethod} payment. Your application will be processed once payment is confirmed. Proceeding to confirmation page.`);
-                  this.submit();   // actually POSTs the form now
+                  // Show confirmation modal instead of alert
+                  const confirmed = await showConfirmation(
+                    'Confirm Payment Submission',
+                    `Your ${paymentMethod} payment is pending verification. Your application will be processed once payment is confirmed. Proceed to confirmation?`,
+                    'question'
+                  );
+                  
+                  if (confirmed) {
+                    showToast('Submitting payment...', 'info');
+                    this.submit();   // actually POSTs the form now
+                  }
                 } else {
-                  alert('Please fill in all required fields before submitting.');
+                  showToast('Please fill in all required fields before submitting.', 'warning');
                 }
             });
             
@@ -1258,9 +1335,9 @@ button[disabled] {
                 progressBar.className = `progress-bar step-${step}`;
             }
             
-            // FORCE CLEAR ALL CACHED DATA ON PAGE LOAD
-            console.log('Force clearing all cached data on page load...');
-            clearCachedFiles();
+            // DON'T FORCE CLEAR ALL CACHED DATA - we need step 2 files!
+            // console.log('Force clearing all cached data on page load...');
+            // clearCachedFiles(); // REMOVED to preserve step 2 file cache
             
             // Optimized restoration system to prevent flickering
             let restorationInProgress = false;
@@ -1277,8 +1354,18 @@ button[disabled] {
             // Disable aggressive caching that interferes with form submission
             console.log('File caching disabled to prevent form submission issues');
             
-            // DISABLED: Navigation event listeners (cause form submission interference)
-            console.log('Event listener restoration DISABLED by design');
+            // Restore receipt when page becomes visible or gets focus
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    console.log('Page became visible, restoring receipt...');
+                    restoreExistingReceiptDisplay();
+                }
+            });
+            
+            window.addEventListener('focus', function() {
+                console.log('Window focused, restoring receipt...');
+                restoreExistingReceiptDisplay();
+            });
             
             // Clear cached data on successful form submission
             form.addEventListener('submit', function(e) {
@@ -1288,6 +1375,22 @@ button[disabled] {
                 }
             });
         });
+    </script>
+    
+    {{-- Include Modern Notification System --}}
+    @include('partials.modern_notifications')
+    
+    <script>
+        // Replace alert with toast notification
+        function showToastAlert(message, type = 'info') {
+            showToast(message, type);
+        }
+        
+        // Replace window.alert
+        const originalAlert = window.alert;
+        window.alert = function(message) {
+            showToast(message, 'info');
+        };
     </script>
 </body>
 </html>

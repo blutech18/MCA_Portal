@@ -1296,21 +1296,24 @@ document.querySelectorAll('.term-option').forEach(option => {
     if (studentId) {
         // Function to fetch and update grades in real-time
         async function fetchLatestGrades() {
+            console.log('fetchLatestGrades called, manual refresh:', window.manualRefresh);
             try {
                 const response = await fetch(`{{ route('api.student.grades') }}?student_id=${studentId}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
                     }
                 });
-
+                
                 if (response.ok) {
                     const data = await response.json();
                     console.log('API Response:', data);
                     
                     if (data.success && data.grades) {
                         const hasGrades = data.grades.length > 0;
+                        console.log('About to update grades table with', data.grades.length, 'grades');
                         updateGradesTable(data.grades);
                         console.log('Grades updated successfully at:', data.timestamp);
                         
@@ -1386,57 +1389,143 @@ document.querySelectorAll('.term-option').forEach(option => {
 
         // Function to update the grades table with new data
         function updateGradesTable(grades) {
+            console.log('updateGradesTable called with:', grades.length, 'grades');
             const tbody = document.querySelector('.grades-table tbody');
-            if (!tbody || grades.length === 0) return;
+            if (!tbody) {
+                console.log('No tbody found');
+                return;
+            }
 
-            // Create a map of current grades for easy lookup
-            const gradesMap = {};
-            grades.forEach(grade => {
-                gradesMap[grade.subject_name] = grade;
-            });
+            // If no grades, show empty message (but only if we don't already have grades displayed)
+            if (grades.length === 0) {
+                const existingRows = tbody.querySelectorAll('tr');
+                const hasGradeRows = existingRows.length > 0 && existingRows[0].querySelector('.subject-name');
+                
+                // Only show "no grades" message if we don't already have grades
+                if (!hasGradeRows) {
+                    console.log('Showing no grades message');
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 40px; color: #666;">
+                                <i class="fas fa-info-circle" style="font-size: 48px; color: #ccc; margin-bottom: 15px; display: block;"></i>
+                                <strong style="font-size: 16px; display: block; margin-bottom: 10px;">No Grades Available Yet</strong>
+                                <p style="font-size: 14px; margin: 0;">Your instructors haven't posted any grades yet. Please check back later or click the "Refresh Grades" button above.</p>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    console.log('Keeping existing grades, ignoring empty response');
+                }
+                return;
+            }
 
-            // Update existing rows
-            const rows = tbody.querySelectorAll('tr');
-            rows.forEach(row => {
-                const subjectCell = row.querySelector('.subject-name');
-                if (subjectCell) {
-                    const subjectName = subjectCell.textContent.trim();
-                    const grade = gradesMap[subjectName];
-                    
-                    if (grade) {
-                        const cells = row.querySelectorAll('td');
+            // Check if we have existing grade rows (not the "No Grades Available" message)
+            const existingRows = tbody.querySelectorAll('tr');
+            const hasGradeRows = existingRows.length > 0 && existingRows[0].querySelector('.subject-name');
+            
+            console.log('Existing rows:', existingRows.length);
+            console.log('Has grade rows:', hasGradeRows);
+            console.log('First row HTML:', existingRows[0]?.innerHTML);
+
+            // Force recreation of rows to ensure fresh data
+            console.log('Force recreating all rows to ensure fresh data');
+            if (false && hasGradeRows) {
+                console.log('Updating existing rows (disabled for debugging)');
+                // Update existing rows
+                const gradesMap = {};
+                grades.forEach(grade => {
+                    gradesMap[grade.subject_name] = grade;
+                    console.log('API Grade subject:', grade.subject_name);
+                });
+                
+                console.log('Grades map keys:', Object.keys(gradesMap));
+
+                existingRows.forEach((row, index) => {
+                    const subjectCell = row.querySelector('.subject-name');
+                    if (subjectCell) {
+                        const subjectName = subjectCell.textContent.trim();
+                        const grade = gradesMap[subjectName];
                         
-                        // Update quarter grades with animation
-                        updateCell(cells[1], grade.first_quarter, gradeStatusClass(grade.first_quarter));
-                        updateCell(cells[2], grade.second_quarter, gradeStatusClass(grade.second_quarter));
-                        updateCell(cells[3], grade.third_quarter, gradeStatusClass(grade.third_quarter));
-                        updateCell(cells[4], grade.fourth_quarter, gradeStatusClass(grade.fourth_quarter));
+                        console.log(`Row ${index + 1}: "${subjectName}" -> Grade found:`, !!grade);
                         
-                        // Update final grade
-                        const finalCell = cells[5];
-                        if (finalCell && grade.final_grade !== null) {
-                            const displayValue = parseFloat(grade.final_grade).toFixed(1);
-                            if (finalCell.textContent.trim() !== displayValue) {
-                                finalCell.classList.add('grade-updated');
-                                finalCell.textContent = displayValue;
-                                finalCell.className = 'final-grade ' + gradeStatusClass(grade.final_grade);
-                                
-                                setTimeout(() => {
-                                    finalCell.classList.remove('grade-updated');
-                                }, 2000);
+                        if (grade) {
+                            console.log(`Updating row ${index + 1} with grade:`, grade);
+                            const cells = row.querySelectorAll('td');
+                            
+                            // Update quarter grades with animation
+                            updateCell(cells[1], grade.first_quarter, gradeStatusClass(grade.first_quarter));
+                            updateCell(cells[2], grade.second_quarter, gradeStatusClass(grade.second_quarter));
+                            updateCell(cells[3], grade.third_quarter, gradeStatusClass(grade.third_quarter));
+                            updateCell(cells[4], grade.fourth_quarter, gradeStatusClass(grade.fourth_quarter));
+                            
+                            // Update final grade
+                            const finalCell = cells[5];
+                            if (finalCell && grade.final_grade !== null) {
+                                const displayValue = parseFloat(grade.final_grade).toFixed(1);
+                                if (finalCell.textContent.trim() !== displayValue) {
+                                    finalCell.classList.add('grade-updated');
+                                    finalCell.textContent = displayValue;
+                                    finalCell.className = 'final-grade ' + gradeStatusClass(grade.final_grade);
+                                    
+                                    setTimeout(() => {
+                                        finalCell.classList.remove('grade-updated');
+                                    }, 2000);
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
+            } else {
+                console.log('Creating new rows from scratch');
+                // Create new rows from scratch
+                tbody.innerHTML = '';
+                console.log('Cleared tbody, now creating', grades.length, 'rows');
+                
+                grades.forEach((grade, index) => {
+                    console.log(`Creating row ${index + 1}:`, grade.subject_name, 'Final:', grade.final_grade);
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="subject-name">${grade.subject_name || 'Unknown Subject'}</td>
+                        <td class="${gradeStatusClass(grade.first_quarter)}">${grade.first_quarter ?? 'N/A'}</td>
+                        <td class="${gradeStatusClass(grade.second_quarter)}">${grade.second_quarter ?? 'N/A'}</td>
+                        <td class="${gradeStatusClass(grade.third_quarter)}">${grade.third_quarter ?? 'N/A'}</td>
+                        <td class="${gradeStatusClass(grade.fourth_quarter)}">${grade.fourth_quarter ?? 'N/A'}</td>
+                        <td class="final-grade ${gradeStatusClass(grade.final_grade)}">${grade.final_grade ? parseFloat(grade.final_grade).toFixed(1) : 'N/A'}</td>
+                    `;
+                    tbody.appendChild(row);
+                    console.log(`Row ${index + 1} added to tbody`);
+                });
+                
+                console.log('All rows created. Final tbody children count:', tbody.children.length);
+                
+                // Add animation to new rows
+                const newRows = tbody.querySelectorAll('tr');
+                console.log('Found', newRows.length, 'new rows for animation');
+                newRows.forEach((row, index) => {
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        row.style.transition = 'all 0.3s ease';
+                        row.style.opacity = '1';
+                        row.style.transform = 'translateY(0)';
+                        console.log(`Row ${index + 1} animated`);
+                    }, index * 100);
+                });
+            }
         }
 
         // Helper function to update individual cell
         function updateCell(cell, value, statusClass) {
-            if (!cell) return;
+            if (!cell) {
+                console.log('updateCell: No cell provided');
+                return;
+            }
             
             const displayValue = value !== null && value !== undefined ? value : 'N/A';
+            console.log('updateCell:', 'value:', value, 'displayValue:', displayValue, 'statusClass:', statusClass);
+            
             if (cell.textContent.trim() !== displayValue.toString()) {
+                console.log('Updating cell from', cell.textContent.trim(), 'to', displayValue);
                 cell.classList.add('grade-updated');
                 cell.textContent = displayValue;
                 cell.className = statusClass;
@@ -1469,8 +1558,9 @@ document.querySelectorAll('.term-option').forEach(option => {
         // Fetch grades immediately on page load
         fetchLatestGrades();
 
-        // Set up periodic fetching (every 30 seconds)
-        setInterval(fetchLatestGrades, 30000);
+        // Set up periodic fetching (every 30 seconds) - temporarily disabled for debugging
+        // setInterval(fetchLatestGrades, 30000);
+        console.log('Periodic refresh disabled for debugging');
 
         // Add visual feedback for grade updates
         const style = document.createElement('style');

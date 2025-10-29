@@ -48,12 +48,28 @@ class InstructorStudentGradeController extends Controller
         $subject = $class->subject;
         $students = Student::where('section_id', $class->section_id)->get();
 
+        \Log::info('Building grade input rows', [
+            'class_id' => $class->id,
+            'subject_id' => $subject->id,
+            'section_id' => $class->section_id,
+            'students_count' => $students->count()
+        ]);
+
         foreach ($students as $student) {
             $grade = Grade::firstOrNew([
                 'student_id' => $student->student_id,
                 'class_id'   => $class->id,
                 'subject_id' => $subject->id,
             ]);
+            
+            \Log::info('Student grade row', [
+                'student_id' => $student->student_id,
+                'student_name' => $student->display_name,
+                'student_primary_key' => $student->getKey(),
+                'grade_exists' => $grade->exists,
+                'grade_id' => $grade->id ?? 'new'
+            ]);
+            
             $rows->push(compact('student','class','subject','grade'));
         }
 
@@ -194,14 +210,33 @@ class InstructorStudentGradeController extends Controller
                 '*.numeric' => 'Grade must be a valid number.',
             ];
             
+            // Convert empty strings to null before validation
+            $inputData = $req->all();
+            foreach (['first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter'] as $field) {
+                if (isset($inputData[$field]) && $inputData[$field] === '') {
+                    $inputData[$field] = null;
+                    $req->merge([$field => null]);
+                }
+            }
+            
             $data = $req->validate($validationRules, $customMessages);
             
+            // Normalize empty strings to null for all quarter fields
+            foreach (['first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter'] as $field) {
+                if (isset($data[$field]) && ($data[$field] === '' || $data[$field] === null)) {
+                    $data[$field] = null;
+                }
+            }
+            
             // Validate that at least one quarter has a grade
-            // Check if any quarter has a non-null, non-empty value
-            $hasAnyGrade = (isset($data['first_quarter']) && $data['first_quarter'] !== '' && $data['first_quarter'] !== null) ||
-                          (isset($data['second_quarter']) && $data['second_quarter'] !== '' && $data['second_quarter'] !== null) ||
-                          (isset($data['third_quarter']) && $data['third_quarter'] !== '' && $data['third_quarter'] !== null) ||
-                          (isset($data['fourth_quarter']) && $data['fourth_quarter'] !== '' && $data['fourth_quarter'] !== null);
+            // Check if any quarter has a non-null, non-empty value that is numeric
+            $hasAnyGrade = false;
+            foreach (['first_quarter', 'second_quarter', 'third_quarter', 'fourth_quarter'] as $field) {
+                if (isset($data[$field]) && $data[$field] !== null && $data[$field] !== '' && is_numeric($data[$field])) {
+                    $hasAnyGrade = true;
+                    break;
+                }
+            }
             
             if (!$hasAnyGrade) {
                 return response()->json([
@@ -217,7 +252,7 @@ class InstructorStudentGradeController extends Controller
                 $data['second_quarter'] ?? null,
                 $data['third_quarter'] ?? null,
                 $data['fourth_quarter'] ?? null
-            ], function($val) { return $val !== null; });
+            ], function($val) { return $val !== null && $val !== '' && is_numeric($val); });
             
             $finalGrade = count($quarters) > 0 ? array_sum($quarters) / count($quarters) : null;
             // Get subject name for legacy 'subject' column
@@ -234,17 +269,18 @@ class InstructorStudentGradeController extends Controller
             // Update only the quarters that have values (preserve existing grades for empty quarters)
             $grade->subject = $subjectName; // Legacy column
             
-            if (isset($data['first_quarter']) && $data['first_quarter'] !== '' && $data['first_quarter'] !== null) {
-                $grade->first_quarter = $data['first_quarter'];
+            // Only update quarters that have actual numeric values
+            if (isset($data['first_quarter']) && $data['first_quarter'] !== null && $data['first_quarter'] !== '' && is_numeric($data['first_quarter'])) {
+                $grade->first_quarter = (float) $data['first_quarter'];
             }
-            if (isset($data['second_quarter']) && $data['second_quarter'] !== '' && $data['second_quarter'] !== null) {
-                $grade->second_quarter = $data['second_quarter'];
+            if (isset($data['second_quarter']) && $data['second_quarter'] !== null && $data['second_quarter'] !== '' && is_numeric($data['second_quarter'])) {
+                $grade->second_quarter = (float) $data['second_quarter'];
             }
-            if (isset($data['third_quarter']) && $data['third_quarter'] !== '' && $data['third_quarter'] !== null) {
-                $grade->third_quarter = $data['third_quarter'];
+            if (isset($data['third_quarter']) && $data['third_quarter'] !== null && $data['third_quarter'] !== '' && is_numeric($data['third_quarter'])) {
+                $grade->third_quarter = (float) $data['third_quarter'];
             }
-            if (isset($data['fourth_quarter']) && $data['fourth_quarter'] !== '' && $data['fourth_quarter'] !== null) {
-                $grade->fourth_quarter = $data['fourth_quarter'];
+            if (isset($data['fourth_quarter']) && $data['fourth_quarter'] !== null && $data['fourth_quarter'] !== '' && is_numeric($data['fourth_quarter'])) {
+                $grade->fourth_quarter = (float) $data['fourth_quarter'];
             }
             
             // Recalculate final grade based on all available quarters
@@ -253,17 +289,28 @@ class InstructorStudentGradeController extends Controller
                 $grade->second_quarter,
                 $grade->third_quarter,
                 $grade->fourth_quarter
-            ], function($val) { return $val !== null && $val !== ''; });
+            ], function($val) { 
+                return $val !== null && $val !== '' && is_numeric($val) && $val >= 0; 
+            });
             
-            $grade->final_grade = count($allQuarters) > 0 ? array_sum($allQuarters) / count($allQuarters) : null;
+            $grade->final_grade = count($allQuarters) > 0 ? round(array_sum($allQuarters) / count($allQuarters), 2) : null;
             $grade->updated_at = now(); // Explicit timestamp for real-time sync
             $grade->save();
             
             \Log::info('Grade saved successfully', [
                 'student_id' => $data['student_id'],
                 'subject_id' => $data['subject_id'],
+                'class_id' => $data['class_id'],
                 'final_grade' => $finalGrade,
-                'timestamp' => now()
+                'grade_record_id' => $grade->id,
+                'timestamp' => now(),
+                'debug_grade_data' => [
+                    'first_quarter' => $grade->first_quarter,
+                    'second_quarter' => $grade->second_quarter,
+                    'third_quarter' => $grade->third_quarter,
+                    'fourth_quarter' => $grade->fourth_quarter,
+                    'final_grade' => $grade->final_grade
+                ]
             ]);
         
             return response()->json([

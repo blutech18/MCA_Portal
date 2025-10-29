@@ -15,5 +15,18 @@ class Strands extends Model
 
     public $incrementing = true;
 
-    protected $fillable = ['name', 'no_of_sections'];
+    protected $fillable = ['name', 'no_of_sections', 'capacity', 'enrolled_count'];
+
+    public function getAvailableSlotsAttribute(): int
+    {
+        $capacity = (int) ($this->capacity ?? 0);
+        $enrolled = (int) ($this->enrolled_count ?? 0);
+        $available = $capacity - $enrolled;
+        return $available > 0 ? $available : 0;
+    }
+
+    public function getIsFullAttribute(): bool
+    {
+        return ($this->enrolled_count ?? 0) >= ($this->capacity ?? 0);
+    }
 }

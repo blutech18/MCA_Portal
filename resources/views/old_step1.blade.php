@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MCA Montessori School Enrollment Form - Pre-Registration</title>
+  <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+  <link rel="icon" href="{{ asset('favicon.ico') }}">
   <link rel="stylesheet" href="{{ asset('css/styles_old_form.css') }}">
   <link rel="stylesheet" href="{{ asset('css/mobile-compatibility.css') }}">
 </head>
@@ -352,7 +354,7 @@
       const studentDetails = document.getElementById('studentDetails');
 
       if (!lrn) {
-        alert('Please enter your LRN');
+        showToast('Please enter your LRN', 'warning');
         return;
       }
 
@@ -407,12 +409,12 @@
           // ensure terms validation reflects current state
           validateTerms();
         } else {
-          alert('Student not found with the provided LRN. Please check your LRN and try again.');
+          showToast('Student not found with the provided LRN. Please check your LRN and try again.', 'error');
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred while looking up the student. Please try again.');
+        showToast('An error occurred while looking up the student. Please try again.', 'error');
       })
       .finally(() => {
         // Reset button state
@@ -433,5 +435,8 @@
   
   <!-- Mobile Compatibility Script -->
   <script src="{{ asset('js/mobile-compatibility.js') }}"></script>
+  
+  {{-- Include Modern Notification System --}}
+  @include('partials.modern_notifications')
 </body>
 </html>

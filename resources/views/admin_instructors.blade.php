@@ -372,6 +372,14 @@
                     <strong style="color: #212529; font-size: 16px;">Current Schedules</strong>
                     <p style="margin: 2px 0 0 0; font-size: 12px; color: #6c757d;">Multiple schedules per day are supported for different time slots</p>
                   </div>
+                  <button type="button" id="refresh-schedules-btn" onclick="refreshSchedulesList()" style="background: #f8f9fa; border: 1px solid #dee2e6; color: #495057; padding: 8px 16px; border-radius: 6px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; font-size: 13px;" onmouseover="this.style.background='#e9ecef'; this.style.borderColor='#adb5bd'" onmouseout="this.style.background='#f8f9fa'; this.style.borderColor='#dee2e6'" title="Refresh schedules list">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="23 4 23 10 17 10"></polyline>
+                      <polyline points="1 20 1 14 7 14"></polyline>
+                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    Refresh
+                  </button>
                 </div>
                 <div id="existing-schedules-list">
                   <ul id="schedule-items" style="list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto;">
@@ -387,118 +395,137 @@
                 </div>
               </div>
 
-              <!-- Form to add schedule -->
-              <form id="schedule-form" method="POST" action="/admin/instructors/schedules">
-                @csrf
-                <input type="hidden" name="instructor_id" id="schedule-instructor-id">
+              <!-- Multiple Schedule Entries Container -->
+              <div id="schedule-entries-container">
+                <!-- Form to add schedule -->
+                <form id="schedule-form" method="POST" action="/admin/instructors/schedules">
+                  @csrf
+                  <input type="hidden" name="instructor_id" id="schedule-instructor-id">
 
-                <div style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 16px 20px; border-radius: 10px; margin-bottom: 20px;">
-                  <div style="display: flex; align-items: center; gap: 12px;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                      <line x1="12" y1="5" x2="12" y2="19"></line>
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    <div>
-                      <h4 style="margin: 0; font-size: 18px; font-weight: 600;">Add New Schedule</h4>
-                      <p style="margin: 2px 0 0 0; font-size: 13px; opacity: 0.9;">Fill in the details to create a new schedule entry. You can add multiple schedules for different times on the same day.</p>
+                  <div style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; padding: 16px 20px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>
+                      <div>
+                        <h4 style="margin: 0; font-size: 18px; font-weight: 600;">Add Schedule Entry</h4>
+                        <p style="margin: 2px 0 0 0; font-size: 13px; opacity: 0.9;">Add multiple schedule entries before saving</p>
+                      </div>
+                    </div>
+                    <button type="button" id="add-schedule-entry-btn" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 16px; border-radius: 6px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>
+                      Add Another
+                    </button>
+                  </div>
+
+                  <!-- Schedule Entries Go Here -->
+                  <div id="schedule-entries-list">
+                    <!-- Schedule Entry 1 -->
+                    <div class="schedule-entry" data-entry-index="0" style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 16px; position: relative;">
+                    <button type="button" class="remove-entry-btn" style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 18px; display: none;">&times;</button>
+                    
+                    <div style="background: transparent; border: none; padding: 0;">
+                      <div class="form-group" style="margin-bottom: 20px;">
+                        <label class="entry-label" style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                          </svg>
+                          Class
+                        </label>
+                        <select
+                          name="instructor_class_id[]"
+                          class="schedule-class-select"
+                          required
+                          style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;"
+                          onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'"
+                          onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'"
+                        ></select>
+                      </div>
+
+                      <div class="form-group" style="margin-bottom: 20px;">
+                        <label class="entry-label" style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                          </svg>
+                          Day of the Week
+                        </label>
+                        <select name="day_of_week[]" class="schedule-day-select" required style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                          <option value="">Select Day</option>
+                          <option value="Monday">Monday</option>
+                          <option value="Tuesday">Tuesday</option>
+                          <option value="Wednesday">Wednesday</option>
+                          <option value="Thursday">Thursday</option>
+                          <option value="Friday">Friday</option>
+                        </select>
+                      </div>
+
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                          <label class="entry-label" style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            Start Time
+                          </label>
+                          <input type="time" name="start_time[]" class="schedule-start-time" required style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                          <label class="entry-label" style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            End Time
+                          </label>
+                          <input type="time" name="end_time[]" class="schedule-end-time" required style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                        </div>
+                      </div>
+
+                      <div class="form-group" style="margin-bottom: 0;">
+                        <label class="entry-label" style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                          </svg>
+                          Room
+                        </label>
+                        <input type="text" name="room[]" class="schedule-room" required placeholder="e.g., Room 101" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                <div style="background: transparent; border: none; padding: 20px 0;">
-                  <div class="form-group" style="margin-bottom: 20px;">
-                    <label for="schedule-instructor-class-id" style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                      </svg>
-                      Class
-                    </label>
-                    <select
-                      name="instructor_class_id"
-                      id="schedule-instructor-class-id"
-                      required
-                      style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;"
-                      onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'"
-                      onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'"
-                    ></select>
-                  </div>
-
-                  <div class="form-group" style="margin-bottom: 20px;">
-                    <label for="day_of_week" style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                      </svg>
-                      Day of the Week
-                    </label>
-                    <select name="day_of_week" id="day_of_week" required style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-                      <option value="">Select Day</option>
-                      <option value="Monday">Monday</option>
-                      <option value="Tuesday">Tuesday</option>
-                      <option value="Wednesday">Wednesday</option>
-                      <option value="Thursday">Thursday</option>
-                      <option value="Friday">Friday</option>
-                    </select>
-                  </div>
-
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
-                    <div class="form-group" style="margin-bottom: 0;">
-                      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        Start Time
-                      </label>
-                      <input type="time" name="start_time" required style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
-                    </div>
-
-                    <div class="form-group" style="margin-bottom: 0;">
-                      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        End Time
-                      </label>
-                      <input type="time" name="end_time" required style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
                     </div>
                   </div>
 
-                  <div class="form-group" style="margin-bottom: 0;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #1f3f49; font-size: 14px;">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7a222b" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                  <!-- Enhanced Button Group -->
+                  <div style="background: #f8f9fa; padding: 20px 24px; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #dee2e6;">
+                    <button type="button" class="btn cancel-btn" id="cancel-schedule" style="background: #fff; color: #6c757d; border: 1px solid #dee2e6; padding: 10px 24px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#fff'">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
                       </svg>
-                      Room
-                    </label>
-                    <input type="text" name="room" required placeholder="e.g., Room 101" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; background-color: #fff;" onfocus="this.style.borderColor='#7a222b'; this.style.boxShadow='0 0 0 3px rgba(122,34,43,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                      Cancel
+                    </button>
+                    <button type="submit" class="btn save-btn" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; border: none; padding: 10px 32px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(122,34,43,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(122,34,43,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(122,34,43,0.2)'">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                      </svg>
+                      Save All Schedules
+                    </button>
                   </div>
-                </div>
-
-                <!-- Enhanced Button Group -->
-                <div style="background: #f8f9fa; padding: 20px 24px; border-radius: 0 0 12px 12px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #dee2e6;">
-                  <button type="button" class="btn cancel-btn" id="cancel-schedule" style="background: #fff; color: #6c757d; border: 1px solid #dee2e6; padding: 10px 24px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#fff'">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                    Cancel
-                  </button>
-                  <button type="submit" class="btn save-btn" style="background: linear-gradient(135deg, #7a222b 0%, #922832 100%); color: white; border: none; padding: 10px 32px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(122,34,43,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(122,34,43,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(122,34,43,0.2)'">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                      <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                      <polyline points="7 3 7 8 15 8"></polyline>
-                    </svg>
-                    Save Schedule
-                  </button>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
           </div>
         </div>

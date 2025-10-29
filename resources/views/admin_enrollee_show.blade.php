@@ -69,42 +69,86 @@ use Illuminate\Support\Facades\Storage;
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <h3>Report Card</h3>
-                @if($enrollee->report_card_path && Storage::disk('public')->exists($enrollee->report_card_path))
-                    <a href="{{ Storage::url($enrollee->report_card_path) }}" target="_blank">Download</a>
+                @php
+                  $doc = \App\Models\StudentDocument::where('enrollment_id', $enrollee->id)->where('enrollment_type','new')->where('document_type','report_card')->first();
+                @endphp
+                @if($doc)
+                  <a href="{{ route('admin.documents.serve-by-id', ['id' => $doc->id]) }}" target="_blank">Download</a>
+                @elseif($enrollee->report_card_path && Storage::disk('public')->exists($enrollee->report_card_path))
+                  <a href="{{ Storage::url($enrollee->report_card_path) }}" target="_blank">Download</a>
                 @elseif($enrollee->report_card_path)
-                    <span class="text-red-500 text-sm">File missing</span>
+                  <span class="text-red-500 text-sm">File missing</span>
+                  <form action="{{ route('admin.documents.reupload') }}" method="POST" enctype="multipart/form-data" class="mt-2 flex gap-2 items-center">
+                    @csrf
+                    <input type="hidden" name="enrollee_id" value="{{ $enrollee->id }}">
+                    <input type="hidden" name="enrollment_type" value="new">
+                    <input type="hidden" name="document_type" value="report_card">
+                    <input type="file" name="file" accept=".jpg,.jpeg,.png,.pdf" required class="text-sm">
+                    <button type="submit" class="px-3 py-1 bg-red-700 text-white text-xs rounded">Re-upload</button>
+                  </form>
                 @else
-                    <span>–</span>
+                  <span>–</span>
                 @endif
             </div>
             <div>
                 <h3>Good Moral</h3>
-                @if($enrollee->good_moral_path && Storage::disk('public')->exists($enrollee->good_moral_path))
-                    <a href="{{ Storage::url($enrollee->good_moral_path) }}" target="_blank">Download</a>
+                @php
+                  $doc = \App\Models\StudentDocument::where('enrollment_id', $enrollee->id)->where('enrollment_type','new')->where('document_type','good_moral')->first();
+                @endphp
+                @if($doc)
+                  <a href="{{ route('admin.documents.serve-by-id', ['id' => $doc->id]) }}" target="_blank">Download</a>
+                @elseif($enrollee->good_moral_path && Storage::disk('public')->exists($enrollee->good_moral_path))
+                  <a href="{{ Storage::url($enrollee->good_moral_path) }}" target="_blank">Download</a>
                 @elseif($enrollee->good_moral_path)
-                    <span class="text-red-500 text-sm">File missing</span>
+                  <span class="text-red-500 text-sm">File missing</span>
+                  <form action="{{ route('admin.documents.reupload') }}" method="POST" enctype="multipart/form-data" class="mt-2 flex gap-2 items-center">
+                    @csrf
+                    <input type="hidden" name="enrollee_id" value="{{ $enrollee->id }}">
+                    <input type="hidden" name="enrollment_type" value="new">
+                    <input type="hidden" name="document_type" value="good_moral">
+                    <input type="file" name="file" accept=".jpg,.jpeg,.png,.pdf" required class="text-sm">
+                    <button type="submit" class="px-3 py-1 bg-red-700 text-white text-xs rounded">Re-upload</button>
+                  </form>
                 @else
-                    <span>–</span>
+                  <span>–</span>
                 @endif
             </div>
             <div>
                 <h3>Birth Certificate</h3>
-                @if($enrollee->birth_certificate_path && Storage::disk('public')->exists($enrollee->birth_certificate_path))
-                    <a href="{{ Storage::url($enrollee->birth_certificate_path) }}" target="_blank">Download</a>
+                @php
+                  $doc = \App\Models\StudentDocument::where('enrollment_id', $enrollee->id)->where('enrollment_type','new')->where('document_type','birth_certificate')->first();
+                @endphp
+                @if($doc)
+                  <a href="{{ route('admin.documents.serve-by-id', ['id' => $doc->id]) }}" target="_blank">Download</a>
+                @elseif($enrollee->birth_certificate_path && Storage::disk('public')->exists($enrollee->birth_certificate_path))
+                  <a href="{{ Storage::url($enrollee->birth_certificate_path) }}" target="_blank">Download</a>
                 @elseif($enrollee->birth_certificate_path)
-                    <span class="text-red-500 text-sm">File missing</span>
+                  <span class="text-red-500 text-sm">File missing</span>
+                  <form action="{{ route('admin.documents.reupload') }}" method="POST" enctype="multipart/form-data" class="mt-2 flex gap-2 items-center">
+                    @csrf
+                    <input type="hidden" name="enrollee_id" value="{{ $enrollee->id }}">
+                    <input type="hidden" name="enrollment_type" value="new">
+                    <input type="hidden" name="document_type" value="birth_certificate">
+                    <input type="file" name="file" accept=".jpg,.jpeg,.png,.pdf" required class="text-sm">
+                    <button type="submit" class="px-3 py-1 bg-red-700 text-white text-xs rounded">Re-upload</button>
+                  </form>
                 @else
-                    <span>–</span>
+                  <span>–</span>
                 @endif
             </div>
             <div>
                 <h3>ID Picture</h3>
-                @if($enrollee->id_picture_path && Storage::disk('public')->exists($enrollee->id_picture_path))
-                    <img src="{{ Storage::url($enrollee->id_picture_path) }}" alt="ID Picture" class="w-24 h-24 object-cover">
+                @php
+                  $doc = \App\Models\StudentDocument::where('enrollment_id', $enrollee->id)->where('enrollment_type','new')->where('document_type','id_picture')->first();
+                @endphp
+                @if($doc)
+                  <img src="{{ 'data:' . $doc->mime_type . ';base64,' . $doc->file_data }}" alt="ID Picture" class="w-24 h-24 object-cover">
+                @elseif($enrollee->id_picture_path && Storage::disk('public')->exists($enrollee->id_picture_path))
+                  <img src="{{ Storage::url($enrollee->id_picture_path) }}" alt="ID Picture" class="w-24 h-24 object-cover">
                 @elseif($enrollee->id_picture_path)
-                    <span class="text-red-500 text-sm">Image missing</span>
+                  <span class="text-red-500 text-sm">Image missing</span>
                 @else
-                    <span>–</span>
+                  <span>–</span>
                 @endif
             </div>
         </div>
@@ -115,10 +159,25 @@ use Illuminate\Support\Facades\Storage;
         <p><strong>Applicant Name:</strong> {{ $enrollee->payment_applicant_name ?? '–' }}</p>
         <p><strong>Reference #:</strong> {{ $enrollee->payment_reference ?? '–' }}</p>
         <p><strong>Paid:</strong> {{ $enrollee->paid ? 'Yes' : 'No' }}</p>
-        @if($enrollee->payment_receipt_path && Storage::disk('public')->exists($enrollee->payment_receipt_path))
-            <a href="{{ Storage::url($enrollee->payment_receipt_path) }}" target="_blank">Download Receipt</a>
+        @php
+          $receiptDoc = \App\Models\StudentDocument::where('enrollment_id', $enrollee->id)->where('enrollment_type','new')->where('document_type','payment_receipt')->first();
+        @endphp
+        @if($receiptDoc)
+          <a href="{{ route('admin.documents.serve-by-id', ['id' => $receiptDoc->id]) }}" target="_blank">Download Receipt</a>
+        @elseif($enrollee->payment_receipt_path && Storage::disk('public')->exists($enrollee->payment_receipt_path))
+          <a href="{{ Storage::url($enrollee->payment_receipt_path) }}" target="_blank">Download Receipt</a>
         @elseif($enrollee->payment_receipt_path)
-            <span class="text-red-500 text-sm">Receipt file missing</span>
+          <span class="text-red-500 text-sm">Receipt file missing</span>
+          <form action="{{ route('admin.documents.reupload') }}" method="POST" enctype="multipart/form-data" class="mt-2 flex gap-2 items-center">
+            @csrf
+            <input type="hidden" name="enrollee_id" value="{{ $enrollee->id }}">
+            <input type="hidden" name="enrollment_type" value="new">
+            <input type="hidden" name="document_type" value="payment_receipt">
+            <input type="file" name="file" accept=".jpg,.jpeg,.png,.pdf" required class="text-sm">
+            <button type="submit" class="px-3 py-1 bg-red-700 text-white text-xs rounded">Re-upload</button>
+          </form>
+        @else
+          <span>–</span>
         @endif
     </div>
 

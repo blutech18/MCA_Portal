@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MCA Montessori School Document Upload</title>
+  <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+  <link rel="icon" href="{{ asset('favicon.ico') }}">
   <link rel="stylesheet" href="{{ asset('css/mobile-compatibility.css') }}">
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -724,8 +726,27 @@ button[disabled] {
                 const input = document.getElementById(inputId);
                 const cachedData = localStorage.getItem(`new_step2_${inputId}`);
                 
-                // Only restore if there's cached data and no existing file (prevent overwriting)
-                if (cachedData && input && (!input.files || input.files.length === 0)) {
+                if (!input) {
+                    console.log(`Input element not found for ${inputId}`);
+                    return;
+                }
+                
+                if (!cachedData) {
+                    console.log(`No cached data found for ${inputId}`);
+                    return;
+                }
+                
+                // Check if input has files - more robust check
+                const hasFiles = input.files && input.files.length > 0;
+                const hasValue = input.value && input.value.length > 0;
+                
+                console.log(`Checking ${inputId} - hasFiles: ${hasFiles}, hasValue: ${hasValue}`);
+                
+                // ALWAYS restore if cached data exists - don't skip even if files appear to exist
+                // This fixes the issue where browser back/forward cache creates fake file entries
+                // that prevent restoration
+                if (true) { // Always restore to fix bfcache issues
+                    console.log(`✅ Proceeding with restoration for ${inputId}`);
                     try {
                         const fileData = JSON.parse(cachedData);
                         console.log(`Restoring cached file for ${inputId}:`, fileData.name);
@@ -743,22 +764,45 @@ button[disabled] {
                             lastModified: fileData.lastModified 
                         });
                         
-                        // Set the file to the input
+                        // Set the file to the input using DataTransfer
                         const dataTransfer = new DataTransfer();
                         dataTransfer.items.add(file);
                         input.files = dataTransfer.files;
                         
-                    // Trigger the change event to update UI
-                    const event = new Event('change', { bubbles: true });
-                    input.dispatchEvent(event);
-                    
-                    // Ensure preview is displayed
-                    setTimeout(() => {
-                        showFilePreview(inputId, fileData);
-                    }, 50);
-                    
-                    restoredCount++;
-                    console.log(`Successfully restored file for ${inputId}: ${fileData.name}`);
+                        // Manually trigger UI update instead of relying on event
+                        // This ensures the preview is always shown
+                        setTimeout(() => {
+                            console.log(`Attempting to show preview for ${inputId}`);
+                            try {
+                                const fileNameElement = input.parentElement ? input.parentElement.querySelector('.file-name') : null;
+                                const previewContainer = document.getElementById(`${inputId}Preview`);
+                                const validationMessage = document.getElementById(`${inputId}Validation`);
+                                
+                                if (fileNameElement) {
+                                    fileNameElement.textContent = fileData.name;
+                                    console.log(`Updated filename for ${inputId}: ${fileData.name}`);
+                                } else {
+                                    console.warn(`Could not find file name element for ${inputId}`);
+                                }
+                                
+                                if (validationMessage) {
+                                    validationMessage.style.display = 'none';
+                                }
+                                
+                                // Show preview
+                                if (previewContainer) {
+                                    console.log(`Showing preview for ${inputId}`);
+                                    showFilePreview(inputId, fileData);
+                                } else {
+                                    console.warn(`Could not find preview container for ${inputId}`);
+                                }
+                            } catch (error) {
+                                console.error(`Error showing preview for ${inputId}:`, error);
+                            }
+                        }, 150);
+                        
+                        restoredCount++;
+                        console.log(`Successfully restored file for ${inputId}: ${fileData.name}`);
                     } catch (error) {
                         console.error(`Error restoring cached file for ${inputId}:`, error);
                         localStorage.removeItem(`new_step2_${inputId}`);
@@ -803,14 +847,33 @@ button[disabled] {
         }
 
         function showFilePreview(inputId, fileData) {
-            const fileNameElement = document.querySelector(`#${inputId}`).parentElement.querySelector('.file-name');
+            console.log(`showFilePreview called for ${inputId}`);
+            const input = document.getElementById(inputId);
+            if (!input) {
+                console.error(`Input element not found for ${inputId}`);
+                return;
+            }
+            
+            const parentElement = input.parentElement;
+            const fileNameElement = parentElement ? parentElement.querySelector('.file-name') : null;
             const previewContainer = document.getElementById(`${inputId}Preview`);
             const validationMessage = document.getElementById(`${inputId}Validation`);
             
-            if (fileNameElement && previewContainer && validationMessage) {
+            console.log(`Elements found - fileNameElement: ${!!fileNameElement}, previewContainer: ${!!previewContainer}, validationMessage: ${!!validationMessage}`);
+            
+            if (!fileNameElement || !previewContainer) {
+                console.warn(`Missing required elements for ${inputId}. fileNameElement: ${!!fileNameElement}, previewContainer: ${!!previewContainer}`);
+                return;
+            }
+            
+            try {
                 // Show filename
                 fileNameElement.textContent = fileData.name;
-                validationMessage.style.display = 'none';
+                
+                if (validationMessage) {
+                    validationMessage.style.display = 'none';
+                }
+                
                 previewContainer.style.display = 'block';
                 previewContainer.innerHTML = '';
                 
@@ -824,7 +887,6 @@ button[disabled] {
                     previewContainer.appendChild(img);
                     
                     // Add remove option
-                    const input = document.getElementById(inputId);
                     addRemoveOption(previewContainer, input, fileNameElement);
                 } else {
                     // Document preview (PDF or other)
@@ -844,11 +906,12 @@ button[disabled] {
                     previewContainer.appendChild(docPreview);
                     
                     // Add remove option
-                    const input = document.getElementById(inputId);
                     addRemoveOption(previewContainer, input, fileNameElement);
                 }
                 
-                console.log(`File preview displayed for ${inputId}: ${fileData.name}`);
+                console.log(`✅ File preview successfully displayed for ${inputId}: ${fileData.name}`);
+            } catch (error) {
+                console.error(`Error in showFilePreview for ${inputId}:`, error);
             }
         }
 
@@ -863,38 +926,229 @@ button[disabled] {
             }
         };
 
-        // Global function to check if all required files are uploaded
-        function checkAllFilesUploaded() {
-            const fileInputs = document.querySelectorAll('.file-input');
-            const nextButton = document.getElementById('nextButton');
-            let allFilled = true;
-            
-            fileInputs.forEach(input => {
-                const validationMessage = document.getElementById(`${input.id}Validation`);
-                if (!input.files || !input.files.length) {
-                    if (validationMessage) {
-                        validationMessage.style.display = 'block';
-                    }
-                    allFilled = false;
-                } else {
-                    if (validationMessage) {
-                        validationMessage.style.display = 'none';
-                    }
-                }
-            });
-
-            if (nextButton) {
-                nextButton.disabled = !allFilled;
-            }
-            return allFilled;
-        }
+        // Function to check if all required files are uploaded (from input, cache, or database)
+        // This function will be defined inside DOMContentLoaded to access existingDocuments
 
         document.addEventListener('DOMContentLoaded', function() {
             // Set the active progress step
             setProgress(2);
             
-            // Restore cached files on page load (delayed to prevent flickering)
-            setTimeout(restoreCachedFiles, 100);
+            // Load existing documents from database
+            @if(isset($existingDocs) && $existingDocs->count() > 0)
+            const existingDocuments = {
+                @foreach($existingDocs as $docType => $doc)
+                '{{ $docType }}': {
+                    name: '{{ $doc->original_filename }}',
+                    mime: '{{ $doc->mime_type }}',
+                    size: {{ $doc->file_size }},
+                    data: '{{ $doc->file_data }}'
+                }{{ !$loop->last ? ',' : '' }}
+                @endforeach
+            };
+            
+            // Restore existing documents to file inputs
+            console.log('Loading existing documents:', existingDocuments);
+            @else
+            const existingDocuments = {};
+            @endif
+            
+            // Define function to check if all required files are uploaded (needs access to existingDocuments)
+            function checkAllFilesUploaded() {
+                const fileInputMap = {
+                    'reportCard': 'report_card',
+                    'goodMoral': 'good_moral',
+                    'birthCertificate': 'birth_certificate',
+                    'idPicture': 'id_picture'
+                };
+                
+                const nextButton = document.getElementById('nextButton');
+                let allFilled = true;
+                
+                // Check each required file
+                for (const [inputId, docType] of Object.entries(fileInputMap)) {
+                    const input = document.getElementById(inputId);
+                    const validationMessage = document.getElementById(`${inputId}Validation`);
+                    
+                    let hasFile = false;
+                    
+                    // Check if file exists in input
+                    if (input.files && input.files.length > 0) {
+                        hasFile = true;
+                    }
+                    // Check if file exists in localStorage cache
+                    else if (localStorage.getItem(`new_step2_${inputId}`)) {
+                        hasFile = true;
+                    }
+                    // Check if file exists in database (existingDocuments)
+                    else if (existingDocuments && existingDocuments[docType]) {
+                        hasFile = true;
+                    }
+                    
+                    if (!hasFile) {
+                        if (validationMessage) {
+                            validationMessage.style.display = 'block';
+                        }
+                        allFilled = false;
+                        console.log(`❌ Missing file: ${inputId}`);
+                    } else {
+                        if (validationMessage) {
+                            validationMessage.style.display = 'none';
+                        }
+                        console.log(`✅ File present: ${inputId}`);
+                    }
+                }
+
+                if (nextButton) {
+                    nextButton.disabled = !allFilled;
+                }
+                
+                console.log(`All files uploaded: ${allFilled}, Next button disabled: ${!allFilled}`);
+                return allFilled;
+            }
+            
+            // Function to remove required attributes from file inputs when files exist in database
+            function updateRequiredAttributes() {
+                const fileInputMap = {
+                    'reportCard': 'report_card',
+                    'goodMoral': 'good_moral',
+                    'birthCertificate': 'birth_certificate',
+                    'idPicture': 'id_picture'
+                };
+                
+                for (const [inputId, docType] of Object.entries(fileInputMap)) {
+                    const input = document.getElementById(inputId);
+                    if (!input) continue;
+                    
+                    let hasFile = false;
+                    
+                    // Check if file exists in input
+                    if (input.files && input.files.length > 0) {
+                        hasFile = true;
+                    }
+                    // Check if file exists in localStorage cache
+                    else if (localStorage.getItem(`new_step2_${inputId}`)) {
+                        hasFile = true;
+                    }
+                    // Check if file exists in database
+                    else if (existingDocuments && existingDocuments[docType]) {
+                        hasFile = true;
+                    }
+                    
+                    // Remove or add required attribute based on file existence
+                    if (hasFile) {
+                        input.removeAttribute('required');
+                        console.log(`Removed required attribute from ${inputId}`);
+                    } else {
+                        input.setAttribute('required', 'required');
+                        console.log(`Added required attribute to ${inputId}`);
+                    }
+                }
+            }
+            
+            // CRITICAL: Check if files exist in inputs OR in cache OR in database, and update UI immediately
+            function updateFileIndicators() {
+                console.log('=== updateFileIndicators called ===');
+                const fileInputs = {
+                    'reportCard': 'report_card',
+                    'goodMoral': 'good_moral',
+                    'birthCertificate': 'birth_certificate',
+                    'idPicture': 'id_picture'
+                };
+                
+                for (const [inputId, docType] of Object.entries(fileInputs)) {
+                    console.log(`Checking ${inputId}...`);
+                    const input = document.getElementById(inputId);
+                    if (!input) {
+                        console.log(`❌ Input element not found for ${inputId}`);
+                        continue;
+                    }
+                    
+                    // Check input, localStorage cache, AND database
+                    const hasFilesInInput = input.files && input.files.length > 0;
+                    const cachedData = localStorage.getItem(`new_step2_${inputId}`);
+                    const hasCachedData = !!cachedData;
+                    const hasDbDoc = existingDocuments && existingDocuments[docType];
+                    
+                    console.log(`${inputId} - Input: ${hasFilesInInput}, Cache: ${hasCachedData}, DB: ${!!hasDbDoc}`);
+                    
+                    let fileName = null;
+                    
+                    // Get filename from input, cache, or database (in that order)
+                    if (hasFilesInInput) {
+                        fileName = input.files[0].name;
+                    } else if (hasCachedData) {
+                        try {
+                            const fileData = JSON.parse(cachedData);
+                            fileName = fileData.name;
+                            console.log(`✅ Found file in cache for ${inputId}: ${fileName}`);
+                        } catch (e) {
+                            console.error(`Error parsing cache for ${inputId}:`, e);
+                        }
+                    } else if (hasDbDoc) {
+                        fileName = existingDocuments[docType].name;
+                        console.log(`✅ Found file in database for ${inputId}: ${fileName}`);
+                    }
+                    
+                    // Update UI if we have a file
+                    if (fileName) {
+                        const fileNameElement = input.parentElement ? input.parentElement.querySelector('.file-name') : null;
+                        const previewContainer = document.getElementById(`${inputId}Preview`);
+                        const validationMessage = document.getElementById(`${inputId}Validation`);
+                        
+                        if (fileNameElement) {
+                            fileNameElement.textContent = '✓ ' + fileName;
+                            fileNameElement.style.color = '#10b981';
+                            fileNameElement.style.fontWeight = '600';
+                        }
+                        
+                        if (validationMessage) {
+                            validationMessage.style.display = 'none';
+                        }
+                        
+                        // Show simple indicator in preview container
+                        if (previewContainer) {
+                            previewContainer.style.display = 'block';
+                            if (hasFilesInInput) {
+                                // Full preview if file exists in input
+                                previewContainer.innerHTML = '<div style="background: #d1fae5; border: 2px solid #10b981; padding: 12px; border-radius: 8px; color: #065f46; font-weight: 600;">✓ File Uploaded</div>';
+                            } else if (hasCachedData) {
+                                // Show that file is cached
+                                previewContainer.innerHTML = '<div style="background: #fef3c7; border: 2px solid #f59e0b; padding: 12px; border-radius: 8px; color: #92400e; font-weight: 600;">⚠️ File cached (restored automatically on submission)</div>';
+                            } else if (hasDbDoc) {
+                                // Show that file is stored in database
+                                previewContainer.innerHTML = '<div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 12px; border-radius: 8px; color: #1e40af; font-weight: 600;">✓ File stored in database</div>';
+                            }
+                        }
+                        
+                        console.log(`✅ Updated indicator for ${inputId}: ${fileName}`);
+                    } else {
+                        console.log(`❌ No files found for ${inputId} (input, cache, or database)`);
+                    }
+                }
+                console.log('=== updateFileIndicators done ===');
+            }
+            
+            // Update indicators and required attributes immediately
+            updateFileIndicators();
+            updateRequiredAttributes(); // Remove required attributes if files exist in database
+            checkAllFilesUploaded(); // Check button state after initial update
+            
+            // Also update after a short delay
+            setTimeout(() => {
+                updateFileIndicators();
+                updateRequiredAttributes();
+                checkAllFilesUploaded();
+            }, 100);
+            setTimeout(() => {
+                updateFileIndicators();
+                updateRequiredAttributes();
+                checkAllFilesUploaded();
+            }, 500);
+            setTimeout(() => {
+                updateFileIndicators();
+                updateRequiredAttributes();
+                checkAllFilesUploaded();
+            }, 1000);
             
             // Get all file inputs
             const fileInputs = document.querySelectorAll('.file-input');
@@ -911,6 +1165,8 @@ button[disabled] {
                     // Cache the file data
                     if (e.target.files[0]) {
                         cacheFileData(this.id, e.target.files[0]);
+                        // Remove required attribute since file is selected
+                        this.removeAttribute('required');
                     }
                     
                     if (fileName) {
@@ -1011,7 +1267,7 @@ button[disabled] {
                 e.preventDefault();
                 
                 if (checkAllFilesUploaded()) {
-                  alert('All documents uploaded successfully! Proceeding to payment page.');
+                  showToast('All documents uploaded successfully! Proceeding to payment page.', 'success');
                   this.submit();   // ← now the form will actually submit
                 }
             });
@@ -1064,10 +1320,22 @@ button[disabled] {
                 }, 100);
             }
             
-            // Single restoration attempt on page load (no multiple attempts to prevent flickering)
-            setTimeout(performFileRestoration, 150);
+            // Multiple restoration attempts for reliability with increasing delays to ensure DOM is ready
+            setTimeout(() => {
+                console.log('First restoration attempt after 300ms');
+                performFileRestoration();
+            }, 300);
+            setTimeout(() => {
+                console.log('Second restoration attempt after 800ms');
+                performFileRestoration();
+            }, 800);
+            setTimeout(() => {
+                console.log('Third restoration attempt after 1500ms');
+                performFileRestoration();
+            }, 1500);
             
-            // Reduced frequency monitoring (every 5 seconds instead of 2)
+            // Monitor for file restoration needs (every 2 seconds) 
+            // Check if files in inputs match cached data
             setInterval(function() {
                 if (restorationInProgress) return;
                 
@@ -1078,8 +1346,13 @@ button[disabled] {
                     const input = document.getElementById(inputId);
                     const cachedData = localStorage.getItem(`new_step2_${inputId}`);
                     
+                    if (!input || !cachedData) return;
+                    
+                    // Check if input has files
+                    const hasFiles = input.files && input.files.length > 0;
+                    
                     // If there's cached data but no file in input, restore it
-                    if (cachedData && input && (!input.files || input.files.length === 0)) {
+                    if (!hasFiles) {
                         needsRestoration = true;
                         console.log(`File missing for ${inputId}, will restore`);
                     }
@@ -1089,7 +1362,26 @@ button[disabled] {
                     console.log('Performing automatic file restoration...');
                     performFileRestoration();
                 }
-            }, 5000);
+            }, 3000); // Increased to 3 seconds to reduce frequency
+            
+            // Update indicators when page becomes visible (for back navigation)
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden) {
+                    console.log('Page became visible, updating file indicators...');
+                    updateFileIndicators();
+                    performFileRestoration();
+                }
+            });
+            
+            // Update indicators when window regains focus (for back navigation)
+            window.addEventListener('focus', function() {
+                console.log('Window focused, updating file indicators...');
+                updateFileIndicators();
+                performFileRestoration();
+            });
+            
+            // Expose updateFileIndicators globally for debugging
+            window.updateFileIndicators = updateFileIndicators;
 
             // Helper function to check if all required files are uploaded moved to global scope
 
@@ -1120,6 +1412,9 @@ button[disabled] {
             });
         });
     </script>
+    
+    {{-- Include Modern Notification System --}}
+    @include('partials.modern_notifications')
 </body>
 </html>
 

@@ -68,10 +68,30 @@ class SectionSeeder extends Seeder
             ['section_name' => '11 - Zinnia', 'grade_level_id' => 11, 'strand_id' => 4, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 2, 'is_active' => true, 'is_full' => false],
             ['section_name' => '11 - Poppy', 'grade_level_id' => 11, 'strand_id' => 4, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 3, 'is_active' => true, 'is_full' => false],
 
-            // Grade 12 - TVL Strand
+            // Grade 12 - GAS Strand
             ['section_name' => '12 - Lotus', 'grade_level_id' => 12, 'strand_id' => 4, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 1, 'is_active' => true, 'is_full' => false],
             ['section_name' => '12 - Aster', 'grade_level_id' => 12, 'strand_id' => 4, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 2, 'is_active' => true, 'is_full' => false],
             ['section_name' => '12 - Bluebell', 'grade_level_id' => 12, 'strand_id' => 4, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 3, 'is_active' => true, 'is_full' => false],
+
+            // Grade 11 - ICT Strand (TVL-ICT, strand_id = 5)
+            ['section_name' => '11 – Del Pilar', 'grade_level_id' => 11, 'strand_id' => 5, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 1, 'is_active' => true, 'is_full' => false],
+            ['section_name' => '11 – Bonifacio', 'grade_level_id' => 11, 'strand_id' => 5, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 2, 'is_active' => true, 'is_full' => false],
+            ['section_name' => '11 – Luna', 'grade_level_id' => 11, 'strand_id' => 5, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 3, 'is_active' => true, 'is_full' => false],
+
+            // Grade 12 - ICT Strand (TVL-ICT, strand_id = 5)
+            ['section_name' => '12 – Rizal', 'grade_level_id' => 12, 'strand_id' => 5, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 1, 'is_active' => true, 'is_full' => false],
+            ['section_name' => '12 – Jacinto', 'grade_level_id' => 12, 'strand_id' => 5, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 2, 'is_active' => true, 'is_full' => false],
+            ['section_name' => '12 – Mabini', 'grade_level_id' => 12, 'strand_id' => 5, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 3, 'is_active' => true, 'is_full' => false],
+
+            // Grade 11 - HE Strand (TVL-HE, strand_id = 6)
+            ['section_name' => '11 – Aguinaldo', 'grade_level_id' => 11, 'strand_id' => 6, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 1, 'is_active' => true, 'is_full' => false],
+            ['section_name' => '11 – Melchora', 'grade_level_id' => 11, 'strand_id' => 6, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 2, 'is_active' => true, 'is_full' => false],
+            ['section_name' => '11 – Pardo', 'grade_level_id' => 11, 'strand_id' => 6, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 3, 'is_active' => true, 'is_full' => false],
+
+            // Grade 12 - HE Strand (TVL-HE, strand_id = 6)
+            ['section_name' => '12 – Gabriela', 'grade_level_id' => 12, 'strand_id' => 6, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 1, 'is_active' => true, 'is_full' => false],
+            ['section_name' => '12 – Gregoria', 'grade_level_id' => 12, 'strand_id' => 6, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 2, 'is_active' => true, 'is_full' => false],
+            ['section_name' => '12 – Teresa', 'grade_level_id' => 12, 'strand_id' => 6, 'max_capacity' => 25, 'current_count' => 0, 'section_priority' => 3, 'is_active' => true, 'is_full' => false],
         ];
 
         foreach ($sections as $section) {

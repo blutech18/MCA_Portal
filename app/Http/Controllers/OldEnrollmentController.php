@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\OldStudentEnrollee;
 use App\Models\Student;
 use App\Models\EnrollmentFee;
+use App\Models\StudentDocument;
+use Illuminate\Support\Facades\DB;
 use App\Mail\EnrollmentConfirmation;
 use Illuminate\Support\Facades\Mail;
 
@@ -124,7 +126,7 @@ class OldEnrollmentController extends Controller
         $currentFee = EnrollmentFee::getCurrentFee($feeType);
         
         // Log for debugging
-        Log::info('Fee determination for old enrollment', [
+        \Log::info('Fee determination for old enrollment', [
             'enrollee_id' => $enrollee->id,
             'grade_level_applying' => $enrollee->grade_level_applying,
             'isSHS' => $isSHS,
@@ -132,13 +134,19 @@ class OldEnrollmentController extends Controller
             'currentFee' => $currentFee ? $currentFee->amount : null
         ]);
         
-        // If no fee is set, create a default fee object for display
+        // If no fee is set, create a default fee object for display with amount 0
         if (!$currentFee) {
             $currentFee = new EnrollmentFee();
-            $currentFee->amount = 1000.00;
+            $currentFee->amount = 0.00;
         }
         
-        return view('old_step2', compact('enrollee', 'currentFee'));
+        // Get existing payment receipt from database if exists
+        $existingReceipt = StudentDocument::where('enrollment_id', $enrollee->id)
+            ->where('enrollment_type', 'old')
+            ->where('document_type', 'payment_receipt')
+            ->first();
+        
+        return view('old_step2', compact('enrollee', 'currentFee', 'existingReceipt'));
     }
 
     /** Handle payment POST and redirect to Step 3 */
@@ -148,22 +156,75 @@ class OldEnrollmentController extends Controller
             session('old_enrollee_id')
         );
 
-        $data = $request->validate([
+        // Check if receipt already exists in database
+        $existingReceiptCheck = StudentDocument::where('enrollment_id', $enrollee->id)
+            ->where('enrollment_type', 'old')
+            ->where('document_type', 'payment_receipt')
+            ->exists();
+
+        // Only validate files if receipt doesn't exist in database
+        $validationRules = [
             'studentId'      => 'required|string',
             'fullName'       => 'required|string',
             'paymentRef'     => 'required|string',
-            'receiptUpload'  => 'required|file|mimes:jpg,jpeg,png,pdf',
-        ]);
+        ];
+        
+        if (!$existingReceiptCheck) {
+            $validationRules['receiptUpload'] = 'required|file|mimes:jpg,jpeg,png,pdf';
+        }
+        
+        $data = $request->validate($validationRules);
 
-        // store the file
-        $path = $request->file('receiptUpload')
-                    ->store('enroll/payments', 'public');
+        // Store receipt in database instead of filesystem (only if file is uploaded)
+        if ($request->hasFile('receiptUpload')) {
+            try {
+                $receiptFile = $request->file('receiptUpload');
+                
+                // Delete old receipt if exists
+                StudentDocument::where('enrollment_id', $enrollee->id)
+                    ->where('enrollment_type', 'old')
+                    ->where('document_type', 'payment_receipt')
+                    ->delete();
+                
+                // Store new receipt in database
+                // Increase max_allowed_packet for large files
+                try {
+                    \DB::statement('SET GLOBAL max_allowed_packet = 67108864'); // 64MB
+                } catch (\Exception $e) {
+                    // If GLOBAL can't be set, try SESSION or just continue
+                    try {
+                        \DB::statement('SET SESSION max_allowed_packet = 67108864');
+                    } catch (\Exception $e2) {
+                        // Just continue - might work without setting it
+                    }
+                }
+                
+                StudentDocument::create([
+                    'enrollment_id' => $enrollee->id,
+                    'enrollment_type' => 'old',
+                    'document_type' => 'payment_receipt',
+                    'original_filename' => $receiptFile->getClientOriginalName(),
+                    'mime_type' => $receiptFile->getMimeType(),
+                    'file_size' => $receiptFile->getSize(),
+                    'file_data' => base64_encode(file_get_contents($receiptFile->getRealPath())),
+                ]);
+                
+                \Log::info('Receipt stored in database successfully', [
+                    'enrollee_id' => $enrollee->id,
+                    'file_size' => $receiptFile->getSize()
+                ]);
+            } catch (\Exception $fileError) {
+                \Log::info('File upload error', [
+                    'error' => $fileError->getMessage()
+                ]);
+            }
+        }
 
         // update record
         $enrollee->update([
             'payment_applicant_name' => $data['fullName'],
             'payment_reference'      => $data['paymentRef'],
-            'payment_receipt_path'   => $path,
+            'payment_receipt_path'   => 'db:payment_receipt',
             'paid'                   => true,
         ]);
 

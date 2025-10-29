@@ -1042,11 +1042,11 @@ body {
                         <div class="document-actions">
                         <button
                             class="document-btn view-btn"
-                            onclick="safeOpenDocPreview(this, '{{ $doc['url'] }}')"
+                            onclick="safeOpenDocPreview(this, '{{ $doc['url'] }}', '{{ $doc['fallback_url'] ?? '' }}')"
                         ><i class="fas fa-eye"></i> View</button>
                         <button
                             class="document-btn download-btn"
-                            onclick="safeDownloadDoc(this, '{{ $doc['url'] }}')"
+                            onclick="safeDownloadDoc(this, '{{ $doc['url'] }}', '{{ $doc['fallback_url'] ?? '' }}')"
                         ><i class="fas fa-download"></i> Download</button>
                         </div>
                     </div>
@@ -1118,22 +1118,29 @@ body {
                 </div>
 
                 <script>
-                  function safeOpenDocPreview(btn, url){
+                  function safeOpenDocPreview(btn, url, fallbackUrl){
                     var card = btn.closest('.document-card');
                     if (card && card.dataset.exists === '0'){
                       alert('This document file is not available. Please re-upload or contact support.');
                       return;
                     }
-                    openDocPreview(url);
+                    openDocPreview(url, fallbackUrl);
                   }
 
-                  function openDocPreview(url){
-                    console.log('Opening document preview:', url);
+                  function openDocPreview(url, fallbackUrl){
+                    console.log('Opening document preview:', url, 'Fallback:', fallbackUrl);
                     var overlay = document.getElementById('doc-preview-overlay');
                     var frame   = document.getElementById('doc-preview-frame');
                     var img     = document.getElementById('doc-preview-image');
                     var dbtn    = document.getElementById('doc-download-btn');
                     dbtn.dataset.url = url;
+                    dbtn.dataset.fallbackUrl = fallbackUrl || '';
+                    
+                    // Clear any existing event handlers to prevent multiple handlers
+                    img.onerror = null;
+                    img.onload = null;
+                    frame.onerror = null;
+                    frame.onload = null;
                     
                     // decide viewer by extension
                     var lower = (url || '').toLowerCase();
@@ -1142,25 +1149,48 @@ body {
                     if (isImage){
                       frame.style.display = 'none';
                       img.style.display = 'block';
-                      img.src = url;
                       
-                      // Handle image load errors
+                      // Handle image load errors - set handler before setting src
                       img.onerror = function() {
                         console.error('Failed to load image:', url);
-                        alert('Unable to load image. The file may be missing or inaccessible. Please try downloading instead.');
+                        // If we have a fallback URL, try it
+                        if (fallbackUrl) {
+                          console.log('Trying fallback URL for image:', fallbackUrl);
+                          img.onerror = null; // Reset error handler
+                          img.onload = function() { console.log('Image loaded from fallback URL'); };
+                          img.src = fallbackUrl;
+                          return;
+                        }
+                        // Use a more user-friendly modal instead of alert to prevent infinite loops
+                        showErrorModal('Unable to load image. The file may be missing or inaccessible. Please try downloading instead.');
                         closeDocPreview();
                       };
+                      
+                      // Handle successful load
+                      img.onload = function() {
+                        console.log('Image loaded successfully:', url);
+                      };
+                      
+                      img.src = url;
                     } else {
                       img.style.display = 'none';
                       frame.style.display = 'block';
-                      frame.src = url;
                       
                       // Handle iframe load errors
                       frame.onerror = function() {
                         console.error('Failed to load document:', url);
-                        alert('Unable to preview this document. Please try downloading it instead.');
+                        // If we have a fallback URL, try it
+                        if (fallbackUrl) {
+                          console.log('Trying fallback URL for document:', fallbackUrl);
+                          frame.onerror = null; // Reset error handler
+                          frame.src = fallbackUrl;
+                          return;
+                        }
+                        showErrorModal('Unable to preview this document. Please try downloading it instead.');
                         closeDocPreview();
                       };
+                      
+                      frame.src = url;
                     }
                     
                     overlay.style.display = 'flex';
@@ -1171,24 +1201,98 @@ body {
                     var overlay = document.getElementById('doc-preview-overlay');
                     var frame   = document.getElementById('doc-preview-frame');
                     var img     = document.getElementById('doc-preview-image');
+                    
+                    // Clear event handlers to prevent memory leaks and multiple handlers
+                    img.onerror = null;
+                    img.onload = null;
+                    frame.onerror = null;
+                    frame.onload = null;
+                    
                     overlay.style.display = 'none';
                     frame.src = 'about:blank';
                     img.src   = '';
                     document.body.style.overflow = '';
                   }
 
-                  function safeDownloadDoc(btn, url){
-                    var card = btn.closest('.document-card');
-                    if (card && card.dataset.exists === '0'){
-                      alert('This document file is not available.');
-                      return;
+                  // Function to show error modal instead of alert to prevent infinite loops
+                  function showErrorModal(message) {
+                    // Create modal if it doesn't exist
+                    let errorModal = document.getElementById('error-modal');
+                    if (!errorModal) {
+                      errorModal = document.createElement('div');
+                      errorModal.id = 'error-modal';
+                      errorModal.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.5);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 10000;
+                      `;
+                      
+                      const modalContent = document.createElement('div');
+                      modalContent.style.cssText = `
+                        background: white;
+                        padding: 20px;
+                        border-radius: 8px;
+                        max-width: 400px;
+                        margin: 20px;
+                        text-align: center;
+                        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                      `;
+                      
+                      modalContent.innerHTML = `
+                        <div style="color: #d32f2f; margin-bottom: 15px;">
+                          <i class="fas fa-exclamation-triangle" style="font-size: 24px;"></i>
+                        </div>
+                        <p id="error-message" style="margin-bottom: 20px; color: #333;"></p>
+                        <button onclick="closeErrorModal()" style="
+                          background: #5c0017;
+                          color: white;
+                          border: none;
+                          padding: 10px 20px;
+                          border-radius: 5px;
+                          cursor: pointer;
+                          font-size: 14px;
+                        ">OK</button>
+                      `;
+                      
+                      errorModal.appendChild(modalContent);
+                      document.body.appendChild(errorModal);
                     }
-                    downloadDoc(url);
+                    
+                    document.getElementById('error-message').textContent = message;
+                    errorModal.style.display = 'flex';
                   }
 
-                  async function downloadDoc(url){
+                  function closeErrorModal() {
+                    const errorModal = document.getElementById('error-modal');
+                    if (errorModal) {
+                      errorModal.style.display = 'none';
+                    }
+                  }
+
+                  function safeDownloadDoc(btn, url, fallbackUrl){
+                    var card = btn.closest('.document-card');
+                    if (card && card.dataset.exists === '0'){
+                      showErrorModal('This document file is not available.');
+                      return;
+                    }
+                    downloadDoc(url, fallbackUrl);
+                  }
+
+                  async function downloadDoc(url, fallbackUrl){
                     try {
-                      const res = await fetch(url, { credentials: 'same-origin' });
+                      let res = await fetch(url, { credentials: 'same-origin' });
+                      // If primary URL fails and we have a fallback, try it
+                      if (!res.ok && fallbackUrl) {
+                        console.log('Primary URL failed, trying fallback:', fallbackUrl);
+                        res = await fetch(fallbackUrl, { credentials: 'same-origin' });
+                      }
                       if (!res.ok) throw new Error('Download failed');
                       const blob = await res.blob();
                       const link = document.createElement('a');
@@ -1200,14 +1304,16 @@ body {
                       URL.revokeObjectURL(link.href);
                       link.remove();
                     } catch (e) {
-                      alert('Unable to download document.');
+                      console.error('Download error:', e);
+                      showErrorModal('Unable to download document. Please try again later.');
                     }
                   }
 
                   document.addEventListener('click', function(e){
                     if (e.target && e.target.id === 'doc-download-btn'){
                       const url = e.target.dataset.url;
-                      if (url) downloadDoc(url);
+                      const fallbackUrl = e.target.dataset.fallbackUrl || '';
+                      if (url) downloadDoc(url, fallbackUrl);
                     }
                   });
                 </script>

@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MCA Montessori School Clearances - Existing Students</title>
+  <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+  <link rel="icon" href="{{ asset('favicon.ico') }}">
   <link rel="stylesheet" href="{{ asset('css/mobile-compatibility.css') }}">
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -884,5 +886,8 @@ button[disabled] {
             });
         });
     </script>
+    
+    {{-- Include Modern Notification System --}}
+    @include('partials.modern_notifications')
 </body>
 </html>

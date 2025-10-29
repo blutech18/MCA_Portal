@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>MCA Montessori School Enrollment Form</title>
+  <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+  <link rel="icon" href="{{ asset('favicon.ico') }}">
   <link rel="stylesheet" href="{{ asset('css/styles_new_form.css') }}?v={{ time() }}">
   <link rel="stylesheet" href="{{ asset('css/mobile-compatibility.css') }}">
   <style>
@@ -255,11 +257,12 @@
     <h3>Grade Level Information</h3>
     <div>
       <label>Grade Level:</label>
-      <input type="checkbox" id="jhs" name="gradeLevel[]" value="JHS">
+      <input type="radio" id="jhs" name="gradeLevel" value="JHS">
       <label for="jhs">Junior High School (JHS)</label>
       
-      <input type="checkbox" id="shs" name="gradeLevel[]" value="SHS">
+      <input type="radio" id="shs" name="gradeLevel" value="SHS">
       <label for="shs">Senior High School (SHS)</label>
+      <span style="color: #9a3a44;">**Required - Please select one</span>
     </div>
 
     <!-- JHS Grade Selection (Grade 7, 8, 9, 10) -->
@@ -323,7 +326,9 @@
     @endif
 
     <fieldset id="strandFieldset">
-      <legend>STRAND (pick one if SHS):</legend>
+      <legend>STRAND (pick one if SHS):
+        <button type="button" id="refreshStrandAvailability" style="margin-left:10px; padding:4px 8px; font-size:12px;">Refresh Availability</button>
+      </legend>
 
       @foreach([
         'ABM'   => 'ACCOUNTANCY AND BUSINESS MANAGEMENT (ABM)',
@@ -339,8 +344,13 @@
             id="strand_{{ $code }}"
             name="strand"
             value="{{ $code }}"
+            data-code="{{ $code }}"
           >
-          <label for="strand_{{ $code }}">{{ $label }}</label>
+          <label for="strand_{{ $code }}">{{ $label }}
+            <span id="availability_{{ $code }}" style="margin-left:6px; font-weight:600;">
+              <!-- availability will be injected here -->
+            </span>
+          </label>
         </div>
       @endforeach
 
@@ -357,14 +367,13 @@
       @endif
     </fieldset>
 
-    <div>
-      <span>SEMESTER (required):</span>
+    <div id="semesterSection" style="display: none;">
+      <span>SEMESTER (required for SHS only):</span>
       <label>
         <input
           type="radio"
           name="semester"
           value="1st"
-          required
         > 1ST SEM
       </label>
       <label>
@@ -372,7 +381,6 @@
           type="radio"
           name="semester"
           value="2nd"
-          required
         > 2ND SEM
       </label>
       @error('semester')
@@ -420,11 +428,72 @@
       <span>**Required</span>
     </div>
     
+    <h4>Home Address</h4>
+    
     <div>
-      <label for="address">Home Address:</label>
-      <input type="text" id="address" name="address" required>
+      <label for="address_house">House No. / Street Address:</label>
+      <input type="text" id="address_house" name="address_house" required>
       <span>**Required</span>
     </div>
+    
+    <div>
+      <label for="address_unit">Apt., Suite, Unit, etc.:</label>
+      <input type="text" id="address_unit" name="address_unit">
+      <span>*Optional</span>
+    </div>
+    
+    <div>
+      <label for="address_city">City:</label>
+      <select id="address_city" name="address_city" required>
+        <option value="">-- Select City --</option>
+        <option value="Metro Manila" selected>Metro Manila</option>
+        <option value="Quezon City">Quezon City</option>
+        <option value="Manila">Manila</option>
+        <option value="Makati">Makati</option>
+        <option value="Pasig">Pasig</option>
+        <option value="Taguig">Taguig</option>
+        <option value="Las Pinas">Las Pinas</option>
+        <option value="Muntinlupa">Muntinlupa</option>
+        <option value="Paranaque">Parañaque</option>
+        <option value="Pasay">Pasay</option>
+        <option value="Marikina">Marikina</option>
+        <option value="Mandaluyong">Mandaluyong</option>
+        <option value="San Juan">San Juan</option>
+        <option value="Valenzuela">Valenzuela</option>
+        <option value="Malabon">Malabon</option>
+        <option value="Caloocan">Caloocan</option>
+        <option value="Navotas">Navotas</option>
+        <option value="Calamba">Calamba</option>
+        <option value="Antipolo">Antipolo</option>
+        <option value="Batangas City">Batangas City</option>
+        <option value="Cabuyao">Cabuyao</option>
+        <option value="Laguna">Laguna</option>
+        <option value="Los Baños">Los Baños</option>
+        <option value="San Pedro">San Pedro</option>
+        <option value="Santa Rosa">Santa Rosa</option>
+        <option value="Angeles">Angeles</option>
+        <option value="Olongapo">Olongapo</option>
+        <option value="San Fernando (Pampanga)">San Fernando (Pampanga)</option>
+        <option value="Baguio">Baguio</option>
+        <option value="Dagupan">Dagupan</option>
+        <option value="Baler">Baler</option>
+        <option value="Ilagan">Ilagan</option>
+        <option value="Tuguegarao">Tuguegarao</option>
+        <option value="Naga">Naga</option>
+        <option value="Iriga">Iriga</option>
+        <option value="Legazpi">Legazpi</option>
+        <option value="Sorsogon City">Sorsogon City</option>
+        <option value="Lucena">Lucena</option>
+        <option value="Tayabas">Tayabas</option>
+        <option value="Calapan">Calapan</option>
+        <option value="Puerto Princesa">Puerto Princesa</option>
+      </select>
+      <span>**Required</span>
+      <div class="validation-message" id="addressCityValidation" style="color: #9a3a44; font-size: 14px; margin-top: 5px; display: none;">Please select a city</div>
+    </div>
+    
+    <!-- Hidden field to store the combined address -->
+    <input type="hidden" id="address" name="address">
     
     <!-- Removed Living with whom: relationship field per requirement -->
     
@@ -432,7 +501,7 @@
       <label for="dob">Date of Birth:</label>
       <input type="date" id="dob" name="dob" min="1950-01-01" max="" required>
       <span>**Required</span>
-      <div class="validation-message" id="dobValidation" style="color: #9a3a44; font-size: 14px; margin-top: 5px; display: none;">Please enter a valid date of birth (between 1950 and current year minus 5)</div>
+      <div class="validation-message" id="dobValidation" style="color: #9a3a44; font-size: 14px; margin-top: 5px; display: none;">Student must be born before 2015 to enroll</div>
     </div>
     
     <div>
@@ -766,20 +835,49 @@
             const today = new Date();
             const currentYear = today.getFullYear();
             const minYear = 1950;
-            const maxYear = currentYear - 5; // Minimum school age is 5 years
+            const maxYear = 2014; // Reject students born from 2015 to present
             
             // Set min and max dates
             const minDate = new Date(minYear, 0, 1); // January 1, 1950
-            const maxDate = new Date(maxYear, today.getMonth(), today.getDate()); // Same date, 5 years ago
+            const maxDate = new Date(maxYear, 11, 31); // December 31, 2014
             
             // Check if date is within acceptable range
-            return selectedDate >= minDate && selectedDate <= maxDate;
+            const isWithinRange = selectedDate >= minDate && selectedDate <= maxDate;
+            
+            // Also check birth year explicitly
+            const birthYear = selectedDate.getFullYear();
+            return isWithinRange && birthYear < 2015;
+        }
+        
+        // Function to combine address fields
+        function combineAddressFields() {
+            const addressHouse = document.getElementById('address_house').value.trim();
+            const addressUnit = document.getElementById('address_unit').value.trim();
+            const addressCity = document.getElementById('address_city').value;
+            const addressField = document.getElementById('address');
+            
+            let combinedAddress = '';
+            
+            if (addressHouse) {
+                combinedAddress += addressHouse;
+            }
+            
+            if (addressUnit) {
+                combinedAddress += ', ' + addressUnit;
+            }
+            
+            if (addressCity) {
+                combinedAddress += ', ' + addressCity;
+            }
+            
+            addressField.value = combinedAddress;
+            console.log('Combined address:', combinedAddress);
         }
         
         // Global required fields array
             const requiredFields = [
             'surname', 'givenName', 'lrn', 'contactNo', 'email',
-            'address', 'dob', 'birthplace', 'gender', 
+            'address_house', 'address_city', 'dob', 'birthplace', 'gender', 
                 'religion', 'nationality', 'formerSchool',
                 'lastSchoolYear', 'schoolAddress', 'reasonTransfer',
             'fatherName', 'fatherOccupation',
@@ -828,15 +926,18 @@
                 console.log(`✅ Terms: ${terms.length}/6 checked`);
             }
 
-            // Require semester
-            const semesterChecked = document.querySelector('input[name="semester"]:checked');
-            if (!semesterChecked) {
-                allValid = false;
-                debugInfo.push('Missing: semester');
-                if (showLogs) console.log('❌ Missing: semester');
-            } else {
-                debugInfo.push(`Semester: ${semesterChecked.value}`);
-                if (showLogs) console.log(`✅ Semester: ${semesterChecked.value}`);
+            // Require semester only for SHS students
+            const shsRadioCheck = document.getElementById('shs');
+            if (shsRadioCheck && shsRadioCheck.checked) {
+                const semesterChecked = document.querySelector('input[name="semester"]:checked');
+                if (!semesterChecked) {
+                    allValid = false;
+                    debugInfo.push('Missing: semester (required for SHS)');
+                    if (showLogs) console.log('❌ Missing: semester (required for SHS)');
+                } else {
+                    debugInfo.push(`Semester: ${semesterChecked.value}`);
+                    if (showLogs) console.log(`✅ Semester: ${semesterChecked.value}`);
+                }
             }
             
             // Validate contact number
@@ -1084,18 +1185,52 @@
                     });
                 }
             });
+            
+            // Address fields event listeners
+            const addressHouse = document.getElementById('address_house');
+            const addressUnit = document.getElementById('address_unit');
+            const addressCity = document.getElementById('address_city');
+            
+            if (addressHouse) {
+                addressHouse.addEventListener('input', function() {
+                    updateSubmitButton();
+                    cacheFormData();
+                });
+            }
+            
+            if (addressUnit) {
+                addressUnit.addEventListener('input', function() {
+                    updateSubmitButton();
+                    cacheFormData();
+                });
+            }
+            
+            if (addressCity) {
+                addressCity.addEventListener('change', function() {
+                    const validationMsg = document.getElementById('addressCityValidation');
+                    if (this.value === '') {
+                        if (validationMsg) validationMsg.style.display = 'block';
+                        this.style.borderColor = '#9a3a44';
+                    } else {
+                        if (validationMsg) validationMsg.style.display = 'none';
+                        this.style.borderColor = '';
+                    }
+                    updateSubmitButton();
+                    cacheFormData();
+                });
+            }
 
             // SHS-only fields visibility
-            const shsCheckbox = document.getElementById('shs');
-            const jhsCheckbox = document.getElementById('jhs');
+            const shsRadio = document.getElementById('shs');
+            const jhsRadio = document.getElementById('jhs');
             const shsOnlyHeader = document.getElementById('shsOnlyHeader');
             const shsOnlyBlocks = [
                 document.getElementById('strandFieldset'),
                 document.getElementById('shsOnlySection'),
             ];
             function updateShsVisibility() {
-                const isShs = shsCheckbox && shsCheckbox.checked;
-                const isJhs = jhsCheckbox && jhsCheckbox.checked;
+                const isShs = shsRadio && shsRadio.checked;
+                const isJhs = jhsRadio && jhsRadio.checked;
                 
                 shsOnlyBlocks.forEach(block => { if (block) block.style.display = isShs ? '' : 'none'; });
                 if (shsOnlyHeader) shsOnlyHeader.style.display = isShs ? '' : 'none';
@@ -1112,6 +1247,16 @@
                     jhsGradeSelection.style.display = isJhs ? 'block' : 'none';
                 }
                 
+                // Show/hide semester field - only show for SHS, hide for JHS
+                const semesterSection = document.getElementById('semesterSection');
+                if (semesterSection) {
+                    semesterSection.style.display = isShs ? 'block' : 'none';
+                }
+                
+                // Make semester required only when SHS
+                const semesterInputs = document.querySelectorAll('input[name="semester"]');
+                semesterInputs.forEach(inp => { inp.required = !!isShs; });
+                
                 // Make strand and SHS grade required only when SHS
                 const strandInputs = document.querySelectorAll('input[name="strand"]');
                 strandInputs.forEach(inp => { inp.required = !!isShs; });
@@ -1124,11 +1269,11 @@
                 jhsGradeInputs.forEach(inp => { inp.required = !!isJhs; });
                 
             }
-            if (shsCheckbox) {
-                shsCheckbox.addEventListener('change', updateShsVisibility);
+            if (shsRadio) {
+                shsRadio.addEventListener('change', updateShsVisibility);
             }
-            if (jhsCheckbox) {
-                jhsCheckbox.addEventListener('change', updateShsVisibility);
+            if (jhsRadio) {
+                jhsRadio.addEventListener('change', updateShsVisibility);
             }
             updateShsVisibility();
 
@@ -1259,9 +1404,9 @@
                 input.addEventListener('change', updateSubmitButton);
             });
             
-            // Add listeners for grade level checkboxes
-            const gradeLevelCheckboxes = document.querySelectorAll('input[name="gradeLevel[]"]');
-            gradeLevelCheckboxes.forEach(input => {
+            // Add listeners for grade level radio buttons
+            const gradeLevelRadios = document.querySelectorAll('input[name="gradeLevel"]');
+            gradeLevelRadios.forEach(input => {
                 input.addEventListener('change', function() {
                     updateSubmitButton();
                     handleAssessmentRecommendation();
@@ -1270,11 +1415,11 @@
 
             // Assessment recommendation handling
             function handleAssessmentRecommendation() {
-                const shsCheckbox = document.getElementById('shs');
+                const shsRadio = document.getElementById('shs');
                 const assessmentRecommendation = document.getElementById('assessment-recommendation');
                 
-                if (shsCheckbox && assessmentRecommendation) {
-                    if (shsCheckbox.checked) {
+                if (shsRadio && assessmentRecommendation) {
+                    if (shsRadio.checked) {
                         // Show assessment recommendation for SHS students
                         assessmentRecommendation.style.display = 'block';
                         preSelectRecommendedStrand();
@@ -1288,13 +1433,13 @@
             // Auto-check SHS if assessment exists and auto-fill is enabled
             function autoCheckSHS() {
                 @if($assessmentResult && session('assessment_auto_fill'))
-                const shsCheckbox = document.getElementById('shs');
-                if (shsCheckbox) {
-                    shsCheckbox.checked = true;
+                const shsRadio = document.getElementById('shs');
+                if (shsRadio) {
+                    shsRadio.checked = true;
                     console.log('Auto-checked SHS due to assessment result');
                     
                     // Trigger the change event to update UI
-                    shsCheckbox.dispatchEvent(new Event('change'));
+                    shsRadio.dispatchEvent(new Event('change'));
                     
                     // Update visibility and requirements
                     updateShsVisibility();
@@ -1437,15 +1582,15 @@
             // Date of birth validation and setup
             const dobInput = document.getElementById('dob');
             
-            // Set year range limits
+            // Set year range limits - reject students born from 2015 to present
             const today = new Date();
             const currentYear = today.getFullYear();
             const minYear = 1950;
-            const maxYear = currentYear - 5; // Minimum school age is 5 years
+            const maxYear = 2014; // Reject students born from 2015 to present
             
             // Set min and max dates
             const minDate = new Date(minYear, 0, 1); // January 1, 1950
-            const maxDate = new Date(maxYear, today.getMonth(), today.getDate()); // Same date, 5 years ago
+            const maxDate = new Date(maxYear, 11, 31); // December 31, 2014
             
             dobInput.min = minDate.toISOString().split('T')[0];
             dobInput.max = maxDate.toISOString().split('T')[0];
@@ -1460,9 +1605,11 @@
                 if (!isValid && this.value !== '') {
                     validationMsg.style.display = 'block';
                     this.style.borderColor = '#9a3a44';
+                    this.style.borderWidth = '2px';
                 } else {
                     validationMsg.style.display = 'none';
                     this.style.borderColor = '';
+                    this.style.borderWidth = '';
                 }
                 updateSubmitButton();
             });
@@ -1475,9 +1622,11 @@
                 if (!isValid && this.value !== '') {
                     validationMsg.style.display = 'block';
                     this.style.borderColor = '#9a3a44';
+                    this.style.borderWidth = '2px';
                 } else {
                     validationMsg.style.display = 'none';
                     this.style.borderColor = '';
+                    this.style.borderWidth = '';
                 }
                 updateSubmitButton();
             });
@@ -1539,6 +1688,8 @@
                     fields.forEach(el => {
                         if (!el.id && !el.name) return;
                         const key = el.name || el.id;
+                        // Skip hidden address field (combined field, not individual fields)
+                        if (key === 'address' && el.type === 'hidden') return;
                         if (el.type === 'checkbox') {
                             if (key.endsWith('[]')) {
                                 // collect array checkbox values
@@ -1572,6 +1723,9 @@
                         const key = el.name || el.id;
                         if (!key) return;
                         if (!(key in data)) return;
+                        
+                        // Skip hidden address field (combined field)
+                        if (key === 'address' && el.type === 'hidden') return;
 
                         if (el.type === 'checkbox') {
                             if (key.endsWith('[]')) {
@@ -1592,6 +1746,9 @@
                             }
                         }
                     });
+                    
+                    // Re-combine address fields after restoration
+                    combineAddressFields();
 
                     // Re-apply dynamic visibility and validation after restoration
                     try { if (typeof updateShsVisibility === 'function') updateShsVisibility(); } catch (e) {}
@@ -1669,6 +1826,9 @@
                     console.log('=== FORM SUBMISSION DEBUG ===');
                     console.log('Form submission started...');
                     
+                    // Combine address fields before submission
+                    combineAddressFields();
+                    
                     // ALWAYS prevent default submission for debugging
                     e.preventDefault();
                     console.log('Form submission prevented for debugging purposes');
@@ -1678,7 +1838,7 @@
                     
                     if (!isValid) {
                         console.log('Form validation failed');
-                        alert('Please fill in all required fields correctly before submitting.');
+                        showToast('Please fill in all required fields correctly before submitting.', 'warning');
                         return false;
                     }
                     
@@ -1743,5 +1903,12 @@
             autoCheckSHS();
         });
     </script>
+    
+    {{-- Include Modern Notification System --}}
+    @include('partials.modern_notifications')
+    <script>
+      window.__strandAvailabilityUrl = '{{ route('enroll.new.strand-availability') }}';
+    </script>
+    <script src="{{ asset('js/strand-availability.js') }}?v={{ time() }}"></script>
 </body>
 </html>

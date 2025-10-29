@@ -18,14 +18,14 @@
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li><a href="{{ route('instructor.dashboard') }}" class="nav-item">DASHBOARD</a></li>
-                    <li>
-                        <a href="{{ route('instructor.schedule') }}" class="nav-item active">CLASSES</a>
-                        <ul class="sub-menu">
-                            <li><a href="{{ route('instructor.schedule') }}" class="sub-item active">SCHEDULES</a></li>
-                            <li><a href="{{ route('instructor.student') }}" class="sub-item">STUDENTS</a></li>
-                        </ul>
-                    </li>
+                                      <li><a href="{{ route('instructor.dashboard') }}" class="nav-item">DASHBOARD</a></li>
+                  <li class="has-submenu active">
+                      <a href="#" class="nav-item active" onclick="toggleSubmenu(event)">CLASSES</a>
+                      <ul class="sub-menu" id="classes-submenu" style="display: block;">
+                          <li><a href="{{ route('instructor.schedule') }}" class="sub-item active">SCHEDULES</a></li>
+                          <li><a href="{{ route('instructor.student') }}" class="sub-item">STUDENTS</a></li>
+                      </ul>
+                  </li>
                     <li><a href="{{ route('instructor.attendance') }}" class="nav-item">ATTENDANCE REPORTS</a></li>
                     <li><a href="{{ route('instructor.report') }}" class="nav-item">GRADE REPORTS</a></li>
                     <li><a href="{{ route('instructor.announcement') }}" class="nav-item">ANNOUNCEMENTS</a></li>

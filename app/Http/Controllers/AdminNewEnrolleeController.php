@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Student;
+use App\Models\StudentSection;
+use App\Mail\StudentCredentialsMail;
+use Illuminate\Support\Facades\Mail;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AdminNewEnrolleeController extends Controller
 {
@@ -1324,6 +1329,138 @@ class AdminNewEnrolleeController extends Controller
                 'strand_id' => $strandId,
                 'error' => $e->getMessage()
             ]);
+        }
+    }
+
+    /**
+     * Generate printable PDF of student credentials
+     */
+    public function generateCredentialsPDF($enrolleeId)
+    {
+        try {
+            $enrollee = NewStudentEnrollee::findOrFail($enrolleeId);
+            
+            // Find the student
+            $student = null;
+            if (!empty($enrollee->lrn)) {
+                $student = Student::with('user')->where('lrn', $enrollee->lrn)->first();
+            }
+            if (!$student && !empty($enrollee->email)) {
+                $student = Student::with('user')->where('email', $enrollee->email)->first();
+            }
+            
+            if (!$student || !$student->user) {
+                return redirect()->back()
+                    ->with('error', 'Student account not found. Please ensure the enrollee has been accepted.');
+            }
+
+            // Get credentials
+            $username = $student->user->username;
+            $birthYear = date('Y', strtotime($student->date_of_birth ?? '2000-01-01'));
+            $lastnameForPassword = strtolower($student->last_name ?? 'student');
+            $lastnameForPassword = preg_replace('/[^a-z0-9]/', '', $lastnameForPassword);
+            $password = $lastnameForPassword . $birthYear;
+
+            // Get section name if available
+            $section = $student->section_id ? StudentSection::find($student->section_id) : null;
+            $sectionName = $section ? $section->section_name : null;
+
+            // Prepare data for PDF
+            $student->studentNumber = sprintf('%02d%05d', (int) now()->format('y'), (int) $enrollee->id);
+            $student->section_name = $sectionName;
+
+            // Generate PDF with options (disable GD requirement)
+            $pdf = Pdf::loadView('pdf.student_credentials', [
+                'student' => $student,
+                'username' => $username,
+                'password' => $password,
+            ]);
+            
+            // Set PDF options to avoid GD requirement
+            $pdf->setOptions([
+                'isRemoteEnabled' => false,
+                'isHtml5ParserEnabled' => true,
+                'isPhpEnabled' => false,
+                'isFontSubsettingEnabled' => false,
+                'dpi' => 96,
+                'defaultMediaType' => 'print',
+                'isJavascriptEnabled' => false,
+            ]);
+
+            // Return PDF download with a meaningful filename
+            $filename = $username . '_credentials_' . now()->format('Y-m-d') . '.pdf';
+            return $pdf->download($filename);
+
+        } catch (\Exception $e) {
+            Log::error('Error generating credentials PDF: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'enrollee_id' => $enrolleeId
+            ]);
+            return redirect()->back()
+                ->with('error', 'Failed to generate credentials PDF: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Send student credentials via email
+     */
+    public function sendCredentialsEmail($enrolleeId)
+    {
+        try {
+            $enrollee = NewStudentEnrollee::findOrFail($enrolleeId);
+            
+            // Find the student
+            $student = null;
+            if (!empty($enrollee->lrn)) {
+                $student = Student::with('user')->where('lrn', $enrollee->lrn)->first();
+            }
+            if (!$student && !empty($enrollee->email)) {
+                $student = Student::with('user')->where('email', $enrollee->email)->first();
+            }
+            
+            if (!$student || !$student->user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Student account not found. Please ensure the enrollee has been accepted.'
+                ], 404);
+            }
+
+            // Get student email
+            $email = $student->email ?? $enrollee->email;
+            if (empty($email)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Student email not found. Please ensure the student has a valid email address.'
+                ], 400);
+            }
+
+            // Get credentials
+            $username = $student->user->username;
+            $birthYear = date('Y', strtotime($student->date_of_birth ?? '2000-01-01'));
+            $lastnameForPassword = strtolower($student->last_name ?? 'student');
+            $lastnameForPassword = preg_replace('/[^a-z0-9]/', '', $lastnameForPassword);
+            $password = $lastnameForPassword . $birthYear;
+
+            // Send email
+            Mail::to($email)->send(new StudentCredentialsMail($student, $username, $password));
+
+            Log::info('Student credentials email sent successfully', [
+                'enrollee_id' => $enrolleeId,
+                'email' => $email,
+                'username' => $username
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Credentials sent successfully to ' . $email
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error sending credentials email: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send email. Error: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

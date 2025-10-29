@@ -49,13 +49,13 @@ REDIS_PASSWORD=null
 REDIS_PORT=6379
 
 MAIL_MAILER=smtp
-MAIL_HOST=sandbox.smtp.mailtrap.io
-MAIL_PORT=2525
-MAIL_USERNAME=fa8f226f768f0e
-MAIL_PASSWORD=e43dc299c297fc
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=krystalmendez2000@gmail.com
+MAIL_PASSWORD=ooagpifyloaxlzon
 MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS="noreply@mcaportal.com"
-MAIL_FROM_NAME="${UniTalk}"
+MAIL_FROM_ADDRESS="noreply@mcamontessori.site"
+MAIL_FROM_NAME="MCA Portal"
 
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=

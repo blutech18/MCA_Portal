@@ -6,10 +6,13 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\NewStudentEnrollee;
 use App\Models\EnrollmentFee;
+use App\Models\StudentDocument;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use App\Mail\EnrollmentConfirmation;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
+use App\Models\Strands;
 
 class NewEnrollmentController extends Controller
 {
@@ -88,14 +91,17 @@ class NewEnrollmentController extends Controller
                 'strand'                  => 'nullable|string|in:ABM,GAS,COMPREHENSIVE,STEM,HUMSS,HE,ICT',
                 'shsGrade'                => 'nullable|in:11,12',
                 'jhsGrade'                => 'nullable|in:7,8,9,10',
-                'semester'                => 'required|string|in:1st,2nd',
+                'semester'                => 'nullable|string|in:1st,2nd',
                 'surname'                 => 'required|string|max:255',
                 'givenName'               => 'required|string|max:255',
                 'middleName'              => 'nullable|string|max:255',
                 'lrn'                     => 'required|string|size:12|regex:/^[0-9]{12}$/',
                 'contactNo'               => 'required|string|regex:/^09[0-9]{9}$/',
                 'email'                   => 'required|email|ends_with:@gmail.com',
-                'address'                 => 'required|string|max:500',
+                'address_house'           => 'required|string|max:255',
+                'address_unit'            => 'nullable|string|max:255',
+                'address_city'            => 'required|string|max:255',
+                'address'                 => 'nullable|string|max:500', // Will be combined from above fields
                 'dob'                     => 'required|date|before:'.date('Y-m-d', strtotime('-4 years')),
                 'birthplace'              => 'required|string|max:255',
                 'gender'                  => 'required|in:Male,Female,Other',
@@ -125,7 +131,35 @@ class NewEnrollmentController extends Controller
                 'terms'                   => 'required|array|min:6',
                 'terms.*'                 => 'string|in:completeness,abide,consequences,responsible,updated,aware',
             ]);
+            
+            // Validate semester is required when SHS is selected
+            $gradeLevel = $request->input('gradeLevel');
+            if ($gradeLevel === 'SHS' && !empty($data['shsGrade'])) {
+                if (empty($data['semester']) || !in_array($data['semester'], ['1st', '2nd'])) {
+                    throw ValidationException::withMessages([
+                        'semester' => 'Semester is required for Senior High School students.'
+                    ]);
+                }
+            } else {
+                // Set default semester for JHS students (though they don't use it)
+                $data['semester'] = $data['semester'] ?? '1st';
+            }
 
+            // Combine address fields
+            $house = $data['address_house'] ?? '';
+            $unit = $data['address_unit'] ?? '';
+            $city = $data['address_city'] ?? '';
+            
+            $combinedAddress = $house;
+            if (!empty($unit)) {
+                $combinedAddress .= ', ' . $unit;
+            }
+            if (!empty($city)) {
+                $combinedAddress .= ', ' . $city;
+            }
+            
+            $data['address'] = $combinedAddress;
+            
             Log::info('New Student Step 1 validation passed', ['validated_data' => $data]);
             
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -155,9 +189,48 @@ class NewEnrollmentController extends Controller
             // Update existing enrollee
             Log::info('Updating existing enrollee', ['enrollee_id' => $currentEnrolleeId]);
             $enrollee = NewStudentEnrollee::findOrFail($currentEnrolleeId);
-            
-            try {
-                // Update only essential fields to avoid database locks
+
+            $selectedCode = $data['strand'] ?? null;
+            $oldCode = $enrollee->strand;
+
+            DB::transaction(function () use (&$enrollee, $data, $selectedCode, $oldCode) {
+                // Adjust strand counts atomically if changed and a strand is selected
+                if ($selectedCode) {
+                    $codeToName = [
+                        'ABM' => 'ABM',
+                        'GAS' => 'GAS',
+                        'STEM' => 'STEM',
+                        'HUMSS' => 'HUMSS',
+                        'ICT' => 'TVL-ICT',
+                        'HE' => 'TVL-HE',
+                    ];
+
+                    $newName = $codeToName[$selectedCode] ?? null;
+                    $oldName = $oldCode ? ($codeToName[$oldCode] ?? null) : null;
+
+                    if ($newName && $newName !== $oldName) {
+                        $newStrand = Strands::where('name', $newName)->lockForUpdate()->first();
+                        if ($newStrand) {
+                            if (($newStrand->enrolled_count ?? 0) >= ($newStrand->capacity ?? 0)) {
+                                throw ValidationException::withMessages([
+                                    'strand' => "The {$selectedCode} strand is currently full. Please select another strand."
+                                ]);
+                            }
+                            $newStrand->enrolled_count = ($newStrand->enrolled_count ?? 0) + 1;
+                            $newStrand->save();
+                        }
+
+                        if ($oldName) {
+                            $oldStrand = Strands::where('name', $oldName)->lockForUpdate()->first();
+                            if ($oldStrand && ($oldStrand->enrolled_count ?? 0) > 0) {
+                                $oldStrand->enrolled_count = $oldStrand->enrolled_count - 1;
+                                $oldStrand->save();
+                            }
+                        }
+                    }
+                }
+
+                // Update enrollee after count adjustments
                 $enrollee->update([
                     'strand' => $data['strand'] ?? null,
                     'jhs_grade' => $data['jhsGrade'] ?? null,
@@ -177,69 +250,86 @@ class NewEnrollmentController extends Controller
                     'former_school' => $data['formerSchool'],
                     'last_school_year' => $data['lastSchoolYear'],
                 ]);
-                
-                Log::info('Existing enrollee updated successfully', [
-                    'enrollee_id' => $enrollee->id,
-                    'updated_fields' => array_keys($enrollee->getDirty())
-                ]);
-            } catch (\Exception $e) {
-                Log::error('Failed to update existing enrollee', [
-                    'enrollee_id' => $enrollee->id ?? 'unknown',
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]);
-                throw $e;
-            }
+            });
         } else {
             // Create new enrollee
             Log::info('Creating new enrollee');
-            $enrollee = NewStudentEnrollee::create([
-                'strand'                 => $data['strand'] ?? null,
-                'shs_grade'              => $data['shsGrade'] ?? null,
-                'jhs_grade'              => $data['jhsGrade'] ?? null,
-                'semester'               => $data['semester'] ?? '1st',
-                'surname'                => $data['surname'],
-                'given_name'             => $data['givenName'],
-                'middle_name'            => $data['middleName'],
-                'lrn'                    => $data['lrn'],
-                'contact_no'             => $data['contactNo'],
-                'email'                  => $data['email'] ?? null,
-                'address'                => $data['address'],
-                'dob'                    => $data['dob'],
-                'birthplace'             => $data['birthplace'],
-                'gender'                 => $data['gender'],
-                'religion'               => $data['religion'],
-                'nationality'            => $data['nationality'],
-                'former_school'          => $data['formerSchool'],
-                'last_school_year'       => $data['lastSchoolYear'],
-                'school_type'            => $data['schoolType'],
-                'school_address'         => $data['schoolAddress'],
-                'reason_transfer'        => $data['reasonTransfer'],
-                'working_student'        => ($data['workingStudent'] ?? 'No') === 'Yes',
-                'intend_working_student' => ($data['intendWorkingStudent'] ?? 'No') === 'Yes',
-                'siblings'               => $data['siblings'] ?? null,
-                'club_member'            => ($data['clubMember'] ?? 'No') === 'Yes',
-                'club_name'              => $data['clubName'] ?? null,
-                'father_name'            => $data['fatherName'],
-                'father_occupation'      => $data['fatherOccupation'],
-                'mother_name'            => $data['motherName'],
-                'mother_occupation'      => $data['motherOccupation'],
-                'guardian_name'          => $data['guardianName'],
-                'guardian_occupation'    => $data['guardianOccupation'],
-                'guardian_contact_no'    => $data['guardianContact'],
-                'medical_history'        => json_encode($data['medicalHistory'] ?? []),
-                'allergy_specify'        => $data['allergySpecify'] ?? null,
-                'others_specify'         => $data['othersSpecify'] ?? null,
-                'last_name'              => $data['surname'],
-                'first_name'             => $data['givenName'],
-                'pob'                    => $data['birthplace'],
-                'mobile'                 => $data['contactNo'],
-                'last_school'            => $data['formerSchool'],
-                'grade_completed'        => isset($data['jhsGrade']) ? ((int)$data['jhsGrade'] - 1) : (isset($data['shsGrade']) ? ((int)$data['shsGrade'] - 1) : 6),
-                'sy_completed'           => $data['lastSchoolYear'],
-                'form138_path'           => 'pending',
-                'desired_grade'          => isset($data['jhsGrade']) ? (int)$data['jhsGrade'] : (isset($data['shsGrade']) ? (int)$data['shsGrade'] : 7),
-            ]);
+            $selectedCode = $data['strand'] ?? null;
+            $enrollee = null;
+
+            DB::transaction(function () use (&$enrollee, $data, $selectedCode) {
+                if ($selectedCode) {
+                    $codeToName = [
+                        'ABM' => 'ABM',
+                        'GAS' => 'GAS',
+                        'STEM' => 'STEM',
+                        'HUMSS' => 'HUMSS',
+                        'ICT' => 'TVL-ICT',
+                        'HE' => 'TVL-HE',
+                    ];
+                    $name = $codeToName[$selectedCode] ?? null;
+                    if ($name) {
+                        $strand = Strands::where('name', $name)->lockForUpdate()->first();
+                        if ($strand) {
+                            if (($strand->enrolled_count ?? 0) >= ($strand->capacity ?? 0)) {
+                                throw ValidationException::withMessages([
+                                    'strand' => "The {$selectedCode} strand is currently full. Please select another strand."
+                                ]);
+                            }
+                            $strand->enrolled_count = ($strand->enrolled_count ?? 0) + 1;
+                            $strand->save();
+                        }
+                    }
+                }
+
+                $enrollee = NewStudentEnrollee::create([
+                    'strand'                 => $data['strand'] ?? null,
+                    'shs_grade'              => $data['shsGrade'] ?? null,
+                    'jhs_grade'              => $data['jhsGrade'] ?? null,
+                    'semester'               => $data['semester'] ?? '1st',
+                    'surname'                => $data['surname'],
+                    'given_name'             => $data['givenName'],
+                    'middle_name'            => $data['middleName'],
+                    'lrn'                    => $data['lrn'],
+                    'contact_no'             => $data['contactNo'],
+                    'email'                  => $data['email'] ?? null,
+                    'address'                => $data['address'],
+                    'dob'                    => $data['dob'],
+                    'birthplace'             => $data['birthplace'],
+                    'gender'                 => $data['gender'],
+                    'religion'               => $data['religion'],
+                    'nationality'            => $data['nationality'],
+                    'former_school'          => $data['formerSchool'],
+                    'last_school_year'       => $data['lastSchoolYear'],
+                    'school_type'            => $data['schoolType'],
+                    'school_address'         => $data['schoolAddress'],
+                    'reason_transfer'        => $data['reasonTransfer'],
+                    'working_student'        => ($data['workingStudent'] ?? 'No') === 'Yes',
+                    'intend_working_student' => ($data['intendWorkingStudent'] ?? 'No') === 'Yes',
+                    'siblings'               => $data['siblings'] ?? null,
+                    'club_member'            => ($data['clubMember'] ?? 'No') === 'Yes',
+                    'club_name'              => $data['clubName'] ?? null,
+                    'father_name'            => $data['fatherName'],
+                    'father_occupation'      => $data['fatherOccupation'],
+                    'mother_name'            => $data['motherName'],
+                    'mother_occupation'      => $data['motherOccupation'],
+                    'guardian_name'          => $data['guardianName'],
+                    'guardian_occupation'    => $data['guardianOccupation'],
+                    'guardian_contact_no'    => $data['guardianContact'],
+                    'medical_history'        => json_encode($data['medicalHistory'] ?? []),
+                    'allergy_specify'        => $data['allergySpecify'] ?? null,
+                    'others_specify'         => $data['othersSpecify'] ?? null,
+                    'last_name'              => $data['surname'],
+                    'first_name'             => $data['givenName'],
+                    'pob'                    => $data['birthplace'],
+                    'mobile'                 => $data['contactNo'],
+                    'last_school'            => $data['formerSchool'],
+                    'grade_completed'        => isset($data['jhsGrade']) ? ((int)$data['jhsGrade'] - 1) : (isset($data['shsGrade']) ? ((int)$data['shsGrade'] - 1) : 6),
+                    'sy_completed'           => $data['lastSchoolYear'],
+                    'form138_path'           => 'pending',
+                    'desired_grade'          => isset($data['jhsGrade']) ? (int)$data['jhsGrade'] : (isset($data['shsGrade']) ? (int)$data['shsGrade'] : 7),
+                ]);
+            });
             
             Log::info('New enrollee created successfully', ['enrollee_id' => $enrollee->id]);
         }
@@ -279,7 +369,14 @@ class NewEnrollmentController extends Controller
         
         try {
             $enrollee = NewStudentEnrollee::findOrFail($sessionId);
-            return view('new_step2', compact('enrollee'));
+            
+            // Get existing documents from database
+            $existingDocs = StudentDocument::where('enrollment_id', $enrollee->id)
+                ->where('enrollment_type', 'new')
+                ->get()
+                ->keyBy('document_type');
+            
+            return view('new_step2', compact('enrollee', 'existingDocs'));
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::error('Enrollee not found for Step 2', [
                 'session_id' => $sessionId,
@@ -296,19 +393,73 @@ class NewEnrollmentController extends Controller
             session('new_enrollee_id')
         );
 
-        $files = $request->validate([
-            'reportCard'       => 'required|file|mimes:pdf,jpg,jpeg,png',
-            'goodMoral'        => 'required|file|mimes:pdf,jpg,jpeg,png',
-            'birthCertificate' => 'required|file|mimes:pdf,jpg,jpeg,png',
-            'idPicture'        => 'required|file|mimes:jpg,jpeg,png',
-        ]);
+        // Check if documents already exist in database
+        $existingDocs = StudentDocument::where('enrollment_id', $enrollee->id)
+            ->where('enrollment_type', 'new')
+            ->pluck('document_type')
+            ->toArray();
 
-        $enrollee->update([
-            'report_card_path' => $request->file('reportCard')->store('enroll/docs', 'public'),
-            'good_moral_path' => $request->file('goodMoral')->store('enroll/docs', 'public'),
-            'birth_certificate_path' => $request->file('birthCertificate')->store('enroll/docs', 'public'),
-            'id_picture_path' => $request->file('idPicture')->store('enroll/docs', 'public'),
-        ]);
+        $requiredDocs = ['report_card', 'good_moral', 'birth_certificate', 'id_picture'];
+        $hasAllDocs = count(array_intersect($requiredDocs, $existingDocs)) === count($requiredDocs);
+
+        // Only validate files if they're being uploaded (not already in database)
+        if (!$hasAllDocs) {
+            $files = $request->validate([
+                'reportCard'       => 'required|file|mimes:pdf,jpg,jpeg,png',
+                'goodMoral'        => 'required|file|mimes:pdf,jpg,jpeg,png',
+                'birthCertificate' => 'required|file|mimes:pdf,jpg,jpeg,png',
+                'idPicture'        => 'required|file|mimes:jpg,jpeg,png',
+            ]);
+        }
+
+        // Store documents in database instead of file system
+        $documentMap = [
+            'reportCard' => 'report_card',
+            'goodMoral' => 'good_moral',
+            'birthCertificate' => 'birth_certificate',
+            'idPicture' => 'id_picture',
+        ];
+
+        foreach ($documentMap as $inputName => $docType) {
+            $file = $request->file($inputName);
+            
+            // Only process if a new file is being uploaded
+            if ($file) {
+                // Delete old document if exists
+                \App\Models\StudentDocument::where('enrollment_id', $enrollee->id)
+                    ->where('enrollment_type', 'new')
+                    ->where('document_type', $docType)
+                    ->delete();
+                
+                // Store new document in database (base64 encoded)
+                // Increase max_allowed_packet for large files
+                try {
+                    \DB::statement('SET GLOBAL max_allowed_packet = 67108864'); // 64MB
+                } catch (\Exception $e) {
+                    // If GLOBAL can't be set, try SESSION or just continue
+                    try {
+                        \DB::statement('SET SESSION max_allowed_packet = 67108864');
+                    } catch (\Exception $e2) {
+                        // Just continue - might work without setting it
+                    }
+                }
+                
+                \App\Models\StudentDocument::create([
+                    'enrollment_id' => $enrollee->id,
+                    'enrollment_type' => 'new',
+                    'document_type' => $docType,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'mime_type' => $file->getMimeType(),
+                    'file_size' => $file->getSize(),
+                    'file_data' => base64_encode(file_get_contents($file->getRealPath())),
+                ]);
+                
+                // Keep path references for backward compatibility
+                $enrollee->update([
+                    $docType . '_path' => 'db:' . $docType,
+                ]);
+            }
+        }
 
         return redirect()->route('enroll.new.step3');
     }
@@ -341,16 +492,23 @@ class NewEnrollmentController extends Controller
                 'jhs_grade' => $enrollee->jhs_grade,
                 'isSHS' => $isSHS,
                 'feeType' => $feeType,
-                'currentFee' => $currentFee ? $currentFee->amount : null
+                'currentFee_id' => $currentFee ? $currentFee->id : null,
+                'currentFee_amount' => $currentFee ? $currentFee->amount : null
             ]);
             
-            // If no fee is set, create a default fee object for display
+            // If no fee is set, create a default fee object for display with amount 0
             if (!$currentFee) {
                 $currentFee = new EnrollmentFee();
-                $currentFee->amount = 1000.00;
+                $currentFee->amount = 0.00;
             }
             
-            return view('new_step3', compact('enrollee', 'currentFee'));
+            // Get existing payment receipt from database if exists
+            $existingReceipt = StudentDocument::where('enrollment_id', $enrollee->id)
+                ->where('enrollment_type', 'new')
+                ->where('document_type', 'payment_receipt')
+                ->first();
+            
+            return view('new_step3', compact('enrollee', 'currentFee', 'existingReceipt'));
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::error('Enrollee not found for Step 3', [
                 'session_id' => $sessionId,
@@ -405,13 +563,24 @@ class NewEnrollmentController extends Controller
             'has_file' => $request->hasFile('receiptUpload')
         ]);
 
-        // Simplified validation that should work for both methods
-        $validatedData = $request->validate([
+        // Check if receipt already exists in database
+        $existingReceiptCheck = StudentDocument::where('enrollment_id', $enrollee->id)
+            ->where('enrollment_type', 'new')
+            ->where('document_type', 'payment_receipt')
+            ->exists();
+
+        // Only validate files if receipt doesn't exist in database
+        $validationRules = [
             'paymentMethod' => 'required|in:digital,cash',
-            'fullName'      => 'nullable|string',  // Make nullable for both methods
-            'paymentRef'    => 'nullable|string',  // Make nullable for both methods  
-            'receiptUpload' => 'required|file|mimes:jpg,jpeg,png,pdf',
-        ]);
+            'fullName'      => 'nullable|string',
+            'paymentRef'    => 'nullable|string',
+        ];
+        
+        if (!$existingReceiptCheck) {
+            $validationRules['receiptUpload'] = 'required|file|mimes:jpg,jpeg,png,pdf';
+        }
+        
+        $validatedData = $request->validate($validationRules);
 
         Log::info('Step 3 validation passed successfully', [
             'payment_method' => $validatedData['paymentMethod']
@@ -436,23 +605,53 @@ class NewEnrollmentController extends Controller
                 'reference' => $enrollee->payment_reference
             ]);
             
-                // Simplified file upload with fallback
-                try {
-                    $receiptPath = $request->file('receiptUpload')->store('enroll/payments','public');
-                    $enrollee->payment_receipt_path = $receiptPath;
-                    
-                    Log::info('File upload successful', [
-                        'receipt_path' => $receiptPath,
-                        'file_size' => $request->file('receiptUpload')->getSize()
-                    ]);
-                } catch (\Exception $fileError) {
-                    // Use enrollee ID as filename to avoid upload issues
-                    $enrollee->payment_receipt_path = 'enroll/payments/enrollee_' . $enrollee->id . '_receipt.txt';
-                    Log::info('File upload set to fallback path', [
-                        'fallback_path' => $enrollee->payment_receipt_path,
-                        'error' => $fileError->getMessage()
-                    ]);
+                // Store receipt in database instead of filesystem (only if file is uploaded)
+                if ($request->hasFile('receiptUpload')) {
+                    try {
+                        $receiptFile = $request->file('receiptUpload');
+                        
+                        // Delete old receipt if exists
+                        StudentDocument::where('enrollment_id', $enrollee->id)
+                            ->where('enrollment_type', 'new')
+                            ->where('document_type', 'payment_receipt')
+                            ->delete();
+                        
+                        // Store new receipt in database (base64 encoded)
+                        // Increase max_allowed_packet for large files
+                        try {
+                            \DB::statement('SET GLOBAL max_allowed_packet = 67108864'); // 64MB
+                        } catch (\Exception $e) {
+                            // If GLOBAL can't be set, try SESSION or just continue
+                            try {
+                                \DB::statement('SET SESSION max_allowed_packet = 67108864');
+                            } catch (\Exception $e2) {
+                                // Just continue - might work without setting it
+                            }
+                        }
+                        
+                        StudentDocument::create([
+                            'enrollment_id' => $enrollee->id,
+                            'enrollment_type' => 'new',
+                            'document_type' => 'payment_receipt',
+                            'original_filename' => $receiptFile->getClientOriginalName(),
+                            'mime_type' => $receiptFile->getMimeType(),
+                            'file_size' => $receiptFile->getSize(),
+                            'file_data' => base64_encode(file_get_contents($receiptFile->getRealPath())),
+                        ]);
+                        
+                        Log::info('Receipt stored in database successfully', [
+                            'enrollee_id' => $enrollee->id,
+                            'file_size' => $receiptFile->getSize()
+                        ]);
+                    } catch (\Exception $fileError) {
+                        Log::info('File upload error', [
+                            'error' => $fileError->getMessage()
+                        ]);
+                    }
                 }
+                
+                // Set payment receipt path reference
+                $enrollee->payment_receipt_path = 'db:payment_receipt';
             
             // Save the enrollee
             $enrollee->save();

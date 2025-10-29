@@ -484,9 +484,9 @@
                       <th>Name</th>
                       <th>Email</th>
               <th>Contact</th>
+              <th>LRN</th>
               <th>Strand</th>
               <th>Grade Level</th>
-              <th>Assessment Score</th>
                       <th>Status</th>
                       <th>Actions</th>
                     </tr>
@@ -497,8 +497,18 @@
                 <td>{{ $e->display_name }}</td>
                 <td>{{ $e->email }}</td>
                       <td>{{ $e->contact_no }}</td>
+                <td>{{ $e->lrn ?? '–' }}</td>
                 <td>
-                        @if($e->strand)
+                        @php
+                          // Determine if student is JHS (grades 7-10)
+                          $desiredGrade = $e->desired_grade ?? $e->previous_grade ?? 7;
+                          $isJHS = ($desiredGrade >= 7 && $desiredGrade <= 10);
+                        @endphp
+                        @if($isJHS)
+                          <div class="strand-info">
+                            <span class="selected-strand">JHS</span>
+                          </div>
+                        @elseif($e->strand)
                           <div class="strand-info">
                             <span class="selected-strand">{{ $e->strand }}</span>
                             @if($e->assessmentResult)
@@ -511,14 +521,7 @@
                           –
                         @endif
                       </td>
-                <td>{{ $e->previous_grade ?? '–' }}</td>
-                <td>
-                  @if($e->assessmentResult)
-                    {{ $e->assessmentResult->recommended_strand }}
-                        @else
-                          –
-                        @endif
-                      </td>
+                <td>{{ $e->desired_grade ?? $e->previous_grade ?? '–' }}</td>
                       <td>
                         <span class="status-badge status-{{ $e->status ?? 'pending' }}">
                           {{ ucfirst($e->status ?? 'pending') }}
@@ -573,6 +576,7 @@
                       <th>Student ID</th>
                       <th>Name</th>
                       <th>LRN</th>
+                      <th>Strand</th>
               <th>Grade Level</th>
                       <th>Status</th>
                       <th>Actions</th>
@@ -584,6 +588,19 @@
                         <td>{{ $e->student_id }}</td>
                 <td>{{ $e->display_name }}</td>
                         <td>{{ $e->lrn }}</td>
+                        <td>
+                          @php
+                            $gradeLevel = $e->grade_level_applying ?? 7;
+                            $isJHS = ($gradeLevel >= 7 && $gradeLevel <= 10);
+                          @endphp
+                          @if($isJHS)
+                            <span class="selected-strand">JHS</span>
+                          @elseif($e->strand)
+                            {{ $e->strand }}
+                          @else
+                            –
+                          @endif
+                        </td>
                         <td>{{ $e->grade_level_applying ?? '–' }}</td>
                         <td>
                           <span class="status-badge status-{{ $e->status ?? 'pending' }}">
@@ -615,7 +632,7 @@
                       </tr>
                     @empty
                       <tr>
-                <td colspan="6" class="text-center">No old student enrollees found.</td>
+                <td colspan="7" class="text-center">No old student enrollees found.</td>
                       </tr>
                     @endforelse
                   </tbody>
@@ -868,6 +885,71 @@
       }
     }
 
+    // Send credentials via email - global function
+    window.sendCredentialsEmail = function(enrolleeId) {
+      const button = event.target.closest('button');
+      const originalButtonHTML = button.innerHTML;
+      
+      // Show loading state
+      button.disabled = true;
+      button.style.opacity = '0.6';
+      button.innerHTML = '<div style="font-size: 14px;">⏳ Sending...</div>';
+      
+      // Send AJAX request - use full URL path
+      const baseUrl = window.location.origin;
+      fetch(`${baseUrl}/admin/enrollees/${enrolleeId}/credentials/email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Show success message
+          button.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+          button.innerHTML = '<div style="font-size: 14px;">✓ Email Sent!</div><div style="font-size: 11px; font-weight: 400; margin-top: 4px; opacity: 0.9;">Check student\'s inbox</div>';
+          
+          // Show notification
+          if (typeof showNotification === 'function') {
+            showNotification('success', data.message || 'Credentials sent successfully!');
+          } else {
+            alert('✓ ' + (data.message || 'Credentials sent successfully!'));
+          }
+          
+          // Reset button after 3 seconds
+          setTimeout(() => {
+            button.innerHTML = originalButtonHTML;
+            button.disabled = false;
+            button.style.opacity = '1';
+          }, 3000);
+        } else {
+          throw new Error(data.message || 'Failed to send email');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        
+        // Show error state
+        button.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+        button.innerHTML = '<div style="font-size: 14px;">✗ Failed</div><div style="font-size: 11px; font-weight: 400; margin-top: 4px; opacity: 0.9;">Try again</div>';
+        
+        // Show error notification
+        if (typeof showNotification === 'function') {
+          showNotification('error', error.message || 'Failed to send email. Please try again.');
+        } else {
+          alert('✗ Error: ' + (error.message || 'Failed to send email. Please try again.'));
+        }
+        
+        // Reset button after 3 seconds
+        setTimeout(() => {
+          button.innerHTML = originalButtonHTML;
+          button.disabled = false;
+          button.style.opacity = '1';
+        }, 3000);
+      });
+    };
 
     // Accept modal functions
     let currentAcceptData = null;
@@ -1142,12 +1224,84 @@
         img.src = '';
       }
       if (frame) {
+        // CRITICAL: Remove onload handler to prevent infinite loop
+        frame.onload = null;
         frame.onerror = null;
         frame.src = 'about:blank';
       }
       
       // Reset error flag
       documentViewerErrorShown = false;
+    }
+    
+    // View Document with Fallback
+    function viewDocumentWithFallback(url, fallbackUrl, title) {
+      console.log('Opening document:', url, 'with fallback:', fallbackUrl);
+      
+      // Try primary URL first
+      viewDocument(url, title);
+      
+      // If primary URL fails, try fallback
+      const modal = document.getElementById('document-viewer-modal');
+      const frame = document.getElementById('document-viewer-frame');
+      const img = document.getElementById('document-viewer-image');
+      
+      if (img) {
+        const originalOnError = img.onerror;
+        img.onerror = function() {
+          if (fallbackUrl && !documentViewerErrorShown) {
+            console.log('Primary URL failed, trying fallback:', fallbackUrl);
+            // Try fallback
+            img.onerror = originalOnError;
+            img.src = fallbackUrl;
+          } else if (originalOnError) {
+            originalOnError();
+          }
+        };
+      }
+      
+      if (frame) {
+        const originalOnLoad = frame.onload;
+        frame.onload = function() {
+          // CRITICAL: Don't try fallback if frame is being cleared (about:blank)
+          if (this.src === 'about:blank' || !this.src) {
+            return;
+          }
+          
+          // Don't check for errors unless absolutely necessary
+          // Most modern browsers handle PDF/document loading in iframes correctly
+          if (originalOnLoad) originalOnLoad();
+        };
+      }
+    }
+    
+    // Download Document with Fallback
+    async function downloadDocWithFallback(url, fallbackUrl) {
+      try {
+        console.log('Attempting download:', url);
+        let res = await fetch(url, { credentials: 'same-origin' });
+        
+        // If primary URL fails and we have a fallback, try it
+        if (!res.ok && fallbackUrl) {
+          console.log('Primary download failed, trying fallback:', fallbackUrl);
+          res = await fetch(fallbackUrl, { credentials: 'same-origin' });
+        }
+        
+        if (!res.ok) throw new Error('Download failed');
+        
+        const blob = await res.blob();
+        const link = document.createElement('a');
+        const fname = (url.split('/').pop() || 'document').split('?')[0];
+        link.href = URL.createObjectURL(blob);
+        link.download = fname || 'document';
+        document.body.appendChild(link);
+        link.click();
+        URL.revokeObjectURL(link.href);
+        link.remove();
+      } catch (e) {
+        console.error('Download error:', e);
+        alert('Unable to download document. Please try again later.');
+      }
     }
 
     // Payment Status Update Function

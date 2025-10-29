@@ -7,6 +7,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+  <link rel="icon" href="{{ asset('favicon.ico') }}">
   <title>MCA Montessori School Confirmation - Existing Students</title>
   <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -784,5 +786,8 @@ button:active {
             return jQuery(a).text().indexOf(m[3]) >= 0;
         };
     </script>
+    
+    {{-- Include Modern Notification System --}}
+    @include('partials.modern_notifications')
 </body>
 </html>

@@ -189,9 +189,12 @@ class StudentDocumentController extends Controller
                             $sizeMb    = number_format($sizeBytes / 1024 / 1024, 2) . ' MB';
                         }
 
-                        // Generate proper URL using asset() for better compatibility
-                        // Ensure the path starts with the correct storage directory
+                        // Generate proper URL with fallback to controller-based serving
+                        // Try direct file URL first, fallback to controller route for deployment compatibility
                         $docUrl = asset('storage/' . $cleanPath);
+                        
+                        // Fallback URL using controller route
+                        $fallbackUrl = route('student.documents.serve', ['path' => $cleanPath]);
                         
                         $documents->push([
                             'icon'     => $this->getFileIcon($path),
@@ -202,6 +205,7 @@ class StudentDocumentController extends Controller
                             'uploaded' => $uploaded,
                             'size'     => $sizeMb,
                             'url'      => $docUrl,
+                            'fallback_url' => $fallbackUrl,
                             'exists'   => $exists,
                             'path'     => $cleanPath,
                         ]);
@@ -246,8 +250,12 @@ class StudentDocumentController extends Controller
                             $sizeMb = number_format($sizeBytes / 1024 / 1024, 2) . ' MB';
                         }
                         
-                        // Generate proper URL using asset() for better compatibility
+                        // Generate proper URL with fallback to controller-based serving
+                        // Try direct file URL first, fallback to controller route for deployment compatibility
                         $docUrl = asset('storage/' . $cleanPath);
+                        
+                        // Fallback URL using controller route
+                        $fallbackUrl = route('student.documents.serve', ['path' => $cleanPath]);
 
                         $documents->push([
                             'icon'     => $this->getFileIcon($path),
@@ -258,6 +266,7 @@ class StudentDocumentController extends Controller
                             'uploaded' => $uploaded,
                             'size'     => $sizeMb,
                             'url'      => $docUrl,
+                            'fallback_url' => $fallbackUrl,
                             'exists'   => $exists,
                             'path'     => $cleanPath,
                         ]);
@@ -292,6 +301,57 @@ class StudentDocumentController extends Controller
 
         // 4. Return to your student_documents view
         return view('student_documents', compact('student', 'documents'));
+    }
+
+    /**
+     * Serve document file directly from storage
+     * This is a fallback method in case symbolic links aren't working
+     */
+    public function serveDocument(Request $request, $path)
+    {
+        try {
+            // Security: Only allow serving files from the student's own records
+            $student = Student::with('studentID')
+                ->where('user_id', Auth::id())
+                ->first();
+
+            if (!$student) {
+                abort(403, 'Unauthorized');
+            }
+
+            // Clean the path
+            $cleanPath = urldecode($path);
+            $cleanPath = ltrim($cleanPath, '/');
+            
+            // Only allow paths from enroll directory as a security measure
+            if (!str_starts_with($cleanPath, 'enroll/')) {
+                abort(403, 'Unauthorized file path');
+            }
+
+            // Verify file exists
+            if (!Storage::disk('public')->exists($cleanPath)) {
+                abort(404, 'File not found');
+            }
+
+            // Get file path
+            $filePath = Storage::disk('public')->path($cleanPath);
+            
+            // Get MIME type
+            $mimeType = mime_content_type($filePath);
+            
+            // Return file response
+            return response()->file($filePath, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'inline; filename="' . basename($filePath) . '"',
+                'Cache-Control' => 'public, max-age=3600',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to serve document', [
+                'path' => $path,
+                'error' => $e->getMessage()
+            ]);
+            abort(404, 'File not found');
+        }
     }
 
     /**

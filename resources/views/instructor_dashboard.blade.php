@@ -19,9 +19,9 @@
           <nav class="sidebar-nav">
               <ul>
                   <li><a href="{{ route('instructor.dashboard') }}" class="nav-item active">DASHBOARD</a></li>
-                  <li>
-                      <a href="{{ route('instructor.schedule') }}" class="nav-item">CLASSES</a>
-                      <ul class="sub-menu">
+                  <li class="has-submenu">
+                      <a href="#" class="nav-item" onclick="toggleSubmenu(event)">CLASSES</a>
+                      <ul class="sub-menu" id="classes-submenu">
                           <li><a href="{{ route('instructor.schedule') }}" class="sub-item">SCHEDULES</a></li>
                           <li><a href="{{ route('instructor.student') }}" class="sub-item">STUDENTS</a></li>
                       </ul>
@@ -160,6 +160,27 @@
                 // Implement actual search functionality here
             });
         });
+        
+        // Function to toggle submenu
+        function toggleSubmenu(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const submenu = document.getElementById('classes-submenu');
+            const parentLi = event.target.closest('li');
+            
+            // Check if submenu exists
+            if (!submenu) return;
+            
+            // Toggle display
+            if (submenu.style.display === 'block' || submenu.style.display === '') {
+                submenu.style.display = 'none';
+                parentLi.classList.remove('active');
+            } else {
+                submenu.style.display = 'block';
+                parentLi.classList.add('active');
+            }
+        }
     </script>
     
     <script src="{{asset('js/logout.js')}}"></script>

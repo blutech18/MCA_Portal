@@ -371,6 +371,71 @@ body {
     box-shadow: none;
 }
 
+/* Individual Save Button */
+.save-individual-btn {
+    background: #28a745;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+}
+
+.save-individual-btn:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.save-individual-btn.changed {
+    background: #ffc107;
+    color: #333;
+    animation: pulse 2s infinite;
+}
+
+.save-individual-btn.changed:hover {
+    background: #e0a800;
+}
+
+.save-individual-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Save Cell */
+.save-cell {
+    text-align: center;
+    min-width: 130px;
+}
+
+/* Save Status */
+.save-status {
+    font-size: 11px;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
 /* Confirmation Modal */
 .confirmation-modal {
     display: none;
@@ -736,6 +801,15 @@ body {
         font-size: 12px;
     }
 
+    .save-individual-btn {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+
+    .save-cell {
+        min-width: 100px;
+    }
+
     .grade-input-header {
         flex-direction: column;
         align-items: flex-start;
@@ -783,5 +857,19 @@ body {
 
     .modal-body p {
         font-size: 14px;
+    }
+
+    .save-individual-btn {
+        padding: 5px 10px;
+        font-size: 10px;
+        gap: 4px;
+    }
+
+    .save-cell {
+        min-width: 80px;
+    }
+
+    .save-status {
+        font-size: 9px;
     }
 }

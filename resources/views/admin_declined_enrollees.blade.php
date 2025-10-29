@@ -194,9 +194,9 @@
                       <th>Name</th>
                       <th>Email</th>
                       <th>Contact</th>
+                      <th>LRN</th>
                       <th>Strand</th>
                       <th>Grade Level</th>
-                      <th>Assessment Score</th>
                       <th>Payment Status</th>
                       <th>Actions</th>
                     </tr>
@@ -207,8 +207,18 @@
                 <td>{{ $e->display_name }}</td>
                 <td>{{ $e->email }}</td>
                       <td>{{ $e->contact_no }}</td>
+                <td>{{ $e->lrn ?? '–' }}</td>
                 <td>
-                        @if($e->strand)
+                        @php
+                          // Determine if student is JHS (grades 7-10)
+                          $desiredGrade = $e->desired_grade ?? $e->previous_grade ?? 7;
+                          $isJHS = ($desiredGrade >= 7 && $desiredGrade <= 10);
+                        @endphp
+                        @if($isJHS)
+                          <div class="strand-info">
+                            <span class="selected-strand">JHS</span>
+                          </div>
+                        @elseif($e->strand)
                           <div class="strand-info">
                             <span class="selected-strand">{{ $e->strand }}</span>
                             @if($e->assessmentResult)
@@ -221,14 +231,7 @@
                           –
                         @endif
                       </td>
-                <td>{{ $e->previous_grade ?? '–' }}</td>
-                <td>
-                  @if($e->assessmentResult)
-                    {{ $e->assessmentResult->recommended_strand }}
-                  @else
-                    –
-                  @endif
-                      </td>
+                <td>{{ $e->desired_grade ?? $e->previous_grade ?? '–' }}</td>
                 <td>
                   @if($e->payment_status === 'verified')
                     Verified
@@ -280,6 +283,7 @@
                       <th>Student ID</th>
                       <th>Name</th>
                       <th>LRN</th>
+                      <th>Strand</th>
                       <th>Grade Level</th>
                       <th>Payment Status</th>
                       <th>Actions</th>
@@ -291,6 +295,19 @@
                         <td>{{ $e->student_id }}</td>
                 <td>{{ $e->display_name }}</td>
                         <td>{{ $e->lrn }}</td>
+                        <td>
+                          @php
+                            $gradeLevel = $e->grade_level_applying ?? 7;
+                            $isJHS = ($gradeLevel >= 7 && $gradeLevel <= 10);
+                          @endphp
+                          @if($isJHS)
+                            <span class="selected-strand">JHS</span>
+                          @elseif($e->strand)
+                            {{ $e->strand }}
+                          @else
+                            –
+                          @endif
+                        </td>
                         <td>{{ $e->grade_level_applying ?? '–' }}</td>
                         <td>
                   @if($e->payment_status === 'verified')
@@ -319,7 +336,7 @@
                       </tr>
                     @empty
                       <tr>
-                <td colspan="6" class="text-center">No declined old student enrollees found.</td>
+                <td colspan="7" class="text-center">No declined old student enrollees found.</td>
                       </tr>
                     @endforelse
                   </tbody>

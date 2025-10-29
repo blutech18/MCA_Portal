@@ -17,8 +17,8 @@ class StrandSeeder extends Seeder
             ['name' => 'ABM', 'no_of_sections' => 2],
             ['name' => 'HUMSS', 'no_of_sections' => 2],
             ['name' => 'GAS', 'no_of_sections' => 1],
-            ['name' => 'TVL-ICT', 'no_of_sections' => 1],
-            ['name' => 'TVL-HE', 'no_of_sections' => 1],
+            ['name' => 'TVL-ICT', 'no_of_sections' => 6],
+            ['name' => 'TVL-HE', 'no_of_sections' => 6],
         ];
 
         foreach ($strands as $strand) {
